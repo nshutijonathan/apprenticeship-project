@@ -1,0 +1,14 @@
+# Distribution / packaging
+.vscode
+__pycache__
+__init__.pyc
+settings.pyc
+
+# dotenv
+.env
+
+# virtualenv
+env/
+
+# SQLite3
+db.sqlite3
