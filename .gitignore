@@ -1,14 +1,13 @@
 # Distribution / packaging
 .vscode
 __pycache__
-__init__.pyc
-settings.pyc
-
-# dotenv
+*.pyc
+.idea/
+db.sqlite3
+.vscode
+.DS_Store
+.pytest_cache
+htmlcov/
+.coverage
 .env
-
-# virtualenv
-env/
-
-# SQLite3
 db.sqlite3

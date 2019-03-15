@@ -1,17 +1,8 @@
 import graphene
-
-"""
-Example of usage
-import examples.schema
+from .apps.authentication.schema import Mutation
 
 
-class Query(examples.schema.Query, graphene.ObjectType):
+class Mutations(Mutation):
     pass
 
-
-class Mutation(examples.schema.Mutation, graphene.ObjectType):
-    pass
-
-
-schema = graphene.Schema(query=Query, mutation=Mutation)
-"""
+schema = graphene.Schema(mutation=Mutations)
