@@ -119,10 +119,19 @@ USE_L10N = True
 
 USE_TZ = True
 
-# GraphQl setting
+# GraphQl settings
 GRAPHENE = {
     'SCHEMA': 'healthid.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware'
+    ],
 }
+
+# Add settings for authentication with graphql_jwt
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTH_USER_MODEL = 'authentication.User'
 

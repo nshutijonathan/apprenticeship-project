@@ -10,27 +10,55 @@ from healthid.schema import schema
 
 from .test_data import password_error_query, secondquery, userquery
 
+
 class TestRegisterMutation(TestCase):
 
     def test_create_user_mutation(self):
         client = Client(schema)
         executed = client.execute(userquery)
-        self.assertIn('success', executed['data']['createUser'])
+        expected = {
+            "data": {
+                "createUser": {
+                "success": [
+                    "message",
+                    "You have succesfully registerd with healthID Please check your email to verify your accout"
+                ]
+                }
+            }
+        }
+        self.assertEqual(executed, expected)
+
+    def test_register_mutation_password_error(self):
+        client = Client(schema)
+
+        executed = client.execute(password_error_query)
+        expected = {
+            "data": {
+                "createUser": {
+                 "errors": [
+                    "password",
+                    "passwords don't match"
+                    ]
+                }
+            }
+        }
+
+        self.assertEqual(executed, expected)
 
     def test_register_mutation_user_error(self):
         client = Client(schema)
         executed = client.execute(secondquery)
         executed_second = client.execute(secondquery)
-        self.assertIn('errors', executed_second['data']['createUser'])
+        expected = {'data': OrderedDict([('createUser',
+                        OrderedDict([('errors',
+                                      ['email',
+                                      'Email already registered.'])]))])}
 
-    def test_create_wrong_password(self):
-        client = Client(schema)
-        executed = client.execute(password_error_query)
-        self.assertIn('errors', executed)
- 
+        self.assertEqual(executed_second, expected)
+
     def test_mail_sent_successfully(self):
             """Tests whether the confirmation email was sent successfully"""
             client = Client(schema)
-            executed = client.execute(userquery) 
+            executed = client.execute(userquery)
             self.assertEqual(len(mail.outbox), 1)
             self.assertIn('success', executed['data']['createUser'])

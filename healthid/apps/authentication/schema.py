@@ -2,6 +2,7 @@
 from os import environ, getenv
 
 import graphene
+import graphql_jwt
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -70,6 +71,38 @@ class RegisterUser(graphene.Mutation):
             return RegisterUser(errors=errors)
         return RegisterUser(errors=errors)
 
+class Query(graphene.AbstractType):
+    """
+    Query to authenticate a user.
+    """
+    me = graphene.Field(UserType)
+    users = graphene.List(UserType)
+
+    def resolve_users(self, info):
+        """
+        Resolver method for users field.
+        """
+        return User.objects.all()
+
+    def resolve_me(self, info):
+        """
+        Resolver method to check if a user is authenticated.
+        """
+        user = info.context.user
+        if user.is_anonymous:
+            raise Exception("Please login to continue.")
+        return user
+
+class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
+    """
+    Class to override default JSONWebTokenMutation to
+    return the user object along with the authentication token.
+    """
+    user = graphene.Field(UserType)
+
+    @classmethod
+    def resolve(cls, root, info, **kwargs):
+        return cls(user=info.context.user)
 
 class Mutation(graphene.ObjectType):
     create_user = RegisterUser.Field()
