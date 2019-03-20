@@ -1,9 +1,8 @@
 # Distribution / packaging
 .vscode
-__pycache__
+__pycache__/
 *.pyc
 .idea/
-db.sqlite3
 .vscode
 .DS_Store
 .pytest_cache
