@@ -1,7 +1,10 @@
 import uuid
 
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils.http import int_to_base36
 
@@ -18,18 +21,26 @@ class UserManager(BaseUserManager):
         """
         Creates and saves a User with the given credentials.
         """
-        email = kwargs.get('email')
-        password = kwargs.get('password')
-        mobile_number = kwargs.get('mobile_number')
+        email = kwargs.get("email")
+        password = kwargs.get("password")
+        mobile_number = kwargs.get("mobile_number")
 
         user = self.model.objects.filter(email=email).first()
         if user:
             raise ValueError(
-                'User with email {email} already exists'.format(email=email))
+                "User with email {email} already exists".format(email=email)
+            )
         user = self.model(
-            mobile_number=mobile_number, email=self.normalize_email(email))
+            mobile_number=mobile_number, email=self.normalize_email(email)
+        )
         user.set_password(password)
         user.save()
+        return user
+
+    def create_superuser(self, email, password):
+        user = self.create_user(email=email, password=password)
+        user.is_superuser = user.is_staff = user.is_active = user.is_admin = True
+        user.save(using=self._db)
         return user
 
 
@@ -39,18 +50,54 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
 
     id = models.CharField(
-        max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False)
+        max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
+    )
 
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
+
     mobile_number = models.CharField(max_length=100, null=True)
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
-    USERNAME_FIELD = 'email'
+    is_admin = models.BooleanField(default=False)
+    role = models.ForeignKey(
+        "Role", related_name="role", null=True, blank=True, on_delete=models.CASCADE
+    )
+    is_staff = models.BooleanField(default=False)
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     def __str__(self):
         return self.email
+
+    def has_perm(self, perm, obj=None):
+        return self.is_admin
+
+    def has_module_perms(self, app_label):
+        return self.is_admin
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+
+class Role(models.Model):
+    """
+        User Role model
+    """
+
+    id = models.CharField(
+        max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
+    )
+    name = models.CharField(
+        max_length=50, help_text="Enter Available Roles", unique=True
+    )
+
+    class Meta:
+        verbose_name_plural = "Roles"
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
