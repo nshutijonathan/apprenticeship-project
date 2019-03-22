@@ -1,44 +1,16 @@
-
-userquery = '''
-            mutation {
-               createUser(
-                   email:"user@gmail.com",
-                   mobileNumber:70777777,
-                   password:"user",
-                   confirmPassword:"user",
-               ) {
+register_user_query = '''
+            mutation {{  
+               createUser( 
+                   email:"{email}",
+                   mobileNumber:"{mobileNumber}",
+                   password:"{password}",
+               ) {{
+                 errors
                  success
-
-               }
-            }
-            '''
-password_error_query = '''
-            mutation {
-               createUser(
-                   email:"user@gmail.com",
-                   mobileNumber:70777777,
-                   password:"1234",
-                   confirmPassword:"1234p",
-               ) {
-
-                 errors
-               }
-            }
+               }}
+            }}
             '''
 
-secondquery = '''
-            mutation {
-               createUser(
-                   email:"user@gmail.com",
-                   mobileNumber:70777777,
-                   password:"user",
-                   confirmPassword:"user",
-               ) {
-
-                 errors
-               }
-            }
-            '''
 
 login_user_query = '''
             mutation {
@@ -52,6 +24,7 @@ login_user_query = '''
             }
             '''
 
+
 login_mutation = '''
             mutation GetToken($email: String!, $password: String!){
                 tokenAuth(email: $email, password: $password) {
@@ -63,6 +36,7 @@ login_mutation = '''
             }
             '''
 
+
 test_users_query = '''
             {
                 users {
@@ -70,3 +44,4 @@ test_users_query = '''
                 }
             }
             '''
+ 

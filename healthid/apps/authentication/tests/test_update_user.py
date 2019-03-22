@@ -6,25 +6,22 @@ from healthid.apps.authentication.models import User
 
 
 class UserUpdateTestCase(TestCase):
-
     def setUp(self):
         self._client = Client()
-        self.user = User.objects.create_user(email="shadik.ntale@andela.com",
-                                             password="Echo-pwned-01",
-                                             mobile_number="0702260027")
+        self.user = User.objects.create_user(
+            email="shadik.ntale@andela.com",
+            password="Echo-pwned-01",
+            mobile_number="0702260027")
         self.user.is_active = True
         self.user.save()
         self._client.login(
-            email="shadik.ntale@andela.com",
-            password="Echo-pwned-01")
+            email="shadik.ntale@andela.com", password="Echo-pwned-01")
 
     def query(self, query: str = None):
         body = dict()
         body['query'] = query
         response = self._client.post(
-            '/healthid/',
-            json.dumps(body),
-            content_type='application/json')
+            '/healthid/', json.dumps(body), content_type='application/json')
         json_response = json.loads(response.content.decode())
         return json_response
 
@@ -34,7 +31,7 @@ class UserUpdateTestCase(TestCase):
         mutation_string = '''
                     mutation{{
                             updateUser(
-                                mobileNumber: "0756565137"
+                                mobileNumber: "+256756565137"
                                 password: [
                                 {{
                                     oldPassword: "{oldPassword}",
@@ -51,8 +48,7 @@ class UserUpdateTestCase(TestCase):
                             }}
                             }}
                 '''.format(
-            newPassword=new_password,
-            oldPassword=old_password)
+            newPassword=new_password, oldPassword=old_password)
         return mutation_string
 
     def test_get_all_users(self):
@@ -64,8 +60,7 @@ class UserUpdateTestCase(TestCase):
         new_password = "Password123"
         old_password = "Echo-pwned-01"
         mutation_string = self.mutation_string_generator(
-            new_password=new_password,
-            old_password=old_password)
+            new_password=new_password, old_password=old_password)
 
         response = self.query(mutation_string)
         self.assertIn('data', response)
@@ -73,11 +68,10 @@ class UserUpdateTestCase(TestCase):
         self.assertIsNone(response['data']['updateUser']['error'])
 
     def test_cannot_update_with_unmatching_passwords(self):
-        new_password = "password1"
-        old_password = "password2"
+        new_password = "Password1"
+        old_password = "Password2"
         mutation_string = self.mutation_string_generator(
-            new_password=new_password,
-            old_password=old_password)
+            new_password=new_password, old_password=old_password)
 
         response = self.query(mutation_string)
         self.assertIsNotNone(response['errors'][0]['message'])
