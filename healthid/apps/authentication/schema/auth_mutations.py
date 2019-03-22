@@ -17,6 +17,8 @@ from healthid.apps.authentication.utils import user_update_instance
 from healthid.apps.authentication.utils.decorator import master_admin_required
 from healthid.apps.authentication.utils.tokens import account_activation_token
 from healthid.apps.authentication.utils.validations import ValidateUser
+from healthid.apps.authentication.utils.admin_validation\
+    import validate_instance
 
 from .auth_queries import RoleType, UserType
 
@@ -26,6 +28,7 @@ DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 class PasswordInput(graphene.InputObjectType):
     new_password = graphene.String()
     old_password = graphene.String()
+
 
 class RoleInput(graphene.InputObjectType):
     """
@@ -254,6 +257,36 @@ class DeleteRole(graphene.Mutation):
             return DeleteRole(success=success, role=None, errors=errors)
 
 
+class UpdateAdminUser(graphene.Mutation):
+
+    user = graphene.Field(UserType)
+    success = graphene.Field(graphene.String)
+
+    class Arguments:
+        first_name = graphene.String()
+        last_name = graphene.String()
+        username = graphene.String()
+        secondary_email = graphene.String()
+        secondary_phone_number = graphene.String()
+
+    @staticmethod
+    @login_required
+    @master_admin_required
+    def mutate(root, info, **kwargs):
+        user = info.context.user
+        validated_fileds = validate_instance.validate_admin_fields(**kwargs)
+        try:
+            user_instance = User.objects.get(id=user.id)
+        except Exception as e:
+            raise GraphQLError(str(e))
+        for(key, value) in validated_fileds.items():
+            if key is not None:
+                setattr(user_instance, key, value)
+        user_instance.save()
+        success = 'admin profile successfully updated'
+        return UpdateAdminUser(user=user_instance, success=success)
+
+
 class Mutation(graphene.ObjectType):
     create_user = RegisterUser.Field()
     update_user = UpdateUserDetails.Field()
@@ -261,3 +294,4 @@ class Mutation(graphene.ObjectType):
     update_role = UpdateUserRole.Field()
     edit_role = EditRole.Field()
     delete_role = DeleteRole.Field()
+    update_admin_user = UpdateAdminUser.Field()

@@ -16,8 +16,8 @@ login_user_query = '''
             mutation {
                createUser(
                    email:"user@gmail.com",
-                   mobileNumber:"070777777",
-                   password:"userQ1"
+                   mobileNumber:"+256 770777777",
+                   password:"Passsword12"
                ) {
                  success
                }
@@ -44,4 +44,24 @@ test_users_query = '''
                 }
             }
             '''
- 
+
+
+query_str = '''
+      mutation{{
+          updateAdminUser(
+              firstName:"{firstname}",
+              lastName:"{lastname}",
+              username:"{username}",
+              secondaryEmail:"{email}",
+              secondaryPhoneNumber:"{phone}",
+              ){{
+              user{{
+                  firstName
+                  lastName
+                  username
+                  secondaryEmail
+              }},
+              success
+          }}
+      }}
+      '''

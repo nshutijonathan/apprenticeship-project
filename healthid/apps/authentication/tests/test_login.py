@@ -31,7 +31,7 @@ class UserTests(JSONWebTokenTestCase):
         # and a token generated.
         variables = {
             'email': self.login_user.email,
-            'password': "userQ1"
+            'password': "Passsword12"
         }
         response = self.client.execute(login_mutation, variables=variables)
         self.assertEqual(str(self.login_user.id),
@@ -42,7 +42,7 @@ class UserTests(JSONWebTokenTestCase):
         # Test if the user can log in with an incorrect email.
         variables = {
             'email': 'wrong_user@gmail.com',
-            'password': 'userQ1'
+            'password': 'Passsword12'
         }
         response = self.client.execute(login_mutation, variables=variables)
         self.assertIn('Please, enter valid credentials', str(response.errors))

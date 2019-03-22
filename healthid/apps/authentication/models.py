@@ -59,6 +59,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     mobile_number = models.CharField(max_length=100, null=True)
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    username = models.CharField(max_length=100, null=True, blank=True)
+    secondary_email = models.EmailField(max_length=100, null=True, blank=True)
+    secondary_phone_number = models.CharField(
+        null=True, blank=True, max_length=100)
     created_at = models.DateField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     role = models.ForeignKey(
