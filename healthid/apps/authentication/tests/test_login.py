@@ -1,65 +1,57 @@
-from django.test import TestCase
-from graphene.test import Client
 import json
 
-from healthid.schema import schema
+from graphene.test import Client
+from graphql_jwt.testcases import JSONWebTokenTestCase
+
 from healthid.apps.authentication.models import User
-from .test_data import userquery
+
+from healthid.apps.authentication.tests.test_data import login_mutation, login_user_query, test_users_query
 
 
-class UserTests(TestCase):
+class UserTests(JSONWebTokenTestCase):
     """
-    Class to test for logged in users
+    Class to test for user authentication.
     """
+
     def setUp(self):
-        self.client = Client(schema)
-        self.user = User(
-            mobile_number=729041783,
-            password="123456",
-            email="testuser@gmail.com"
-        )
-
-        self.user.is_active = True
-        self.user.save()
-
-        self.client.execute(userquery)
-
+        self.client.execute(login_user_query)
         self.login_user = User.objects.get(email="user@gmail.com")
         self.login_user.is_active = True
         self.login_user.save()
+        self.client.authenticate(self.login_user)
 
     def test_get_user(self):
-        """
-        Test if testuser exists in the database
-        """
-        query = '''
-            query GetUsers {
-                users {
-                    id
-                }
-            }
-            '''
+        # Check if testuser exists in the database
+        response = self.client.execute(test_users_query)
+        self.assertEqual(str(self.login_user.id),
+                         response.data['users'][0]["id"])
 
-        response = self.client.execute(query)
-        self.assertEqual(str(self.user.id), response['data']['users'][0]['id'])
-
-    def test_user_login(self):
-        """
-        Test if the created user can be logged in
-        and a token generated.
-        """
-
-        mutation = '''
-            mutation GetToken($email: String!, $password: String!){
-                tokenAuth(email: $email, password: $password) {
-                token
-                }
-            }
-            '''
+    def test_correct_user_login(self):
+        # Test if the created user can be logged in
+        # and a token generated.
         variables = {
-            'email': 'user@gmail.com',
-            'password': 'user'
+            'email': self.login_user.email,
+            'password': "userQ1"
         }
+        response = self.client.execute(login_mutation, variables=variables)
+        self.assertEqual(str(self.login_user.id),
+                         response.data['tokenAuth']['user']['id'])
+        self.assertGreater(len(response.data['tokenAuth']['token']), 10)
 
-        response = self.client.execute(mutation, variables=variables)
-        self.assertEqual(str(self.user.id), response['data']['users'][0]['id'])
+    def test_incorrect_email_login(self):
+        # Test if the user can log in with an incorrect email.
+        variables = {
+            'email': 'wrong_user@gmail.com',
+            'password': 'userQ1'
+        }
+        response = self.client.execute(login_mutation, variables=variables)
+        self.assertIn('Please, enter valid credentials', str(response.errors))
+
+    def test_incorrect_password_login(self):
+        # Test if the user can log in with a wrong password.
+        variables = {
+            'email': 'wrong_user@gmail.com',
+            'password': 'Incorrect1234'
+        }
+        response = self.client.execute(login_mutation, variables=variables)
+        self.assertIn('Please, enter valid credentials', str(response.errors))
