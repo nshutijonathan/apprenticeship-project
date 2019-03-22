@@ -1,3 +1,3 @@
-from .update_user import instance
+from .update_user import user_update_instance
 
-__all__ = ['instance']
+__all__ = ['user_update_instance']

@@ -1,16 +1,16 @@
-from healthid.apps.business.schema import business_mutation, business_query
-from healthid.apps.authentication.schema import Mutation, Query, ObtainJSONWebToken
-from healthid.apps.authentication.auth_schema import auth_queries
-from healthid.apps.authentication.auth_schema import auth_mutations
 import graphene
 import graphql_jwt
 
+from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
+                                         ObtainJSONWebToken)
+from healthid.apps.business.schema import business_mutation, business_query
 
-class Query(Query, auth_queries.Query, business_query.Query, graphene.ObjectType):
+
+class Query(AuthQuery, business_query.Query, graphene.ObjectType):
     pass
 
 
-class Mutation(Mutation, auth_mutations.Mutation, business_mutation.Mutation, graphene.ObjectType):
+class Mutation(AuthMutation, business_mutation.Mutation, graphene.ObjectType):
     # Add Mutations provided by graphql_jwt to generate
     # and verify tokens
     token_auth = ObtainJSONWebToken.Field()

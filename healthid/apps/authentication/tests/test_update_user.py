@@ -80,5 +80,5 @@ class UserUpdateTestCase(TestCase):
             old_password=old_password)
 
         response = self.query(mutation_string)
-        self.assertIsNotNone(response['data']['updateUser']['error'])
-        self.assertIsNone(response['data']['updateUser']['success'])
+        self.assertIsNotNone(response['errors'][0]['message'])
+        self.assertIsNone(response['data']['updateUser'])
