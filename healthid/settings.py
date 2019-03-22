@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+
 # Helps load enviromental variable in .env file
 from dotenv import load_dotenv
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'graphene_django',
     'healthid.apps.authentication',
+    'healthid.apps.business'
 ]
 
 
