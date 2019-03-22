@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'graphene_django',
     'healthid.apps.authentication',
-    'healthid.apps.business'
+    'healthid.apps.business',
+    'healthid.apps.outlets',
 ]
 
 
