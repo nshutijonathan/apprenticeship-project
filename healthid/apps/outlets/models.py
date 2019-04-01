@@ -28,6 +28,7 @@ class OutletKind(models.Model):
 
 
 class Outlet(models.Model):
+    id = models.AutoField(primary_key=True)
     kind = models.ForeignKey(OutletKind, on_delete=models.CASCADE)
     name = models.CharField(max_length=244)
     address_line1 = models.CharField(max_length=244)
@@ -36,6 +37,7 @@ class Outlet(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=25)
     date_launched = models.DateField()
+    prefix_id = models.CharField(max_length=9, null=False)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
 
     class Meta:

@@ -3,10 +3,10 @@
 __pycache__/
 *.pyc
 .idea/
-.vscode
+db.sqlite3
 .DS_Store
 .pytest_cache
 htmlcov/
 .coverage
+.coveragerc
 .env
-db.sqlite3

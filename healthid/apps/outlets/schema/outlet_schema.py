@@ -39,7 +39,8 @@ class Query(graphene.ObjectType):
                             address_line2=graphene.String(),
                             lga=graphene.String(),
                             city_id=graphene.Int(),
-                            date_launched=graphene.String())
+                            date_launched=graphene.String(),
+                            prefix_id=graphene.String())
 
     @login_required
     def resolve_outlets(self, info, **kwargs):

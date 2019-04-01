@@ -21,6 +21,7 @@ class CreateOutlet(graphene.Mutation):
         city_id = graphene.Int()
         phone_number = graphene.String()
         date_launched = graphene.types.datetime.Date()
+        prefix_id = graphene.String()
         business_id = graphene.String()
 
     @login_required
@@ -53,6 +54,7 @@ class UpdateOutlet(graphene.Mutation):
         phone_number = graphene.String()
         lga = graphene.String()
         date_launched = graphene.String()
+        prefix_id = graphene.String()
 
     @login_required
     @master_admin_required

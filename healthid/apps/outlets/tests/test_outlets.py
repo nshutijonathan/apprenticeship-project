@@ -85,14 +85,14 @@ class GraphQLTestCase(TestCase):
                     phoneNumber: "2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
-                    outlet{{name}}
+                    outlet{{name, prefixId}}
                 }}
             }}
             '''),
         )
         self.assertResponseNoErrors(
             response, {"createOutlet": {
-                'outlet': {'name': 'green ville'}
+                'outlet': {'name': 'green ville', 'prefixId': 'AN001-GRE'}
             }})
 
     def test_update_outlet(self):
@@ -110,14 +110,14 @@ class GraphQLTestCase(TestCase):
                     phoneNumber: "2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
-                    outlet{{name}}
+                    outlet{{name, prefixId}}
                 }}
             }}
             '''),
         )
         self.assertResponseNoErrors(
             response, {"updateOutlet": {
-                'outlet': {'name': 'green ville'}
+                'outlet': {'name': 'green ville', 'prefixId': 'AN005-GRE'}
             }})
 
     def test_outlet_model(self):

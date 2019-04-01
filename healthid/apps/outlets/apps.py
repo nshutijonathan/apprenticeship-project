@@ -2,4 +2,8 @@ from django.apps import AppConfig
 
 
 class OutletsConfig(AppConfig):
-    name = 'outlets'
+
+    name = 'healthid.apps.outlets'
+
+    def ready(self):
+        from . import signals
