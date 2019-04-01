@@ -11,8 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
-# Helps load enviromental variable in .env file
+import django_heroku
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -42,12 +41,14 @@ INSTALLED_APPS = [
     'healthid.apps.authentication',
     'healthid.apps.business',
     'healthid.apps.outlets',
+    'corsheaders',
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -144,10 +145,19 @@ STATIC_URL = '/static/'
 
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_USE_TLS = True
-EMAIL_PORT = 587
+EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 FIXTURE_DIRS = (os.path.join(PROJECT_DIR, "fixtures"),)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+django_heroku.settings(locals())
+
+CORS_ORIGIN_WHITELIST = (
+    '0.0.0.0:8080',
+    'localhost:8080',
+)
