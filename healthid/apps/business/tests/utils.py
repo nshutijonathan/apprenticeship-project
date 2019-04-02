@@ -1,5 +1,6 @@
 from healthid.apps.business.models import Business
 
+
 def create_business():
     return Business.objects.create(
         legal_name="rockerr",

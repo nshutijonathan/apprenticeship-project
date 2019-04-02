@@ -3,7 +3,7 @@ import uuid
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
-    PermissionsMixin,
+    PermissionsMixin
 )
 from django.db import models
 from django.utils.http import int_to_base36
@@ -39,7 +39,8 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password):
         user = self.create_user(email=email, password=password)
-        user.is_superuser = user.is_staff = user.is_active = user.is_admin = True
+        user.is_superuser = user.is_staff = True
+        user.is_active = user.is_admin = True
         user.save(using=self._db)
         return user
 
@@ -68,7 +69,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     role = models.ForeignKey(
-        "Role", related_name="role", null=True, blank=True, on_delete=models.CASCADE
+        "Role", related_name="role",
+        null=True, blank=True,
+        on_delete=models.CASCADE
     )
     is_staff = models.BooleanField(default=False)
     USERNAME_FIELD = "email"
@@ -79,13 +82,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-    def has_perm(self, perm, obj=None):
+    def has_admin_permission(self, perm, obj=None):
         return self.is_admin
 
-    def has_module_perms(self, app_label):
+    def has_module_permission(self, app_label):
         return self.is_admin
 
-    def has_perm(self, perm, obj=None):
+    def has_super_admin_permission(self, perm, obj=None):
         return self.is_superuser
 
 

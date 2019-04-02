@@ -3,7 +3,6 @@ import json
 from django.core import mail
 from django.test import Client, TestCase
 
-from healthid.apps.authentication.models import User
 from healthid.apps.authentication.tests.test_data import register_user_query
 
 

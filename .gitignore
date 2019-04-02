@@ -10,3 +10,5 @@ htmlcov/
 .coverage
 .coveragerc
 .env
+db.sqlite3
+.tox

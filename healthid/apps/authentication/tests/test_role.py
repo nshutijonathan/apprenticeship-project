@@ -19,7 +19,10 @@ class GraphQLTestCase(TestCase):
         self.user.role = self.create_default_role()
         self.user.is_active = True
         self.user.save()
-        self._client.login(email="testemail@test.com", password="testpassword123")
+        self._client.login(
+            email="testemail@test.com",
+            password="testpassword123"
+        )
 
     def create_test_user(self):
         return User.objects.create_user(
@@ -119,7 +122,8 @@ class GraphQLTestCase(TestCase):
         }}
 
         """
-        expected = {"editRole": {"success": True, "role": {"name": "Test Role"}}}
+        expected = {"editRole": {"success": True,
+                                 "role": {"name": "Test Role"}}}
         resp = self.query(query_string)
         self.assertResponseNoErrors(resp, expected)
 

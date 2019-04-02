@@ -2,7 +2,6 @@
 import re
 
 from graphql import GraphQLError
-from graphql_jwt.decorators import login_required
 
 
 class ValidateAdmin:
@@ -33,7 +32,7 @@ class ValidateAdmin:
 
         if not len(name) < 30:
             raise GraphQLError('a name cannnot exceed 30 characters')
-        if re.match('^[A-Za-z0-9_]*$', name) is None:
+        if re.match(r'^[A-Za-z0-9_]*$', name) is None:
             raise GraphQLError('names must not contain special characters')
 
         return name
@@ -41,7 +40,7 @@ class ValidateAdmin:
     def _validate_secondary_email(self, email):
 
         email = email.strip()
-        if re.match('^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
+        if re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
                     email) is None:
             raise GraphQLError(f'{email} is not a valid email address')
         return email
@@ -50,7 +49,7 @@ class ValidateAdmin:
 
         phone_number = phone_number.strip()
         if re.match(
-            '^\+?\(?\d{3}\)?[-. ]?\d{9}$',
+            r'^\+?\(?\d{3}\)?[-. ]?\d{9}$',
                 phone_number) is None:
             raise GraphQLError('Please input a valid mobileNumber')
         return phone_number

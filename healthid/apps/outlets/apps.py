@@ -6,4 +6,4 @@ class OutletsConfig(AppConfig):
     name = 'healthid.apps.outlets'
 
     def ready(self):
-        from . import signals
+        from . import signals  # noqa

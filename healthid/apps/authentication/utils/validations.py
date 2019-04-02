@@ -13,14 +13,14 @@ class ValidateUser:
 
     def validate_email(self, email):
         email = email.strip()
-        if re.match('^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
+        if re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
                     email) is None:
             raise GraphQLError('Please input a valid email'.format(email))
         return email
 
     def validate_mobileNumber(self, mobile_number):
         mobile_number = mobile_number.strip()
-        if re.match('^\+?\(?\d{3}\)?[-. ]?\d{9}$', mobile_number) is None:
+        if re.match(r'^\+?\(?\d{3}\)?[-. ]?\d{9}$', mobile_number) is None:
             raise GraphQLError('Please input a valid mobile number')
         return mobile_number
 

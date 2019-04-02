@@ -3,14 +3,12 @@ from os import environ, getenv
 import graphene
 from graphql import GraphQLError
 
-import graphql_jwt
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from dotenv import load_dotenv
-from graphene_django import DjangoObjectType
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from graphql_jwt.decorators import login_required
 from healthid.apps.authentication.models import Role, User
 from healthid.apps.authentication.utils import user_update_instance
@@ -80,7 +78,8 @@ class RegisterUser(graphene.Mutation):
 
             success = [
                 "message",
-                "You have succesfully registered with healthID. Please check your email to verify your account"
+                "You have succesfully registered with healthID."
+                " Please check your email to verify your account"
             ]
             return RegisterUser(success=success, user=user)
         except Exception as e:
@@ -182,7 +181,8 @@ class UpdateUserRole(graphene.Mutation):
                     user_instance.role = role_instance
                     user_instance.save()
                     message = [
-                        f"Successfully updated {user_instance} to an {role_instance} role"
+                        f"Successfully updated {user_instance}"
+                        " to an {role_instance} role"
                     ]
                     return UpdateUserRole(
                         success=success, user=user_instance, message=message
@@ -221,7 +221,11 @@ class EditRole(graphene.Mutation):
                 role_instance.name = input.name
                 role_instance.save()
                 message = [f"Successfully Edited the role"]
-                return EditRole(success=success, role=role_instance, message=message)
+                return EditRole(
+                    success=success,
+                    role=role_instance,
+                    message=message
+                )
         except Exception as e:
             errors = ["Something went wrong: {}".format(e)]
             return EditRole(success=success, role=None, errors=errors)

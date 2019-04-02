@@ -8,7 +8,8 @@ class BusinessManager(BaseUserManager):
     """
     Creates a business.
     Validate whethere the busines with same email already exits
-    Validate whether business with same legal name exits before creating a business
+    Validate whether business with same legal name exits before
+    creating a business
 
     """
 
@@ -31,7 +32,8 @@ class BusinessManager(BaseUserManager):
             legal_name=legal_name)
         if business:
             raise ValueError(
-                "Business with this legal name {} already exists".format(legal_name))
+                "Business with this legal name {} already"
+                " exists".format(legal_name))
         business = self.model(
             email=email,
             trading_name=trading_name,

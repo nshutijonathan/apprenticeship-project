@@ -1,8 +1,7 @@
 import graphene
-from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from healthid.apps.authentication.utils.decorator import master_admin_required
-from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
+from healthid.apps.outlets.models import Outlet
 from healthid.apps.outlets.schema.outlet_schema import OutletType
 
 

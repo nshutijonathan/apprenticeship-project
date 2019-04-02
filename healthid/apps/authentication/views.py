@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.http import HttpResponse
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 
 from healthid.apps.authentication.utils.tokens import account_activation_token
@@ -21,8 +21,7 @@ def activate(request, uidb64, token):
         user.save()
         messages.success(request,
                          ('Your new email was successfully confirmed!'))
-        return HttpResponse(
-            'Thank you for your email confirmation. Now you can login into your account.'
-        )
-        errors = ('Something went wrong: {}'.format(e))
+        return HttpResponse('Thank you for your email confirmation.'
+                            ' Now you can login into your account.'
+                            )
     return HttpResponse(errors)

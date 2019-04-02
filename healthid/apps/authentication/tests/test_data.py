@@ -1,15 +1,15 @@
 register_user_query = '''
-            mutation {{  
-               createUser( 
-                   email:"{email}",
-                   mobileNumber:"{mobileNumber}",
-                   password:"{password}",
-               ) {{
-                 errors
-                 success
-               }}
-            }}
-            '''
+                mutation{{
+                    createUser(
+                    email:"{email}",
+                    mobileNumber:"{mobileNumber}",
+                    password:"{password}",
+                ) {{
+                    errors
+                    success
+                }}
+                }}
+                '''
 
 
 login_user_query = '''

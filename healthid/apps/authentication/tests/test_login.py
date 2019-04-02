@@ -1,11 +1,10 @@
-import json
 
-from graphene.test import Client
 from graphql_jwt.testcases import JSONWebTokenTestCase
 
 from healthid.apps.authentication.models import User
 
-from healthid.apps.authentication.tests.test_data import login_mutation, login_user_query, test_users_query
+from healthid.apps.authentication.tests.test_data import \
+    login_mutation, login_user_query, test_users_query
 
 
 class UserTests(JSONWebTokenTestCase):

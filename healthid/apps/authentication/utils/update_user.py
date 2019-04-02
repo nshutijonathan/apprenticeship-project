@@ -1,7 +1,5 @@
-import re
-from functools import wraps
 
-from graphql import GraphQLError
+from functools import wraps
 
 from .validations import ValidateUser
 
@@ -18,7 +16,7 @@ class UpdateUser:
 
             if key is not None:
                 setattr(instance, key, value)
-        instance.set_password(password) if password!=None else None
+        instance.set_password(password) if password is not None else None
         instance.save()
 
     def __call__(self, func):
@@ -30,7 +28,7 @@ class UpdateUser:
             if kwargs.get('password') is not None:
                 password_input = kwargs.get('password')
                 new_password = password_input[0]['new_password']
-                ValidateUser().validate_password(new_password)            
+                ValidateUser().validate_password(new_password)
             return func(*args, **kwargs)
         return wrapper
 

@@ -2,9 +2,7 @@ import json
 
 from django.test import Client, TestCase
 
-from healthid.apps.authentication.models import User, Role
-from healthid.apps.authentication.utils.decorator import master_admin_required
-from healthid.apps.business.models import Business
+from healthid.apps.authentication.models import Role, User
 
 from .utils import create_business
 
@@ -17,7 +15,10 @@ class GraphQLTestCase(TestCase):
     def setUp(self):
         self._client = Client()
         self.user = User.objects.create_user(
-            email='qwertyu@example.com', password='qwertyuiop', mobile_number='256')
+            email='qwertyu@example.com',
+            password='qwertyuiop',
+            mobile_number='256'
+        )
         self.user.role = self.create_default_role()
         self.user.is_active = True
         self.user.save()

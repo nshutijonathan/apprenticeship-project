@@ -1,10 +1,8 @@
 import json
 
-from django.db import connection
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
-
 from healthid.apps.authentication.tests.test_data import query_str
 
 

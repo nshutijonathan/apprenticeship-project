@@ -1,9 +1,8 @@
 import json
 
 from django.test import Client, TestCase
+
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.authentication.utils.decorator import master_admin_required
-from healthid.apps.business.models import Business
 from healthid.apps.business.tests.utils import create_business
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 
@@ -121,18 +120,18 @@ class GraphQLTestCase(TestCase):
             }})
 
     def test_outlet_model(self):
-        outlet = self.create_outlet()
+        self.create_outlet()
         all_outlets = Outlet.objects.all()
         self.assertQuerysetEqual(all_outlets, ['<Outlet: bingo>'])
 
     def test_country_model(self):
-        country = Country.objects.create(name="Kenya")
+        Country.objects.create(name="Kenya")
         all_countries = Country.objects.all()
         self.assertQuerysetEqual(all_countries, ['<Country: Kenya>'])
 
     def test_city_model(self):
         country = Country.objects.create(name='Kenya')
-        city = City.objects.create(name='Nairobi', country_id=country.id)
+        City.objects.create(name='Nairobi', country_id=country.id)
         all_cities = City.objects.all()
         self.assertQuerysetEqual(all_cities, ['<City: Nairobi>'])
 
