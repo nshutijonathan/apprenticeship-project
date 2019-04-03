@@ -7,8 +7,8 @@ class ValidateUser:
     def validate_user_fields(self, email, password, mobile_number):
         return {
             "email": self.validate_email(email),
-            "mobile_number": self.validate_mobileNumber(mobile_number),
-            "password": self.validate_password(password),
+            "mobile_number": self.validate_mobile_number(mobile_number),
+            "password": self.validate_password(password)
         }
 
     def validate_email(self, email):
@@ -18,7 +18,7 @@ class ValidateUser:
             raise GraphQLError('Please input a valid email'.format(email))
         return email
 
-    def validate_mobileNumber(self, mobile_number):
+    def validate_mobile_number(self, mobile_number):
         mobile_number = mobile_number.strip()
         if re.match(r'^\+?\(?\d{3}\)?[-. ]?\d{9}$', mobile_number) is None:
             raise GraphQLError('Please input a valid mobile number')
@@ -26,15 +26,16 @@ class ValidateUser:
 
     def validate_password(self, password):
         password = password.strip()
-        if not len(password) > 0:
+        if re.match('(?=.{8,100})(?=.*[A-Z])(?=.*[0-9])', password) is None:
             raise GraphQLError(
-                'passwords must be bettween 8 to 100 characters')
-        if not len(password) < 100:
-            raise GraphQLError(
-                'passwords must be bettween 8 to 100 characters')
-        msg = 'password must contain atleast one number and a capital letter.'
-        if (re.search('[0-9]', password) is None):
-            raise GraphQLError(msg)
-        if (re.search('[A-Z]', password) is None):
-            raise GraphQLError(msg)
+                'password must have at least 8 characters, '
+                'a number and a capital letter.')
         return password
+
+    def validate_username(self, username):
+        username = username.strip()
+        if re.match('(?=.*^[A-Za-z0-9_]*$)(?=.{1,30})', username) is None:
+            raise GraphQLError(
+                'valid username cannot be blank, contain special characters  '
+                'or exceed 30 characters.')
+        return username

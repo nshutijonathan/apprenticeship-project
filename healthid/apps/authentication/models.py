@@ -74,6 +74,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         on_delete=models.CASCADE
     )
     is_staff = models.BooleanField(default=False)
+    profile_image = models.URLField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

@@ -10,13 +10,14 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.authentication.models import Role, User
 from healthid.apps.authentication.utils import user_update_instance
+from healthid.apps.authentication.utils.admin_validation import \
+    validate_instance
 from healthid.apps.authentication.utils.decorator import master_admin_required
 from healthid.apps.authentication.utils.tokens import account_activation_token
 from healthid.apps.authentication.utils.validations import ValidateUser
-from healthid.apps.authentication.utils.admin_validation\
-    import validate_instance
 
 from .auth_queries import RoleType, UserType
 
@@ -95,6 +96,9 @@ class UpdateUserDetails(graphene.Mutation):
     class Arguments:
         mobile_number = graphene.String()
         password = graphene.List(PasswordInput)
+        username = graphene.String()
+        profile_image = graphene.String()
+        email = graphene.String()
 
     user = graphene.Field(UserType)
     error = graphene.Field(graphene.String)
@@ -109,7 +113,11 @@ class UpdateUserDetails(graphene.Mutation):
             old_password = password_input[0].old_password
             check_old_password = user.check_password(old_password)
             if not check_old_password:
-                raise GraphQLError('password doesnot match old password!')
+                raise GraphQLError('password does not match old password!')
+        if kwargs.get('email') is not None:
+            email = kwargs.get('email')
+            if User.objects.filter(email=email):
+                raise GraphQLError('email has already been registered.')
 
         user_update_instance.update_user(user, **kwargs)
         success = "user successfully updated"
