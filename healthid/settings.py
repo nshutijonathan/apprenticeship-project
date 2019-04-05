@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'healthid.apps.orders',
     'rest_framework',
     'corsheaders',
+    'healthid.apps.receipts',
 ]
 
 

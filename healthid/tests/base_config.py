@@ -2,7 +2,7 @@ import json
 
 from django.test import Client, TestCase
 
-from healthid.apps.authentication.models import User
+from healthid.apps.authentication.models import Role, User
 from healthid.tests.test_fixtures.authentication import login_user_query
 
 
@@ -58,14 +58,22 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256 770777777",
             "password": "Password123"
         }
+        self.master_admin = {
+            "email": "you@example.com",
+        }
         self.login_user = {
             "email": "john.doe@gmail.com",
             "password": "Password123"
         }
-
+        self.login_master_admin = {
+            "email": "you@example.com",
+            "password": "Password123"
+        }
         # register and log in user
         self.register_user()
         self.access_token = self.user_login()
+        self.register_master_admin()
+        self.access_token_master = self.admin_login()
 
     def register_user(self):
         """
@@ -80,9 +88,31 @@ class BaseConfiguration(TestCase):
         user.is_active = True
         user.save()
 
+    def register_master_admin(self):
+        """
+        register a master admin
+        """
+        email = self.master_admin["email"]
+        mobile_number = self.new_user["mobile_number"]
+        password = self.new_user["password"]
+        user = User.objects.create_user(email=email,
+                                        mobile_number=mobile_number,
+                                        password=password)
+        user.is_active = True
+        user.role = Role.objects.create(name='Master Admin')
+        user.save()
+
     def user_login(self):
         """
         Log in registered user and return a token
         """
         response = self.query(login_user_query.format(**self.login_user))
+        return response['data']['tokenAuth']['token']
+
+    def admin_login(self):
+        """
+        Log in registered user and return a token
+        """
+        response = self.query(
+            login_user_query.format(**self.login_master_admin))
         return response['data']['tokenAuth']['token']
