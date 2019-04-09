@@ -66,3 +66,52 @@ update_image_query = '''
             }}
           }}
         '''
+
+add_user_query = '''
+mutation {{
+        addUser (
+          email:"{email}",
+          outletId: ["{outletId}"],
+          roleId: "{roleId}",
+          mobileNumber:"{mobileNumber}",
+          firstName: "Firstname",
+          lastName: "Lastname",
+          username: "username",
+          startingDate: "2019-12-04",
+          birthday: "2019-11-15"
+        ){{
+          user{{
+            email
+          mobileNumber
+          }}
+        success
+        errors
+        }}
+      }}
+  '''
+
+admin_update_user_query = '''
+mutation {{
+        adminUpdateUser (
+        id:"{id}",
+        jobTitle: "{jobTitle}",
+        email:"{email}",
+        mobileNumber:"{mobileNumber}",
+        firstName: "{firstname}",
+        lastName: "Lastname",
+        username: "newUsername",
+        startingDate: "2019-12-10",
+        birthday: "2019-11-15"
+      ) {{
+        errors
+        message
+        user {{
+          id
+          firstName
+          email
+          mobileNumber
+          jobTitle
+        }}
+      }}
+      }}
+  '''

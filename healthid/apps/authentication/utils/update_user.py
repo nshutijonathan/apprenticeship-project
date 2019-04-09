@@ -1,6 +1,6 @@
 
 from functools import wraps
-
+from graphql import GraphQLError
 from .validations import ValidateUser
 
 
@@ -19,6 +19,19 @@ class UpdateUser:
                 setattr(instance, key, value)
         instance.set_password(password) if password is not None else None
         instance.save()
+
+    def add_user(self, instance, **kwargs):
+        for key, value in kwargs.items():
+            if key is not None:
+                setattr(instance, key, value)
+        instance.save()
+
+    def validate_char(self, **kwargs):
+        for key, value in kwargs.items():
+            if len(value) > 100 and key != 'profile_image':
+                raise GraphQLError(f'Length of {key} cannot '
+                                   f'be more than 100 characters')
+        return kwargs
 
     def __call__(self, func):
         @wraps(func)

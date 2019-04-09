@@ -3,7 +3,7 @@
       "model":"authentication.role",
       "pk":"52k75gnn8",
       "fields":{
-         "name":"User"
+         "name":"Cashier"
       }
    },
    {

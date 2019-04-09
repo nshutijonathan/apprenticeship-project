@@ -23,7 +23,7 @@ class ReceiptTestCase(ReceiptBaseCase):
             resp, {"receiptTemplate": {"id": template.id}})
 
     def test_create_receipt_template(self):
-        outlet = self.create_outlet()
+        outlet = self.outlet
         response = self.query_with_token(
             self.access_token_master,
             create_template(outlet.id),

@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import django_heroku
+import cloudinary
+# Helps load enviromental variable in .env file
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'healthid.apps.receipts',
+    'cloudinary'
 ]
 
 
@@ -143,6 +146,7 @@ AUTH_USER_MODEL = 'authentication.User'
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_USE_TLS = True
@@ -162,3 +166,10 @@ CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:8080',
     'localhost:8080',
 )
+
+cloudinary.config(
+  cloud_name=os.getenv('CLOUD_NAME'),
+  api_key=os.getenv('API_KEY'),
+  api_secret=os.getenv('API_SECRET')
+)
+

@@ -1,10 +1,10 @@
-from healthid.tests.outlets.base import OutletBaseTest
+from healthid.tests.base_config import BaseConfiguration
 from healthid.apps.receipts.models import ReceiptTemplate, FieldSet
 
 
-class ReceiptBaseCase(OutletBaseTest):
+class ReceiptBaseCase(BaseConfiguration):
     def create_receipt_template(self):
-        outlet = self.create_outlet()
+        outlet = self.outlet
         return ReceiptTemplate.objects.create(
             cashier=False, discount_total=False, outlet_id=outlet.id,
             total_tax=True, subtotal=True, purchase_total=True,

@@ -26,7 +26,9 @@ class GraphQLTestCase(TestCase):
 
     def create_test_user(self):
         return User.objects.create_user(
-            email="user@test.com", password="userpassword123"
+            email="user@test.com",
+            password="userpassword123",
+            mobile_number="+256 747464768"
         )
 
     def create_test_role(self):

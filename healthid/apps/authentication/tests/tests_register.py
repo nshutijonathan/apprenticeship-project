@@ -2,7 +2,7 @@ import json
 
 from django.core import mail
 from django.test import Client, TestCase
-
+from healthid.apps.authentication.models import Role
 from healthid.apps.authentication.tests.test_data import register_user_query
 
 
@@ -28,9 +28,11 @@ class TestRegisterMutation(TestCase):
         json_response = json.loads(response.content.decode())
         return json_response
 
+    def create_default_role(self, role_name):
+        return Role.objects.create(name=role_name)
+
     def test_create_user(self):
         """method for creating a user"""
-
         response = self.query(register_user_query.format(**self.user_data), )
         self.assertNotIn('errors', response)
         self.assertIn('success', response['data']['createUser'])
@@ -64,6 +66,7 @@ class TestRegisterMutation(TestCase):
 
     def test_mail_sent_successfully(self):
         """Tests whether the confirmation email was sent successfully"""
+        self.create_default_role(role_name="Master Admin")
         response = self.query(register_user_query.format(**self.user_data), )
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('success', response['data']['createUser'])

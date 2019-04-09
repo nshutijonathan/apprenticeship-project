@@ -26,6 +26,13 @@ class UserManager(BaseUserManager):
         mobile_number = kwargs.get("mobile_number")
 
         user = self.model.objects.filter(email=email).first()
+        user_mobile_number = \
+            self.model.objects.filter(mobile_number=mobile_number).first()
+        if user_mobile_number:
+            raise ValueError(
+                "User with mobile number {mobile_number} "
+                "already exists".format(mobile_number=mobile_number)
+            )
         if user:
             raise ValueError(
                 "User with email {email} already exists".format(email=email)
@@ -53,11 +60,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.CharField(
         max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
     )
-
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
-
-    mobile_number = models.CharField(max_length=100, null=True)
+    mobile_number = models.CharField(max_length=100, null=True, unique=True)
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     first_name = models.CharField(max_length=100, null=True, blank=True)
@@ -66,6 +71,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     secondary_email = models.EmailField(max_length=100, null=True, blank=True)
     secondary_phone_number = models.CharField(
         null=True, blank=True, max_length=100)
+    profile_image = models.URLField(
+        default='https://res.cloudinary.com/health-id/image/upload/'
+        'v1554552278/Profile_Picture_Placeholder.png'
+    )
+    job_title = models.CharField(max_length=100, null=True, blank=True)
+    starting_date = models.DateField(blank=True, null=True)
+    birthday = models.DateField(auto_now=False, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     role = models.ForeignKey(
@@ -74,7 +86,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         on_delete=models.CASCADE
     )
     is_staff = models.BooleanField(default=False)
-    profile_image = models.URLField(null=True, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
