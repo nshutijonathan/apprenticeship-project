@@ -1,31 +1,32 @@
 from os import environ, getenv
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-import graphene
-from graphql import GraphQLError
+
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+import cloudinary
+import cloudinary.api
+import cloudinary.uploader
+import graphene
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.outlets.models import Outlet
+from healthid.apps.authentication.querysets.role_query import ModelQuery
+from healthid.apps.authentication.querysets.user_query import UserModelQuery
+from healthid.apps.authentication.schema.auth_queries import RoleType, UserType
+from healthid.apps.authentication.schema.login_mutation import LoginUser
 from healthid.apps.authentication.utils import user_update_instance
+from healthid.apps.authentication.utils.admin_validation import \
+    validate_instance
 from healthid.apps.authentication.utils.decorator import master_admin_required
+from healthid.apps.authentication.utils.password_generator import \
+    generate_password
 from healthid.apps.authentication.utils.tokens import account_activation_token
 from healthid.apps.authentication.utils.validations import ValidateUser
-from healthid.apps.authentication.utils.admin_validation \
-    import validate_instance
+from healthid.apps.outlets.models import Outlet
 
-from .auth_queries import RoleType, UserType
-from healthid.apps.authentication.utils.password_generator \
-    import generate_password
-from healthid.apps.authentication.querysets.role_query \
-    import ModelQuery
-from healthid.apps.authentication.querysets.user_query \
-    import UserModelQuery
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -454,3 +455,4 @@ class Mutation(graphene.ObjectType):
     delete_role = DeleteRole.Field()
     update_admin_user = UpdateAdminUser.Field()
     admin_update_user = AdminUpdateUserDetails.Field()
+    login_user = LoginUser.Field()
