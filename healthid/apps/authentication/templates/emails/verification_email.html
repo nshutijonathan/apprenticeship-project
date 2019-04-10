@@ -1,229 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Verification Email</title>
-     <style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>HealthID Email Verification</title>
+  <style>
+    @font-face {
+    font-family: Avenir;
+    src: url("https://res.cloudinary.com/health-id/raw/upload/v1554202284/avenir.ttc");
+    }
+    section {
+      font-family: Avenir;
+      text-align:center;
+      margin:auto;
+      width:80%;
+    }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #28356e;
-}
-.container {
-  height: 100%;
-  width: 100%;
+    .healthid_logo {
+      width: 270px;
+      height: 70px;
+      margin-top: 30px;
+    }
 
-  margin-top: 168px;
-  text-align: center;
-}
-h1 {
-  color: currentColor;
-  font-family: '-webkit-body';
-}
-p {
-  font-size: 20px;
-  font-family: ubuntu;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-}
+    .healthid_envelope {
+      background-color:#424242;
+      height:280px;
+    }
 
-.message {
-  height: 400px;
-  width: 40%;
-  margin-left: 30%;
-  border-radius: 10px;
-  background-color: whitesmoke;
-  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-.btn {
-  background-color: #4caf50; /* Green */
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: 50px;
-  border-radius: 10px;
-  
-}
-.btn > a {
-  text-decoration: none;
-}
+    .healthid_envelope img {
+      margin-top: 30px;
+      width: 135px;
+    }
 
-.logo {
-  border-radius: 50%;
-  border: 2px solid rgb(54, 18, 95);
-  height: 50px;
-  width: 50px;
-  padding: 5px;
-  justify-items: center;
-  align-items: center;
-  margin-left: 44%;
-  margin-right: 45%;
-  color: #28356e;
-  background-color: mintcream;
-}
+    .verify {
+      color:#FAF33E;
+      font-size: 25px;
+    }
+    .password {
+      margin-top: 15px;
+    }
 
-@media screen and (max-width: 425px) {
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #28356e;
-  }
-  .container {
-    height: 300px;
-    width: 650px;
-    margin-top: 168px;
-    margin-left: -145px;
-    text-align: center;
-  }
-  h1 {
-    color: currentColor;
-    font-family: '-webkit-body';
-  }
-  p {
-    font-size: 17px;
-    font-family: ubuntu;
-    font-family: -webkit-body;
-  }
+    .small_text {
+      font-size: 16px;
+      margin-top: 14px;
+      color:#424242;
+    }
 
-  .message {
-    height: 410px;
-    width: 45%;
-    margin-left: 149px;
-    border-radius: 10px;
-    background-color: whitesmoke;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-  .btn {
-    background-color: #4caf50;
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    height: 55px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin-top: 50px;
-    border-radius: initial;
-  }
-  .btn > a {
-    text-decoration: none;
-  }
-  .logo {
-    border-radius: 50%;
-    border: 2px solid rgb(54, 18, 95);
-    height: 50px;
-    width: 50px;
-    padding: 5px;
-    justify-items: center;
-    align-items: center;
-    margin-left: 42%;
-    margin-right: 45%;
-    color: #28356e;
-    background-color: mintcream;
-  }
-  h2 {
-    font-size: 22px;
-  }
-}
+    .email_body {
+      color:#424242;
+      margin: auto;
+      width: 40%;
+    }
 
-@media screen and (max-width: 750px) {
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #28356e;
-  }
-  .container {
-    height: 300px;
-    width: 650px;
-    margin-top: 168px;
-    margin-left: -145px;
-    text-align: center;
-  }
-  h1 {
-    color: currentColor;
-    font-family: '-webkit-body';
-  }
-  p {
-    font-size: 25px;
-    font-family: ubuntu;
-    font-family: -webkit-body;
-    font-weight: bold;
-  }
+    .email_body_cont {
+      display: flex;
+    }
 
-  .message {
-    height: 410px;
-    width: 390px;
-    margin-left: 149px;
-    border-radius: 10px;
-    background-color: aliceblue;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-  .btn {
-    background-color: #28356e;
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    height: 55px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin-top: 20px;
-    border-radius: initial;
-  }
-  .btn > a {
-    text-decoration: none;
-    font-size: 27px;
-  }
-  .logo {
-    border-radius: 50%;
-    border: 2px solid rgb(54, 18, 95);
-    height: 50px;
-    width: 50px;
-    padding: 5px;
-    justify-items: center;
-    align-items: center;
-    margin-left: 42%;
-    margin-right: 45%;
-    color: #28356e;
-    background-color: mintcream;
-  }
-  h2 {
-    font-size: 22px;
-  }
-}
-     </style>
-  </head>
+    .verify_button {
+      background-color:#FAF33E;
+      color:#424242;
+      padding: 2px 12px;
+      font-size: 20px;
+      margin-top: 40px;
+    }
+
+    .email_body_a {
+      color: #A3A3A3;
+    }
+
+    a {
+      text-decoration: none;
+    }
+    .email_body_b1 {
+      margin-left: 43px;
+    }
+    .email_body_b2 {
+      margin-left: 17px;
+    }
+
+    .email_body_b {
+      color: #424242;
+      margin-left: 35px;
+    }
+
+    .footer_text {
+      font-size: 14px;
+      margin-top: 20px;
+    }
+
+    @media screen and (max-width: 812px) {
+      .small_text {
+        font-size: 12px;
+      }
+      .email_body {
+        width: 100%;
+        font-size: 13px;
+      }
+       .email_body_b1 {
+      margin-left: 50px;
+    }
+
+    .email_body_b {
+      color: #424242;
+      margin-left: 10px;
+    }
+    .footer_text {
+      font-size: 12px;
+    }
+    }
+  </style>
+</head>
 <body>
-    <div class="container">
-        <div class="message">
-            <br>
-           <div class="logo">
-                <h3 >HID</h3>
-            </div>
-            <h2 > Hi, {{ name }}</h2>
-
-            <p>
-                {% autoescape off %}
-                Thank you for registering with healthid, Lagos/Africa.
-                <br>
-                Please click here
-                to verify your account
-
-            </p>
-
-            <button class="btn">
-             <a href=" {{ domain }}{% url 'activate'  uidb64=uid token=token %}">
-            Click to verify account
-             </a>
-            </button>
-            {% endautoescape %}
-
-        <div>
+  <section>
+    <div>
+      <img class="healthid_logo" src="https://res.cloudinary.com/health-id/image/upload/v1554202200/HealthID_full_logo.png" alt="healthID_logo">
     </div>
+    <div class="healthid_envelope">
+        <img src="https://res.cloudinary.com/health-id/image/upload/v1554202183/Email_envelop_icon.png" alt="healthID_envelope">
+        <div>
+          <h2 class="verify">Verify your email</h2>
+        </div>
+    </div>
+    <div class="small_text">
+      <p>Thank you for creating a HealthID account. Please verify your email address to set up your account.</p>
+    </div>
+    <div>
+      <div class="email_body">
+        <div class="email_body_cont">
+          <div class="email_body_a">Email:</div>
+          <div class="email_body_b">{{ email }}</div>
+        </div>
+        <br>
+        <div class="email_body_cont">
+          <div class="email_body_a">Link:</div>
+          <div class="email_body_b1"> https://www.healthid.com/verifyemail?/</span>
+        </div>
+        
+      </div>
+        <a href=" {{ domain }}{% url 'activate'  uidb64=uid token=token %}">
+        <div class="verify_button">
+          <h2 style="font-size: 15px;">VERIFY</h2>
+        </div>
+        </a>
+    </div>
+
+    <p class="footer_text">Didn’t create an account? Feel free to ignore this email or <span style="color:#FAF33E"><u>CONTACT US</u></span> if you have any issues.</p>
+  </section>
 </body>
 </html>

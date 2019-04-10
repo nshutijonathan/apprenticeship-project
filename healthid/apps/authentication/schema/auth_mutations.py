@@ -71,7 +71,7 @@ class RegisterUser(graphene.Mutation):
             token = account_activation_token.make_token(user)
             html_body = render_to_string(
                 'emails/verification_email.html', {
-                    'name': email,
+                    'email': email,
                     'domain': DOMAIN,
                     'uid': urlsafe_base64_encode(force_bytes(
                         user.pk)).decode(),
