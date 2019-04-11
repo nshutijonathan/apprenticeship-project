@@ -87,7 +87,7 @@ class BaseConfiguration(TestCase):
         # register and log in user
         self.user = self.register_user()
         self.access_token = self.user_login()
-        self.register_master_admin()
+        self.master_admin_user = self.register_master_admin()
         self.access_token_master = self.admin_login()
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
@@ -121,6 +121,7 @@ class BaseConfiguration(TestCase):
         user.is_active = True
         user.role = Role.objects.create(name='Master Admin')
         user.save()
+        return user
 
     def user_login(self):
         """

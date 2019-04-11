@@ -33,6 +33,7 @@ class OutletTestCase(BaseConfiguration):
 
     def test_update_outlet(self):
         outlet = self.outlet
+        outlet.user.add(self.master_admin_user)
         response = self.query_with_token(
             self.access_token_master,
             update_outlet(outlet.id,

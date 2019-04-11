@@ -35,11 +35,13 @@ class CreateOutlet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         try:
             outlet = Outlet()
             for(key, value) in kwargs.items():
                 setattr(outlet, key, value)
             outlet.save()
+            outlet.user.add(user)
         except Exception as e:
             raise Exception(f'Something went wrong {e}')
 
@@ -69,8 +71,13 @@ class UpdateOutlet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         id = kwargs.get('id')
         outlet = Outlet.objects.get(pk=id)
+        outlet_users = outlet.user.all()
+        if user not in outlet_users:
+            raise GraphQLError("You can't update an outlet that you are not \
+assigned to!")
         for(key, value) in kwargs.items():
             if key is not None:
                 setattr(outlet, key, value)
