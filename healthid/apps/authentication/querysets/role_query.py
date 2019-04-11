@@ -3,7 +3,7 @@ from graphql import GraphQLError
 from healthid.apps.authentication.models import Role
 
 
-class ModelQuery:
+class RoleModelQuery:
     """
     this class create queries for the role
     """

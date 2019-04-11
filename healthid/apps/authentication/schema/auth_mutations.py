@@ -13,17 +13,20 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.authentication.querysets.role_query import ModelQuery
-from healthid.apps.authentication.querysets.user_query import UserModelQuery
 from healthid.apps.authentication.schema.auth_queries import RoleType, UserType
 from healthid.apps.authentication.schema.login_mutation import LoginUser
-from healthid.apps.outlets.models import Outlet
 from healthid.utils.auth_utils import user_update_instance
 from healthid.utils.auth_utils.admin_validation import validate_instance
 from healthid.utils.auth_utils.decorator import master_admin_required
 from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
+from healthid.apps.authentication.querysets.role_query \
+    import RoleModelQuery
+from healthid.apps.authentication.querysets.user_query \
+    import UserModelQuery
+from healthid.utils.business_utils.business_query \
+    import BusinessModelQuery
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -61,7 +64,7 @@ class RegisterUser(graphene.Mutation):
             email, password, mobile_number)
         try:
             user = User.objects.create_user(**validate_fields)
-            role = ModelQuery().query_role_name('Master Admin')
+            role = RoleModelQuery().query_role_name('Master Admin')
             user.set_password(password)
             user.role = role
             user.save()
@@ -101,7 +104,7 @@ class AddUser(graphene.Mutation):
     user = graphene.Field(UserType)
 
     class Arguments:
-        outlet_id = graphene.List(graphene.String)
+        outlet_id = graphene.List(graphene.String, required=True)
         email = graphene.String(required=True)
         mobile_number = graphene.String(required=True)
         first_name = graphene.String()
@@ -111,7 +114,7 @@ class AddUser(graphene.Mutation):
         job_title = graphene.String()
         starting_date = graphene.String()
         birthday = graphene.String()
-        role_id = graphene.String()
+        role_id = graphene.String(required=True)
 
     success = graphene.List(graphene.String)
     errors = graphene.List(graphene.String)
@@ -136,7 +139,7 @@ class AddUser(graphene.Mutation):
             'birthday': kwargs.get('birthday'),
         }
 
-        role_instance = ModelQuery().query_role_id(role_id)
+        role_instance = RoleModelQuery().query_role_id(role_id)
         try:
             user_fields = {
                 "email": email,
@@ -147,7 +150,10 @@ class AddUser(graphene.Mutation):
             user_update_instance.add_user(user, **data)
             user.role = role_instance
             for i in outlet:
-                outlet_instance = Outlet.objects.get(id=i)
+                outlet_instance = \
+                    BusinessModelQuery().query_outlet_id(i)
+                business_instance = outlet_instance.business
+                business_instance.user.add(user)
                 user.users.add(outlet_instance)
             if profile_image:
                 user.profile_image = \
@@ -305,8 +311,8 @@ class UpdateUserRole(graphene.Mutation):
     """
 
     class Arguments:
-        id = graphene.String(required=True)
-        input = RoleInput(required=True)
+        role_id = graphene.String(required=True)
+        user_id = graphene.String(required=True)
 
     success = graphene.Boolean()
     user = graphene.Field(UserType)
@@ -316,35 +322,33 @@ class UpdateUserRole(graphene.Mutation):
     @staticmethod
     @login_required
     @master_admin_required
-    def mutate(root, info, id, input=None):
-        success = False
-        if id is None:
-            errors = ["id", "User Id is empty"]
-            return UpdateUserRole(success, errors=errors)
-        user_instance = User.objects.get(id=id)
-        if user_instance is None:
-            errors = ["user", "User does not exist"]
-            return UpdateUserRole(success, errors=errors)
-        if input.name != "":
-            try:
-                role_instance = Role.objects.get(name=input.name)
-                if role_instance:
-                    success = True
-                    user_instance.role = role_instance
-                    user_instance.save()
-                    message = [
-                        f"Successfully updated {user_instance}"
-                        " to an {role_instance} role"
-                    ]
-                    return UpdateUserRole(
-                        success=success, user=user_instance, message=message
-                    )
-                return UpdateUserRole(success=success, user=None)
-            except Exception as e:
-                errors = ["Something went wrong: {}".format(e)]
-                return UpdateUserRole(success=False, errors=errors)
-        errors = ["name", "Role Field is empty"]
-        return UpdateUserRole(success=False, errors=errors)
+    def mutate(root, info, **kwargs):
+        user_id = kwargs.get('user_id')
+        role_id = kwargs.get('role_id')
+        user_instance = UserModelQuery().query_user_id(user_id)
+        role_instance = RoleModelQuery().query_role_id(role_id)
+        admin_instance = \
+            RoleModelQuery().query_role_name('Master Admin')
+        business_users = User.objects.filter(
+            business__user=user_instance)
+        business_admin = business_users.filter(
+            role=admin_instance).count()
+        if user_instance.role == role_instance:
+            raise GraphQLError("This user is already assigned to this role")
+        if business_admin == 1 \
+                and role_instance != admin_instance:
+            raise GraphQLError("You cannot downgrade this User: "
+                               "This user is the only Master Admin "
+                               "in this business")
+        user_instance.role = role_instance
+        user_instance.save()
+        message = [
+            f"Successfully updated {user_instance}"
+            f" to a {role_instance} role"
+        ]
+        return UpdateUserRole(
+            user=user_instance,
+            message=message)
 
 
 class EditRole(graphene.Mutation):

@@ -3,6 +3,12 @@ from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.business.models import Business
+from healthid.apps.authentication.schema.auth_queries \
+    import UserType
+from healthid.apps.authentication.querysets.user_query \
+    import UserModelQuery
+from healthid.utils.business_utils.business_query \
+    import BusinessModelQuery
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -96,6 +102,34 @@ class UpdateBusiness(graphene.Mutation):
         )
 
 
+class AddUserBusiness(graphene.Mutation):
+    class Arguments:
+        user_id = graphene.String(required=True)
+        business_id = graphene.String(required=True)
+
+    user = graphene.Field(UserType)
+    errors = graphene.List(graphene.String)
+    message = graphene.List(graphene.String)
+
+    @staticmethod
+    @login_required
+    @master_admin_required
+    def mutate(root, info, **kwargs):
+        user_id = kwargs.get('user_id')
+        business_id = kwargs.get('business_id')
+        user_instance = UserModelQuery().query_user_id(user_id)
+        business_instance = BusinessModelQuery().query_business_id(business_id)
+        business_instance.user.add(user_instance)
+        user_instance.save()
+        message = [
+            f"Successfully added User with {user_instance.email}"
+            f" to {business_instance.legal_name} business"
+        ]
+        return AddUserBusiness(
+            user=user_instance,
+            message=message)
+
+
 class DeleteBusiness(graphene.Mutation):
     """Deletes a Business
     This also perform the delete action after validating user
@@ -123,3 +157,4 @@ class Mutation(graphene.ObjectType):
     create_business = CreateBusiness.Field()
     delete_business = DeleteBusiness.Field()
     update_business = UpdateBusiness.Field()
+    add_user_business = AddUserBusiness.Field()

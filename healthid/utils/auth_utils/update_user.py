@@ -1,6 +1,8 @@
 
 from functools import wraps
 from graphql import GraphQLError
+from healthid.utils.business_utils.business_query \
+    import BusinessModelQuery
 from .validations import ValidateUser
 
 
@@ -49,6 +51,16 @@ class UpdateUser:
             if kwargs.get('username') is not None:
                 username = kwargs.get('username')
                 ValidateUser().validate_username(username)
+
+            if kwargs.get('outlet_id') is not None:
+                outlets = kwargs.get('outlet_id')
+                if len(outlets) < 1:
+                    raise GraphQLError('This user must be assigned '
+                                       'to at least 1 (one) outlet')
+                for outlet in outlets:
+                    if outlet == '':
+                        raise GraphQLError('Outlet Id cannot be Empty')
+                    BusinessModelQuery().query_outlet_id(outlet)
             return func(*args, **kwargs)
         return wrapper
 

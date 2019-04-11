@@ -78,37 +78,6 @@ class GraphQLTestCase(TestCase):
             resp, {"role": {"id": str(role.id), "name": str(role.name)}}
         )
 
-    def test_update_role(self):
-        user = self.create_test_user()
-        query_string = f"""
-        mutation updateRole {{
-           updateRole (id:"{user.id}", input:{{
-              name: "Master Admin"
-          }}) {{
-            success
-            user {{
-              id
-              email
-              role {{
-                name
-              }}
-            }}
-          }}
-        }}
-        """
-        expected = {
-            "updateRole": {
-                "success": True,
-                "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "role": {"name": "Master Admin"},
-                },
-            }
-        }
-        resp = self.query(query_string)
-        self.assertResponseNoErrors(resp, expected)
-
     def test_edit_role(self):
         role = self.create_test_role()
         query_string = f"""

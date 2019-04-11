@@ -115,3 +115,32 @@ mutation {{
       }}
       }}
   '''
+
+update_user_role_query = '''
+mutation updateRole {{
+           updateRole (roleId:"{roleId}",
+           userId:"{userId}"){{
+           errors
+            user {{
+              id
+              email
+              role {{
+                name
+              }}
+            }}
+          }}
+        }}
+'''
+
+add_user_business_query = '''
+    mutation addUserBusiness {{
+    addUserBusiness (userId:"{userId}", businessId:"{businessId}") {{
+        errors
+        message
+        user {{
+          id
+          email
+        }}
+      }}
+    }}
+'''
