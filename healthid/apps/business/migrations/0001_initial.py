@@ -2,7 +2,7 @@
 
 from django.conf import settings
 from django.db import migrations, models
-import healthid.apps.utils.id_generator
+import healthid.utils.app_utils.id_generator
 
 
 class Migration(migrations.Migration):
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Business',
             fields=[
-                ('id', models.CharField(default=healthid.apps.utils.id_generator.id_gen,
+                ('id', models.CharField(default=healthid.utils.app_utils.id_generator.id_gen,
                                         editable=False, max_length=9, primary_key=True, serialize=False)),
                 ('trading_name', models.CharField(max_length=244)),
                 ('legal_name', models.CharField(max_length=244, unique=True)),

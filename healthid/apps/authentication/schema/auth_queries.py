@@ -1,10 +1,10 @@
 import graphene
-
 import graphql_jwt
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
-from healthid.apps.authentication.models import User, Role
-from healthid.apps.authentication.utils.decorator import master_admin_required
+
+from healthid.apps.authentication.models import Role, User
+from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class UserType(DjangoObjectType):

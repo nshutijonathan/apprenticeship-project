@@ -3,9 +3,9 @@ from django.http import HttpResponse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 
-from healthid.apps.authentication.utils.tokens import account_activation_token
+from healthid.utils.auth_utils.tokens import account_activation_token
 
-from .models import User
+from healthid.apps.authentication.models import User
 
 
 def activate(request, uidb64, token):

@@ -1,6 +1,8 @@
 from django.db import models
-from healthid.apps.business.models import Business
+
 from healthid.apps.authentication.models import User
+from healthid.apps.business.models import Business
+from healthid.apps.preference.models import Preference
 
 
 class Country(models.Model):
@@ -41,6 +43,8 @@ class Outlet(models.Model):
     prefix_id = models.CharField(max_length=9, null=False)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     user = models.ManyToManyField(User, related_name='users')
+    preference = models.OneToOneField(
+        Preference, on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = (("name", "business"))

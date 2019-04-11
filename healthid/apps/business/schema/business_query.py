@@ -1,8 +1,9 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
-from healthid.apps.authentication.utils.decorator import master_admin_required
+
 from healthid.apps.business.models import Business
+from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class BusinessType(DjangoObjectType):

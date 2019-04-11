@@ -6,13 +6,16 @@ from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
 from healthid.apps.business.schema import business_mutation, business_query
 from healthid.apps.orders.schema import SuppliersMutation, SuppliersQuery
 from healthid.apps.outlets.schema import outlet_mutation, outlet_schema
-from healthid.apps.receipts.schema import receipt_schema, receipt_mutation
+from healthid.apps.preference.schema import (preference_mutation,
+                                             preference_schema)
+from healthid.apps.receipts.schema import receipt_mutation, receipt_schema
 
 
 class Query(
         AuthQuery,
         business_query.Query,
         outlet_schema.Query,
+        preference_schema.Query,
         SuppliersQuery,
         receipt_schema.Query,
         graphene.ObjectType):
@@ -23,6 +26,7 @@ class Mutation(
         AuthMutation,
         business_mutation.Mutation,
         outlet_mutation.Mutation,
+        preference_mutation.Mutation,
         SuppliersMutation,
         receipt_mutation.Mutation,
         graphene.ObjectType):

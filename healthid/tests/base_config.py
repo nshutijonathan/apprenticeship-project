@@ -4,7 +4,8 @@ from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import User, Role
 from healthid.apps.outlets.models import Outlet, OutletKind, Country, City
-from healthid.apps.business.tests.utils import create_business
+from healthid.utils.business_utils.create_business import create_business
+from healthid.apps.preference.models import Timezone
 from healthid.tests.test_fixtures.authentication import login_user_query
 
 
@@ -76,6 +77,10 @@ class BaseConfiguration(TestCase):
 
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
+        self.timezone = Timezone(
+            id="285461788", name="Africa/Lagos",
+            time_zone="(GMT+01:00) Lagos")
+        self.timezone.save()
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
 

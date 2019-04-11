@@ -3,8 +3,7 @@ import json
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
-
-from .utils import create_business
+from healthid.utils.business_utils.create_business import create_business
 
 
 class GraphQLTestCase(TestCase):

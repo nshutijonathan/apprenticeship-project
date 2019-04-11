@@ -1,18 +1,15 @@
 import graphene
 from django.db import IntegrityError
-from graphql import GraphQLError
 from django.db.models import Q
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.authentication.utils.decorator import master_admin_required
 from healthid.apps.outlets.models import City, Country, Outlet
-from healthid.apps.outlets.schema.outlet_schema import (
-    CityType,
-    CountryType,
-    OutletType
-)
-from healthid.apps.utils.outlets.check_citie import CheckCity
-from healthid.apps.utils.outlets.validators import validate_fields
+from healthid.apps.outlets.schema.outlet_schema import (CityType, CountryType,
+                                                        OutletType)
+from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.outlet_utils.check_citie import CheckCity
+from healthid.utils.outlet_utils.validators import validate_fields
 
 
 class CreateOutlet(graphene.Mutation):
@@ -20,6 +17,7 @@ class CreateOutlet(graphene.Mutation):
     Creates an outlet
     """
     outlet = graphene.Field(OutletType)
+    success = graphene.String()
 
     class Arguments:
         name = graphene.String()
@@ -32,6 +30,7 @@ class CreateOutlet(graphene.Mutation):
         date_launched = graphene.types.datetime.Date()
         prefix_id = graphene.String()
         business_id = graphene.String()
+        preference_id = graphene.String()
 
     @login_required
     @master_admin_required
@@ -45,7 +44,8 @@ class CreateOutlet(graphene.Mutation):
             raise Exception(f'Something went wrong {e}')
 
         return CreateOutlet(
-            outlet=outlet
+            outlet=outlet,
+            success="Outlet created successfully and default timezone set "
         )
 
 
@@ -64,6 +64,7 @@ class UpdateOutlet(graphene.Mutation):
         lga = graphene.String()
         date_launched = graphene.String()
         prefix_id = graphene.String()
+        preference_id = graphene.String()
 
     @login_required
     @master_admin_required

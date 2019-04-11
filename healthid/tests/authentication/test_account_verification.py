@@ -2,9 +2,10 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
 from healthid.apps.authentication.models import User
-from healthid.apps.authentication.utils.tokens import account_activation_token
 from healthid.apps.authentication.views import activate
+from healthid.utils.auth_utils.tokens import account_activation_token
 
 
 class VerificationTestCase(TestCase):

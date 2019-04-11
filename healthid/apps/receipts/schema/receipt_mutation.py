@@ -1,13 +1,14 @@
 import graphene
-from graphql import GraphQLError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.authentication.utils.decorator import master_admin_required
+
 from healthid.apps.receipts.models import ReceiptTemplate
 from healthid.apps.receipts.schema.receipt_schema import ReceiptTemplateType
 from healthid.apps.receipts.schema.template_field_mutation import (
-    CreateFieldSet, UpdateFieldSet, DeleteFieldSet)
+    CreateFieldSet, DeleteFieldSet, UpdateFieldSet)
+from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class CreateReceiptTemplate(graphene.Mutation):

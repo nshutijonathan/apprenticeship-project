@@ -1,6 +1,6 @@
 from django.contrib.auth.models import BaseUserManager
 from django.db import models
-from healthid.apps.utils.id_generator import id_gen
+from healthid.utils.app_utils.id_generator import id_gen
 from healthid.apps.authentication.models import User
 
 

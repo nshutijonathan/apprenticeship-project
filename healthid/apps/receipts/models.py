@@ -1,6 +1,7 @@
 from django.db import models
-from healthid.apps.utils.id_generator import id_gen, ID_LENGTH
+
 from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 
 
 class ReceiptTemplate(models.Model):

@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from healthid.apps.orders.utils import add_supplier
+from healthid.utils.orders_utils import add_supplier
 
 
 class HandleCSV(APIView):

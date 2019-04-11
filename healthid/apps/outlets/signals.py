@@ -1,14 +1,20 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.preference.models import Preference, Timezone
 
 
 @receiver(post_save, sender=Outlet)
 def set_prefix(sender, update_fields=['prefix_id'], *args, **kwargs):
     """
-    Method to generate prefix id using signals
+    Method to generate prefix id and default timezone using signals
     """
     outlet = kwargs['instance']
+    default_timezone = Timezone.objects.get(pk="285461788")
+    preference = Preference()
+    preference.outlet_timezone = default_timezone
+    preference.save()
+    outlet.preference_id = preference.id
     outlet_name = outlet.name[slice(3)].upper()
     business_name = outlet.business.trading_name[slice(2)].upper()
     outlet_id = (str(outlet.id)).zfill(3)

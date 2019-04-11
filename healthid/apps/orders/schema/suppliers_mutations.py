@@ -3,7 +3,7 @@ from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.models import Suppliers
-from healthid.apps.orders.utils import add_supplier
+from healthid.utils.orders_utils import add_supplier
 
 
 class SuppliersType(DjangoObjectType):

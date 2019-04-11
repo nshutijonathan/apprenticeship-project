@@ -1,10 +1,11 @@
 import graphene
-from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from graphql_jwt.decorators import login_required
-from healthid.apps.authentication.utils.decorator import master_admin_required
+
 from healthid.apps.receipts.models import FieldSet
 from healthid.apps.receipts.schema.receipt_schema import FieldSetType
+from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class CreateFieldSet(graphene.Mutation):
