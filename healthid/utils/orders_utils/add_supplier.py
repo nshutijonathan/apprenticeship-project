@@ -15,7 +15,10 @@ class AddSupplier:
             'MultipleObjectsReturned',
             'city',
             'tier',
-            'payment_terms']
+            'payment_terms',
+            'supplier_id',
+            'id',
+            'objects']
         self.safe_list = [
             each for each in Suppliers.__dict__ if not
             each.startswith('__') and each not in
@@ -37,6 +40,11 @@ class AddSupplier:
 
     def handle_csv_upload(self, io_string):
         for column in csv.reader(io_string, delimiter=','):
+            if len(self.safe_list) != len(column):
+                message = {
+                    "error": "Missing column(s)"
+                    }
+                raise ValidationError(message)
             dict_object = dict(zip(self.safe_list, column))
             instance = Suppliers()
             for (key, value) in dict_object.items():
