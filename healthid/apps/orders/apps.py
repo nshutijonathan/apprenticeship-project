@@ -5,4 +5,4 @@ class OrdersConfig(AppConfig):
     name = 'healthid.apps.orders'
 
     def ready(self):
-        from . import signals # noqa
+        from . import signals  # noqa

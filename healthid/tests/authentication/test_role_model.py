@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import Role
+from healthid.apps.authentication.models import Role
 
 
 class RoleModelTest(TestCase):

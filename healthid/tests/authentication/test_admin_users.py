@@ -3,7 +3,7 @@ import json
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.authentication.tests.test_data import query_str
+from healthid.tests.authentication.test_data import query_str
 
 
 class TestAdminRegistration(TestCase):

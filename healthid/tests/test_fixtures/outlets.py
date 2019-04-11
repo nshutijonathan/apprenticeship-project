@@ -38,3 +38,122 @@ def update_outlet(outlet_id, outlet_name):
 
 def delete_outlet(outlet_id):
     return f'mutation{{deleteOutlet(id: {outlet_id}){{success}}}}'
+
+
+create_country_string = '''
+            mutation{{
+            createCountry(name:"{country_name}"){{
+                country{{
+                name
+                id
+                citySet{{
+                    id
+                    name
+                }}
+                }}
+            }}
+            }}
+        '''
+
+update_country_string = '''
+        mutation{{
+        editCountry(id:{id}, name:"{name}"){{
+            country{{
+            name
+            id
+            }}
+            success
+        }}
+    }}
+'''
+
+delete_country_string = '''
+        mutation{{
+        deleteCountry(id:{id}){{
+            success
+            }}
+        }}
+'''
+
+query_countries_string = '''
+        query{
+        countries{
+            id
+            name
+          }
+        }
+    '''
+
+
+query_country_string_with_name = '''
+
+        query{{
+        country(name:"{name}"){{
+            id
+            name
+         }}
+        }}
+'''
+
+
+query_country_string_with_id = '''
+
+        query{{
+        country(id:{id}){{
+            id
+            name
+         }}
+        }}
+    '''
+
+create_city_string = '''
+
+        mutation{{
+        createCity(countryId:{country_id}, cityName:"{city_name}"){{
+                city{{
+            id
+            name
+            }}
+        }}
+        }}
+    '''
+edit_city_string = '''
+
+        mutation{{
+        editCity(id:{id}, name:"{name}"){{
+            city{{
+                id
+                name
+            }}
+            success
+        }}
+    }}
+'''
+
+query_city_string_by_name = '''
+
+    query{{
+        city(name:"{name}"){{
+            id
+            name
+        }}
+    }}
+'''
+
+query_city_string_by_id = '''
+
+    query{{
+        city(id:{id}){{
+            id
+            name
+        }}
+    }}
+'''
+query_cities_string = '''
+    query{
+    cities{
+        id
+        name
+    }
+}
+'''

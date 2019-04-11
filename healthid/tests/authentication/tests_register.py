@@ -2,8 +2,9 @@ import json
 
 from django.core import mail
 from django.test import Client, TestCase
+
 from healthid.apps.authentication.models import Role
-from healthid.apps.authentication.tests.test_data import register_user_query
+from healthid.tests.authentication.test_data import register_user_query
 
 
 class TestRegisterMutation(TestCase):

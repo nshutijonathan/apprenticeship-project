@@ -1,1 +1,1 @@
-from .add_supplier import add_supplier # noqa
+from .add_supplier import add_supplier  # noqa
