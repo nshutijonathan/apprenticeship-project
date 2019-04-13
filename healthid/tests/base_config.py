@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from healthid.apps.authentication.models import User, Role
 from healthid.apps.outlets.models import Outlet, OutletKind, Country, City
 from healthid.utils.business_utils.create_business import create_business
-from healthid.apps.preference.models import Timezone
+from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
 
 
@@ -89,6 +89,7 @@ class BaseConfiguration(TestCase):
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin()
         self.access_token_master = self.admin_login()
+        self.preference = Preference.objects.get()
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")
