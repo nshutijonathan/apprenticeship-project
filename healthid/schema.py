@@ -9,6 +9,7 @@ from healthid.apps.outlets.schema import outlet_mutation, outlet_schema
 from healthid.apps.preference.schema import (preference_mutation,
                                              preference_schema)
 from healthid.apps.receipts.schema import receipt_mutation, receipt_schema
+from healthid.apps.register.schema import register_mutation, register_schema
 
 
 class Query(
@@ -18,6 +19,7 @@ class Query(
         preference_schema.Query,
         SuppliersQuery,
         receipt_schema.Query,
+        register_schema.Query,
         graphene.ObjectType):
     pass
 
@@ -29,6 +31,7 @@ class Mutation(
         preference_mutation.Mutation,
         SuppliersMutation,
         receipt_mutation.Mutation,
+        register_mutation.Mutation,
         graphene.ObjectType):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
