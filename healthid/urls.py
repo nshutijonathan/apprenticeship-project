@@ -25,7 +25,6 @@ admin.site.site_header = "HealthID Admin"
 admin.site.site_title = "HealthID Admin"
 admin.site.index_title = "Welcome to HealthID"
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthid/', csrf_exempt(GraphQLView.as_view(graphiql=True))),

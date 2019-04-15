@@ -25,9 +25,7 @@ class Query(graphene.AbstractType):
     me = graphene.Field(UserType)
     users = graphene.List(UserType)
     role = graphene.Field(
-        RoleType,
-        id=graphene.String(),
-        name=graphene.String())
+        RoleType, id=graphene.String(), name=graphene.String())
     roles = graphene.List(RoleType)
 
     def resolve_users(self, info):

@@ -1,5 +1,18 @@
 [
   {
+    "model": "products.measurementunit",
+    "pk": 1,
+    "fields": {
+      "name": "tablets"
+    }
+  },
+  {
+    "model": "products.productcategory",
+    "pk": 1,
+    "fields": {
+      "name":"prescription"
+    }},
+  {
     "model": "outlets.country",
     "pk": 1,
     "fields": {

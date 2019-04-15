@@ -7,23 +7,16 @@ from healthid.apps.outlets.models import City
 
 
 class AddSupplier:
-
     def __init__(self):
         self.exclude_list = [
-            'DoesNotExist',
-            '_meta',
-            'MultipleObjectsReturned',
-            'city',
-            'tier',
-            'payment_terms',
-            'supplier_id',
-            'id',
-            'objects']
+            'DoesNotExist', '_meta', 'MultipleObjectsReturned', 'city', 'tier',
+            'payment_terms', 'supplier_id', 'id', 'objects', 'prefered',
+            'backup'
+        ]
         self.safe_list = [
-            each for each in Suppliers.__dict__ if not
-            each.startswith('__') and each not in
-            self.exclude_list
-            ]
+            each for each in Suppliers.__dict__
+            if not each.startswith('__') and each not in self.exclude_list
+        ]
 
     @staticmethod
     def create_supplier(instance, input):
@@ -41,9 +34,7 @@ class AddSupplier:
     def handle_csv_upload(self, io_string):
         for column in csv.reader(io_string, delimiter=','):
             if len(self.safe_list) != len(column):
-                message = {
-                    "error": "Missing column(s)"
-                    }
+                message = {"error": "Missing column(s)"}
                 raise ValidationError(message)
             dict_object = dict(zip(self.safe_list, column))
             instance = Suppliers()
@@ -53,14 +44,15 @@ class AddSupplier:
                 if key == 'rating':
                     value = int(value)
                 if key == 'city_id':
-                    value = self.get_model_instance_id(
-                        City, value.title(), 'city')
+                    value = self.get_model_instance_id(City, value.title(),
+                                                       'city')
                 if key == 'tier_id':
-                    value = self.get_model_instance_id(
-                        Tier, value.lower(), 'tier')
+                    value = self.get_model_instance_id(Tier, value.lower(),
+                                                       'tier')
                 if key == 'payment_terms_id':
-                    value = self.get_model_instance_id(
-                        PaymentTerms, value.lower(), 'payment term')
+                    value = self.get_model_instance_id(PaymentTerms,
+                                                       value.lower(),
+                                                       'payment term')
                 setattr(instance, key, value)
             instance.save()
 
@@ -77,9 +69,9 @@ class AddSupplier:
             supplier = Suppliers.objects.get(email=email)
             if supplier:
                 message = {
-                    "error": f"supplier with email {supplier.email} " +
-                    "already exists"
-                    }
+                    "error":
+                    f"supplier with email {supplier.email} " + "already exists"
+                }
                 raise ValidationError(message)
         except ObjectDoesNotExist:
             return email

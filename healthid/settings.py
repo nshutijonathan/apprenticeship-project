@@ -24,7 +24,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET")
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False)
 ALLOWED_HOSTS = []
@@ -47,9 +46,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'healthid.apps.receipts',
-    'cloudinary'
+    'cloudinary',
+    'healthid.apps.products',
+    'taggit',
+    'django_extensions',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -82,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'healthid.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -102,19 +102,22 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -143,13 +146,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTH_USER_MODEL = 'authentication.User'
+TAGGIT_CASE_INSENSITIVE = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
-FIXTURE_DIRS = (os.path.join(PROJECT_DIR, "fixtures"),)
+FIXTURE_DIRS = (os.path.join(PROJECT_DIR, "fixtures"), )
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 EMAIL_HOST = os.getenv('EMAIL_HOST')
@@ -169,5 +173,4 @@ CORS_ORIGIN_WHITELIST = (
 cloudinary.config(
     cloud_name=os.getenv('CLOUD_NAME'),
     api_key=os.getenv('API_KEY'),
-    api_secret=os.getenv('API_SECRET')
-)
+    api_secret=os.getenv('API_SECRET'))
