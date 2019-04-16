@@ -1,6 +1,7 @@
 import re
 
 from graphql import GraphQLError
+from healthid.utils.app_utils.validators import validate_email
 
 
 class ValidateUser:
@@ -12,11 +13,7 @@ class ValidateUser:
         }
 
     def validate_email(self, email):
-        email = email.strip()
-        if re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
-                    email) is None:
-            raise GraphQLError('Please input a valid email'.format(email))
-        return email
+        return validate_email(email)
 
     def validate_mobile_number(self, mobile_number):
         mobile_number = mobile_number.strip()

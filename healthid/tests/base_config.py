@@ -2,11 +2,11 @@ import json
 
 from django.test import Client, TestCase
 
-from healthid.apps.authentication.models import User, Role
-from healthid.apps.outlets.models import Outlet, OutletKind, Country, City
-from healthid.utils.business_utils.create_business import create_business
-from healthid.apps.preference.models import Timezone, Preference
+from healthid.apps.authentication.models import Role, User
+from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
+from healthid.apps.preference.models import Preference, Timezone
 from healthid.tests.test_fixtures.authentication import login_user_query
+from healthid.utils.business_utils.create_business import create_business
 
 
 class BaseConfiguration(TestCase):

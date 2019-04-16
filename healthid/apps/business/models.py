@@ -1,7 +1,12 @@
 from django.contrib.auth.models import BaseUserManager
 from django.db import models
-from healthid.utils.app_utils.id_generator import id_gen
+from django.db.models import Q
+from graphql import GraphQLError
+
 from healthid.apps.authentication.models import User
+from healthid.utils.app_utils.id_generator import id_gen
+from healthid.utils.app_utils.validators import validate_email
+from healthid.utils.business_utils.validators import ValidateBusiness
 
 
 class BusinessManager(BaseUserManager):
@@ -14,37 +19,30 @@ class BusinessManager(BaseUserManager):
     """
 
     def create_business(self, **kwargs):
-        email = kwargs.get('email')
-        trading_name = kwargs.get('trading_name')
-        legal_name = kwargs.get('legal_name')
-        address = kwargs.get('address')
-        phone_number = kwargs.get('phone_number')
-        website = kwargs.get('website')
-        facebook = kwargs.get('facebook')
-        twitter = kwargs.get('twitter')
-        instagram = kwargs.get('instagram')
-        logo = kwargs.get('logo')
-        business = self.model.objects.filter(email=email)
+        '''Method to save a business in the database
+        '''
+        business = Business.objects.filter(
+            Q(business_email=kwargs['business_email']) |
+            Q(legal_name=kwargs['legal_name']))
         if business:
-            raise ValueError(
-                "Business with this email {} already exists".format(email))
-        business = self.model.objects.filter(
-            legal_name=legal_name)
-        if business:
-            raise ValueError(
-                "Business with this legal name {} already"
-                " exists".format(legal_name))
+            raise GraphQLError('Business already exists!')
+        business_email = validate_email(kwargs['business_email'])
+        ValidateBusiness().validate_business(**kwargs)
         business = self.model(
-            email=email,
-            trading_name=trading_name,
-            legal_name=legal_name,
-            address=address,
-            phone_number=phone_number,
-            website=website,
-            facebook=facebook,
-            twitter=twitter,
-            instagram=instagram,
-            logo=logo
+            business_email=business_email,
+            trading_name=kwargs.get('trading_name'),
+            legal_name=kwargs.get('legal_name'),
+            address_line_1=kwargs.get('address_line_1'),
+            address_line_2=kwargs.get('address_line_2'),
+            city=kwargs.get('city'),
+            country=kwargs.get('country'),
+            local_government_area=kwargs.get('local_government_area'),
+            phone_number=kwargs.get('phone_number'),
+            website=kwargs.get('website'),
+            facebook=kwargs.get('facebook'),
+            twitter=kwargs.get('twitter'),
+            instagram=kwargs.get('instagram'),
+            logo=kwargs.get('logo')
         )
         business.save()
         return business
@@ -55,14 +53,18 @@ class Business(models.Model):
         max_length=9, primary_key=True, default=id_gen, editable=False)
     trading_name = models.CharField(max_length=244)
     legal_name = models.CharField(max_length=244, unique=True)
-    address = models.CharField(max_length=244)
+    address_line_1 = models.CharField(max_length=244, blank=True)
+    address_line_2 = models.CharField(max_length=244, blank=True)
+    local_government_area = models.CharField(max_length=244, blank=True)
+    country = models.CharField(max_length=244, blank=True)
+    city = models.CharField(max_length=244, blank=True)
     phone_number = models.CharField(max_length=25)
-    email = models.EmailField(blank=True, unique=True)
+    business_email = models.EmailField(blank=True, unique=True)
     website = models.CharField(max_length=344)
     facebook = models.CharField(max_length=344)
     twitter = models.CharField(max_length=344)
     instagram = models.CharField(max_length=244)
-    logo = models.ImageField(upload_to='logos')
+    logo = models.URLField()
     user = models.ManyToManyField(User)
     objects = BusinessManager()
 

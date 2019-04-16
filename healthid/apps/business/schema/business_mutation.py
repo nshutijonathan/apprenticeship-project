@@ -10,6 +10,7 @@ from healthid.apps.authentication.querysets.user_query \
 from healthid.utils.business_utils.business_query \
     import BusinessModelQuery
 from healthid.utils.auth_utils.decorator import master_admin_required
+from graphql import GraphQLError
 
 
 class BusinesType(DjangoObjectType):
@@ -28,11 +29,15 @@ class CreateBusiness(graphene.Mutation):
     error = graphene.List(graphene.String)
 
     class Arguments:
-        trading_name = graphene.String()
-        legal_name = graphene.String()
-        address = graphene.String()
-        phone_number = graphene.String()
-        email = graphene.String()
+        trading_name = graphene.String(required=True)
+        legal_name = graphene.String(required=True)
+        address_line_1 = graphene.String(required=True)
+        address_line_2 = graphene.String()
+        phone_number = graphene.String(required=True)
+        business_email = graphene.String(required=True)
+        city = graphene.String(required=True)
+        country = graphene.String(required=True)
+        local_government_area = graphene.String()
         website = graphene.String()
         facebook = graphene.String()
         twitter = graphene.String()
@@ -47,9 +52,13 @@ class CreateBusiness(graphene.Mutation):
         business = Business.objects.create_business(
             trading_name=kwargs.get('trading_name'),
             legal_name=kwargs.get('legal_name'),
-            address=kwargs.get('address'),
+            address_line_1=kwargs.get('address_line_1'),
+            address_line_2=kwargs.get('address_line_2'),
             phone_number=kwargs.get('phone_number'),
-            email=kwargs.get('email'),
+            business_email=kwargs.get('business_email'),
+            city=kwargs.get('city'),
+            country=kwargs.get('country'),
+            local_government_area=kwargs.get('local_government_area'),
             website=kwargs.get('website'),
             facebook=kwargs.get('facebook'),
             twitter=kwargs.get('twitter'),
@@ -58,7 +67,7 @@ class CreateBusiness(graphene.Mutation):
         )
         business.user.add(user)
         business.save()
-        success = ["Business successfully created"]
+        success = ["Business successfully created!"]
         return CreateBusiness(business=business, success=success)
 
 
@@ -75,9 +84,13 @@ class UpdateBusiness(graphene.Mutation):
         id = graphene.String()
         trading_name = graphene.String()
         legal_name = graphene.String()
-        address = graphene.String()
+        address_line_1 = graphene.String()
+        address_line_2 = graphene.String()
         phone_number = graphene.String()
-        email = graphene.String()
+        business_email = graphene.String()
+        city = graphene.String()
+        country = graphene.String()
+        local_government_area = graphene.String()
         website = graphene.String()
         facebook = graphene.String()
         twitter = graphene.String()
@@ -88,8 +101,15 @@ class UpdateBusiness(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         id = kwargs.get('id')
         business = Business.objects.get(pk=id)
+
+        business_users = business.user.all()
+
+        if user not in business_users:
+            raise GraphQLError("You can't update a business you're \
+not assigned to!")
         for(key, value) in kwargs.items():
             if key is not None:
                 setattr(business, key, value)
