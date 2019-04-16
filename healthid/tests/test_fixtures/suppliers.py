@@ -17,6 +17,7 @@ supplier_mutation = '''
 
             }){
                 supplier{
+                id
                 supplierId
                 city{
                     name
@@ -29,10 +30,129 @@ supplier_mutation = '''
 
 suppliers_query = '''
         query{
-            suppliers{
+            allSuppliers{
                 id
                 name
             }
         }
 
+'''
+
+approved_suppliers = '''
+        query{
+            approvedSuppliers{
+                id
+                name
+            }
+        }
+
+'''
+
+approve_supplier = '''
+        mutation{{
+          approveSupplier(id:"{supplier_id}"){{
+            success
+          }}
+        }}
+
+'''
+delete_supplier = '''
+        mutation{{
+          deleteSupplier(id:"{supplier_id}"){{
+            success
+          }}
+        }}
+
+'''
+
+edit_request = '''
+        mutation{{
+          editSupplier(
+            id: "{supplier_id}"
+            email: "email9@email.com"
+            name: "shack",
+            mobileNumber:"0702260027",
+            addressLine1:"address",
+            addressLine2:"addressline2",
+            lga: "lga",
+            tierId:1,
+            cityId: 1
+            rating:5,
+            creditDays:4,
+            logo:"logo",
+            paymentTermsId:1,
+            commentary: "no comment"
+          ){{
+            message,
+            editRequest{{
+              id
+              name
+              mobileNumber
+            }}
+          }}
+        }}
+
+'''
+
+edit_requests = '''
+        query{
+            editRequests{
+            id
+            name
+            isApproved
+          }
+        }
+'''
+approve_request = '''
+        mutation{{
+          approveEditRequest(id:"{request_id}"){{
+            message
+          }}
+        }}
+'''
+decline_request = '''
+        mutation{{
+          declineEditRequest(
+          id:"{request_id}"
+          comment: "No way!"){{
+            message
+          }}
+        }}
+'''
+filter_suppliers = '''
+        query{
+          filterSuppliers(rating: 5){
+            edges{
+              node{
+                id
+                name
+              }
+            }
+          }
+        }
+'''
+
+empty_search = '''
+        query{
+          filterSuppliers(rating: 9){
+            edges{
+              node{
+                id
+                name
+              }
+            }
+          }
+        }
+'''
+invalid_search = '''
+        query{
+          filterSuppliers(tier_Name_Icontains: ""){
+            edges{
+              node{
+                id
+                name
+              }
+            }
+          }
+        }
 '''
