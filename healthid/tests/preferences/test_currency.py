@@ -1,5 +1,5 @@
 from healthid.apps.preference.models import Currency
-from healthid.tests.currency.currency_base import CurrencyBaseTest
+from healthid.tests.preferences.currency_base import CurrencyBaseTest
 from healthid.tests.test_fixtures.currency import (get_currencies,
                                                    get_currency,
                                                    get_wrong_currency,

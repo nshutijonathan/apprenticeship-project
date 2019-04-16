@@ -1,7 +1,8 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from healthid.apps.outlets.models import Outlet
-from healthid.apps.preference.models import Preference, Timezone, Currency
+from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
+from healthid.utils.app_utils.id_generator import id_gen
 
 
 @receiver(post_save, sender=Outlet)
@@ -22,8 +23,15 @@ def set_prefix(sender, update_fields=['prefix_id'], *args, **kwargs):
         code="NGN",
         name_plural="Nigerian nairas"
     )
+    default_vat = Vat.objects.get_or_create(
+        pk=id_gen,
+        rate=00.00
+    )
+
     preference = Preference()
     preference.outlet = outlet
+    # vat
+    preference.vat_rate = default_vat[0]
     # get the set defualt currency
     preference.outlet_currency = default_currency[0]
     preference.outlet_timezone = default_timezone

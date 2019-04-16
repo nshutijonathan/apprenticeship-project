@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from graphene_django import DjangoObjectType
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.preference.models import Currency, Preference, Timezone
+from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -18,6 +18,11 @@ class TimezoneType(DjangoObjectType):
 class PreferenceType(DjangoObjectType):
     class Meta:
         model = Preference
+
+
+class VatType(DjangoObjectType):
+    class Meta:
+        model = Vat
 
 
 def _json_object_hook(d):
@@ -68,6 +73,11 @@ class Query(graphene.ObjectType):
         name_plural=graphene.String(),
         business_id=graphene.String()
     )
+
+    vat = graphene.Field(
+        VatType,
+        id=graphene.String()
+    )
     success = graphene.List(graphene.String)
 
     @login_required
@@ -101,3 +111,15 @@ class Query(graphene.ObjectType):
         if name is not None:
             return Currency.objects.get(name=name)
         return None
+
+    @login_required
+    def resolve_vat(self, info, **kwargs):
+        # returns vat from db by id
+        id = kwargs.get('id')
+        try:
+            vat = Vat.objects.get(pk=id)
+
+            return vat
+        except ObjectDoesNotExist:
+            raise GraphQLError(
+                'Vat with {} id does not exist'.format(id))

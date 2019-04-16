@@ -37,9 +37,17 @@ class Currency(models.Model):
         return cls.money_formats
 
 
+class Vat(models.Model):
+    # Model that handle VAT
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    rate = models.FloatField(default=00.00)
+
+
 class Preference(models.Model):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     outlet_timezone = models.ForeignKey(
         Timezone, on_delete=models.CASCADE)
     outlet_currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    vat_rate = models.ForeignKey(Vat, on_delete=models.CASCADE)

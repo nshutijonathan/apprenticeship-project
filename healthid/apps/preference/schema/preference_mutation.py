@@ -4,8 +4,10 @@ from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 from healthid.apps.preference.models import Currency, Preference, Timezone
 from healthid.apps.preference.schema.preference_schema import (CurrencyType,
-                                                               TimezoneType)
+                                                               TimezoneType,
+                                                               VatType)
 from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.preference_utils.update_currency import update_vate
 
 
 def get_timezone(outlet_timezone_id):
@@ -53,12 +55,14 @@ class UpdatePreference(graphene.Mutation):
     """
     outlet_currency = graphene.Field(CurrencyType)
     outlet_timezone = graphene.Field(TimezoneType)
+    outlet_vat = graphene.Field(VatType)
     success = graphene.String()
 
     class Arguments:
         outlet_timezone = graphene.String()
         preference_id = graphene.String(required=True)
         outlet_currency = graphene.String()
+        outlet_vat = graphene.Float()
 
     @login_required
     @master_admin_required
@@ -66,8 +70,13 @@ class UpdatePreference(graphene.Mutation):
         try:
             outlet_timezone_id = kwargs.get('outlet_timezone')
             outlet_currency = kwargs.get('outlet_currency')
+            outlet_vat_rate = kwargs.get('outlet_vat')
             preference_id = kwargs.get('preference_id')
             preference = Preference.objects.get(pk=preference_id)
+            if outlet_vat_rate:
+                outlet_vat = update_vate(outlet_vat_rate, preference)
+                preference.vat_rate.rate = outlet_vat
+
             if outlet_timezone_id:
                 outlet_timezone = get_timezone(outlet_timezone_id)
                 preference.outlet_timezone = outlet_timezone
@@ -82,6 +91,7 @@ class UpdatePreference(graphene.Mutation):
         return UpdatePreference(
             outlet_timezone=preference.outlet_timezone,
             outlet_currency=preference.outlet_currency,
+            outlet_vat=preference.vat_rate,
             success=("Preference updated successfully")
         )
 
