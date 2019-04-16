@@ -12,5 +12,12 @@
       "fields":{
          "name":"Master Admin"
       }
+   },
+   {
+      "model": "authentication.role",
+      "pk": "6lbwxaf31",
+      "fields": {
+         "name": "Manager"
+      }
    }
 ]

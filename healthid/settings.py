@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'healthid.apps.orders',
     'healthid.apps.preference',
     'healthid.apps.register',
+    'healthid.apps.events',
     'rest_framework',
     'corsheaders',
     'healthid.apps.receipts',
@@ -53,7 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',        
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',

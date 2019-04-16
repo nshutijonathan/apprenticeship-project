@@ -86,6 +86,7 @@ class BaseConfiguration(TestCase):
 
         # register and log in user
         self.user = self.register_user()
+        self.outlet.user.add(self.user)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin()
         self.access_token_master = self.admin_login()
