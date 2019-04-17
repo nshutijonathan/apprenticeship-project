@@ -1,0 +1,15 @@
+[
+  {
+    "model": "products.batchinfo",
+    "pk": 1,
+    "fields": {
+      "date_received": "2019-06-07",
+      "expiry_date": "2030-06-03",
+      "quantity_received": 10,
+      "pack_size": 24,
+      "supplier_id": 1,
+      "unit_cost": 3000,
+      "commentary": "Delivered late"
+    }
+  }
+]

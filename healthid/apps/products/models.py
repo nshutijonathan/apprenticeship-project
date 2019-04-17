@@ -1,6 +1,10 @@
+from decimal import Decimal
+
 from django.db import models
-from healthid.apps.orders.models import Suppliers
 from taggit.managers import TaggableManager
+
+from healthid.apps.orders.models import Suppliers
+from healthid.utils.app_utils.id_generator import id_gen
 
 
 class ProductCategory(models.Model):
@@ -41,3 +45,27 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
+
+
+class BatchInfo(models.Model):
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    batch_no = models.CharField(
+        max_length=100, null=True, blank=True, editable=False
+    )
+    supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
+    date_received = models.DateField(auto_now=False, null=True, blank=True)
+    pack_size = models.CharField(max_length=100, null=True, blank=True)
+    quantity_received = models.PositiveIntegerField(blank=True, null=True)
+    expiry_date = models.DateField(auto_now=False, null=True, blank=True)
+    unit_cost = models.DecimalField(
+        max_digits=20, decimal_places=2, default=Decimal('0.00')
+    )
+    commentary = models.TextField(blank=True, null=True)
+    product = models.ManyToManyField(Product, related_name='batch_info')
+
+    def __str__(self):
+        return self.batch_no
+
+    def __unicode__(self):
+        return self.batch_no

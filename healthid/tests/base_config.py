@@ -3,8 +3,11 @@ import json
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
+from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.preference.models import Preference, Timezone
+from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+                                           ProductCategory)
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 
@@ -83,6 +86,10 @@ class BaseConfiguration(TestCase):
         self.timezone.save()
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
+        self.measurement_unit = self.create_measurement_unit()
+        self.supplier = self.create_suppliers()
+        self.product = self.create_product()
+        self.batch_info = self.create_batch_info()
 
         # register and log in user
         self.user = self.register_user()
@@ -122,6 +129,7 @@ class BaseConfiguration(TestCase):
                                         password=password)
         user.is_active = True
         user.role = Role.objects.create(name='Master Admin')
+        self.business.user.add(user)
         user.save()
         return user
 
@@ -142,7 +150,9 @@ class BaseConfiguration(TestCase):
 
     def create_outlet_kind(self):
         country = Country.objects.create(name='Peru')
-        city = City.objects.create(name="Chiclayo", country_id=country.id)
+        city = City.objects.create(
+            name="Chiclayo", country_id=country.id
+        )
         outlet_kind = OutletKind.objects.create(name="Warehouse")
         info = {"city_id": city.id, "outlet_kindid": outlet_kind.id}
         return info
@@ -160,3 +170,39 @@ class BaseConfiguration(TestCase):
         return Role.objects.create(
             name=role_name
         )
+
+    def create_suppliers(self):
+        payment_terms = \
+            PaymentTerms.objects.create(name="Mobile Banking")
+        city = City.objects.get(name="Chiclayo")
+        tier = Tier.objects.create(name="exporter")
+        return Suppliers.objects.create(
+            name='Sport Direct',
+            email='sportdirect@mail.com',
+            mobile_number='254745345342',
+            city=city, tier=tier,
+            payment_terms=payment_terms
+        )
+
+    def create_measurement_unit(self):
+        return MeasurementUnit.objects.create(name='kilogram')
+
+    def create_product(self):
+        product_category = \
+            ProductCategory.objects.create(name='Drinks')
+        return Product.objects.create(
+            product_name='Pizza', sales_price=100,
+            product_category=product_category,
+            measurement_unit=self.measurement_unit,
+            prefered_supplier=self.supplier,
+            backup_supplier=self.supplier
+        )
+
+    def create_batch_info(self):
+        batch_info = BatchInfo.objects.create(
+            supplier=self.supplier,
+            quantity_received=10,
+        )
+        batch_info.product.add(self.product)
+        batch_info.save()
+        return batch_info
