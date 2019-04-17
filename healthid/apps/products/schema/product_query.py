@@ -22,7 +22,7 @@ class ProductType(DjangoObjectType):
 class Query(graphene.AbstractType):
 
     products = graphene.List(ProductType)
-
+    proposed_products = graphene.List(ProductType)
     product = graphene.Field(
         ProductType,
         id=graphene.Int(),
@@ -50,3 +50,7 @@ class Query(graphene.AbstractType):
             raise GraphQLError("Please provide the product id")
         except ObjectDoesNotExist:
             raise GraphQLError("Product with Id {} doesn't exist".format(id))
+
+    @login_required
+    def resolve_proposed_products(self, info):
+        return Product.objects.filter(is_approved=False)
