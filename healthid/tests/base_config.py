@@ -78,8 +78,10 @@ class BaseConfiguration(TestCase):
             "password": "Password123"
         }
 
+        self.user = self.register_user()
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
+        self.supplier = self.create_suppliers(self.user)
         self.timezone = Timezone(
             id="285461788", name="Africa/Lagos",
             time_zone="(GMT+01:00) Lagos")
@@ -87,12 +89,10 @@ class BaseConfiguration(TestCase):
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
         self.measurement_unit = self.create_measurement_unit()
-        self.supplier = self.create_suppliers()
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
 
         # register and log in user
-        self.user = self.register_user()
         self.outlet.user.add(self.user)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin()
@@ -171,17 +171,19 @@ class BaseConfiguration(TestCase):
             name=role_name
         )
 
-    def create_suppliers(self):
+    def create_suppliers(self, user):
         payment_terms = \
             PaymentTerms.objects.create(name="Mobile Banking")
         city = City.objects.get(name="Chiclayo")
         tier = Tier.objects.create(name="exporter")
+
         return Suppliers.objects.create(
             name='Sport Direct',
             email='sportdirect@mail.com',
             mobile_number='254745345342',
             city=city, tier=tier,
-            payment_terms=payment_terms
+            payment_terms=payment_terms,
+            user=user
         )
 
     def create_measurement_unit(self):
