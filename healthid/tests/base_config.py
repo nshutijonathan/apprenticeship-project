@@ -16,6 +16,7 @@ class BaseConfiguration(TestCase):
     """
     Base configuration file for all tests.
     """
+
     @classmethod
     def setUpClass(cls):
 
@@ -48,7 +49,8 @@ class BaseConfiguration(TestCase):
         content_type = 'application/json'
 
         response = cls.client.post(
-            url, json.dumps(body),
+            url,
+            json.dumps(body),
             HTTP_AUTHORIZATION=http_auth,
             content_type=content_type)
         json_response = json.loads(response.content.decode())
@@ -81,8 +83,7 @@ class BaseConfiguration(TestCase):
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
         self.timezone = Timezone(
-            id="285461788", name="Africa/Lagos",
-            time_zone="(GMT+01:00) Lagos")
+            id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
@@ -110,9 +111,8 @@ class BaseConfiguration(TestCase):
         email = self.new_user["email"]
         mobile_number = self.new_user["mobile_number"]
         password = self.new_user["password"]
-        user = User.objects.create_user(email=email,
-                                        mobile_number=mobile_number,
-                                        password=password)
+        user = User.objects.create_user(
+            email=email, mobile_number=mobile_number, password=password)
         user.is_active = True
         user.save()
         return user
@@ -124,9 +124,8 @@ class BaseConfiguration(TestCase):
         email = self.master_admin["email"]
         mobile_number = self.master_admin["mobile_number"]
         password = self.master_admin["password"]
-        user = User.objects.create_user(email=email,
-                                        mobile_number=mobile_number,
-                                        password=password)
+        user = User.objects.create_user(
+            email=email, mobile_number=mobile_number, password=password)
         user.is_active = True
         user.role = Role.objects.create(name='Master Admin')
         self.business.user.add(user)
@@ -150,9 +149,7 @@ class BaseConfiguration(TestCase):
 
     def create_outlet_kind(self):
         country = Country.objects.create(name='Peru')
-        city = City.objects.create(
-            name="Chiclayo", country_id=country.id
-        )
+        city = City.objects.create(name="Chiclayo", country_id=country.id)
         outlet_kind = OutletKind.objects.create(name="Warehouse")
         info = {"city_id": city.id, "outlet_kindid": outlet_kind.id}
         return info
@@ -160,16 +157,18 @@ class BaseConfiguration(TestCase):
     def create_outlet(self):
         info = self.outlet_kind
         return Outlet.objects.create(
-            name="bingo", kind_id=info["outlet_kindid"],
-            address_line1="wandegya", phone_number="254745345342",
-            address_line2="Central, Kla", lga="KCCA",
-            city_id=info["city_id"], date_launched="1995-10-20",
+            name="bingo",
+            kind_id=info["outlet_kindid"],
+            address_line1="wandegya",
+            phone_number="254745345342",
+            address_line2="Central, Kla",
+            lga="KCCA",
+            city_id=info["city_id"],
+            date_launched="1995-10-20",
             business_id=self.business.id)
 
     def create_role(self, role_name):
-        return Role.objects.create(
-            name=role_name
-        )
+        return Role.objects.create(name=role_name)
 
     def create_suppliers(self):
         payment_terms = \
@@ -180,9 +179,9 @@ class BaseConfiguration(TestCase):
             name='Sport Direct',
             email='sportdirect@mail.com',
             mobile_number='254745345342',
-            city=city, tier=tier,
-            payment_terms=payment_terms
-        )
+            city=city,
+            tier=tier,
+            payment_terms=payment_terms)
 
     def create_measurement_unit(self):
         return MeasurementUnit.objects.create(name='kilogram')
@@ -191,12 +190,12 @@ class BaseConfiguration(TestCase):
         product_category = \
             ProductCategory.objects.create(name='Drinks')
         return Product.objects.create(
-            product_name='Pizza', sales_price=100,
+            product_name='Pizza',
+            sales_price=100,
             product_category=product_category,
             measurement_unit=self.measurement_unit,
             prefered_supplier=self.supplier,
-            backup_supplier=self.supplier
-        )
+            backup_supplier=self.supplier)
 
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(

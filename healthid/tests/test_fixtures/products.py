@@ -32,7 +32,6 @@ create_product = '''
             }}
 '''
 
-
 supplier_mutation = '''
         mutation{
             addSupplier(input:{
@@ -62,7 +61,38 @@ supplier_mutation = '''
             }
             }
 '''
+create_proposed_product = '''
+mutation {
+    createProduct(
+        productCategoryId:1,
+        productName :"gfcds",
+        measurementUnitId :1,
+        packSize :"2kgs",
+        description :"first treatment people try for mild to moderate pain",
+        brand :"ventolinllke mklllll",
+        manufacturer:"vbn",
+        vatStatus:"VAT",
+        quality : "meet the pharmacopoeia specification",
+        salesPrice :1000,
+        preferedSupplierId :1,
+        backupSupplierId:2,
+        tags:["painkillers","panadol"]
 
+    ){
+      product{
+        id
+        salesPrice
+        quality
+        packSize
+        productName
+        vatStatus
+        skuNumber
+        tags
+      }
+
+    }
+}
+'''
 backup_supplier = '''
         mutation{
             addSupplier(input:{
@@ -95,7 +125,7 @@ backup_supplier = '''
 
 product_query = '''
         query{
-            products{
+            approvedProducts{
                 skuNumber
                 productName
             }
@@ -116,12 +146,18 @@ proposed_product_query = '''
 
 def create_product_2(supplier_id, backup_id):
     return Product.objects.create(
-        product_category_id=1, product_name='Panadol',
-        measurement_unit_id=1, pack_size="2kgs",
-        description='first treatment people try', brand='ventolinllke',
-        manufacturer="Harmon Northrop", vat_status="VAT",
-        quality="meet the pharmacopoeia specification", sales_price=1000,
-        prefered_supplier_id=supplier_id, backup_supplier_id=backup_id,
+        product_category_id=1,
+        product_name='Panadol',
+        measurement_unit_id=1,
+        pack_size="2kgs",
+        description='first treatment people try',
+        brand='ventolinllke',
+        manufacturer="Harmon Northrop",
+        vat_status="VAT",
+        quality="meet the pharmacopoeia specification",
+        sales_price=1000,
+        prefered_supplier_id=supplier_id,
+        backup_supplier_id=backup_id,
         tags="painkillers")
 
 
@@ -158,3 +194,17 @@ def delete_product(product_id):
             }}
             }}
     ''')
+
+
+approve_product = '''
+        mutation {{
+            approveProduct(
+            productId:{product_id}
+            ){{
+            product{{
+                id
+            }}
+            success
+            }}
+        }}
+'''

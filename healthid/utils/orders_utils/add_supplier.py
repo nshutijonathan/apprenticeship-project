@@ -11,7 +11,7 @@ class AddSupplier:
         self.exclude_list = [
             'DoesNotExist', '_meta', 'MultipleObjectsReturned', 'city', 'tier',
             'payment_terms', 'supplier_id', 'id', 'objects', 'prefered',
-            'backup'
+            'backup', 'batchinfo_set'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__
@@ -39,6 +39,7 @@ class AddSupplier:
             dict_object = dict(zip(self.safe_list, column))
             instance = Suppliers()
             for (key, value) in dict_object.items():
+
                 if key == 'email':
                     self.catch_duplicate_email(value)
                 if key == 'rating':

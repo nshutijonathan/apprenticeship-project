@@ -49,6 +49,7 @@ class Query(graphene.AbstractType):
         BatchInfoType,
         id=graphene.Int(required=True)
     )
+    approved_products = graphene.List(ProductType)
 
     product = graphene.Field(
         ProductType,
@@ -68,6 +69,10 @@ class Query(graphene.AbstractType):
     def resolve_products(self, info):
         all_products = Product.objects.all()
         return all_products
+
+    @login_required
+    def resolve_approved_products(self, info):
+        return Product.objects.filter(is_approved=True)
 
     @login_required
     def resolve_product(self, info, **kwargs):

@@ -1,2 +1,2 @@
 product_category,product_name,measurement_unit,pack_size,description,brand,manufacturer,vat_status,quality,sales_price,prefered_supplier,backup_supplier,tags
-prescription,panadol,tablets,2kgs,first treatment people try for mild to moderate pain,panadol,Harmon Northrop Morse,VAT,meet the pharmacopoeia specification,25000,shadik.,ntale,painkillers
+prescription,panadolextra,tablets,2kgs,first treatment people try for mild to moderate pain,panadol,Harmon Northrop Morse,VAT,meet the pharmacopoeia specification,25000,shadik.,shadik.,painkillers

@@ -8,6 +8,8 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.products.models import BatchInfo, Product
 from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.utils.auth_utils.decorator import admin_required
+from healthid.utils.auth_utils.decorator import \
+    operations_or_master_admin_required
 from healthid.utils.product_utils import handle_product_validations
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product_querysets import ProductModelQuery
@@ -98,7 +100,7 @@ class UpdateProposedProduct(graphene.Mutation):
         tags = kwargs.get("tags")
         kwargs.pop("tags")
         update_values = []
-        for(key, value) in kwargs.items():
+        for (key, value) in kwargs.items():
             if type(value) is str and value.strip() == "":
                 raise GraphQLError(f"The {key} field can't be empty")
             if key is not None:
@@ -110,10 +112,7 @@ class UpdateProposedProduct(graphene.Mutation):
         product.save(update_fields=update_values)
         product.tags.set(*tags)
         message = 'Product successfully updated'
-        return UpdateProposedProduct(
-            product=product,
-            message=message
-        )
+        return UpdateProposedProduct(product=product, message=message)
 
 
 class DeleteProduct(graphene.Mutation):
@@ -136,9 +135,7 @@ class DeleteProduct(graphene.Mutation):
             raise GraphQLError("Approved product can't be deleted.")
         product.delete()
 
-        return DeleteProduct(
-            success="Product has been deleted"
-        )
+        return DeleteProduct(success="Product has been deleted")
 
 
 class CreateBatchInfo(graphene.Mutation):
@@ -174,8 +171,7 @@ class CreateBatchInfo(graphene.Mutation):
             expiry_date=parse_date(kwargs.get('expiry_date')),
             unit_cost=kwargs.get('unit_cost'),
             commentary=kwargs.get('commentary'),
-            supplier=supplier_instance
-        )
+            supplier=supplier_instance)
         for product in products:
             product_instance = \
                 ProductModelQuery().query_product_id(product)
@@ -239,8 +235,10 @@ class UpdateBatchInfo(graphene.Mutation):
                 update_values.append(key)
                 setattr(batch_info, key, value)
         batch_info.save(update_fields=update_values)
-        message = [f'Batch with number {batch_info.batch_no} '
-                   f'successfully updated']
+        message = [
+            f'Batch with number {batch_info.batch_no} '
+            f'successfully updated'
+        ]
         return UpdateBatchInfo(message=message, batch_info=batch_info)
 
 
@@ -268,6 +266,37 @@ class DeleteBatchInfo(graphene.Mutation):
         return DeleteBatchInfo(message=message)
 
 
+class ApproveProduct(graphene.Mutation):
+    """
+      Mutation to approve proposed products a product.
+    """
+
+    class Arguments:
+        product_id = graphene.Int(required=True)
+
+    product = graphene.Field(ProductType)
+    success = graphene.List(graphene.String)
+
+    @operations_or_master_admin_required
+    def mutate(self, info, **kwargs):
+        id = kwargs.get('product_id')
+        try:
+            product = Product.objects.get(pk=id)
+            if product.is_approved:
+                raise GraphQLError(
+                    "Product {} has already been approved".format(id))
+            product.is_approved = True
+            product.save()
+            success = [
+                'message',
+                'Product {} has successfully been approved.'.format(id)
+            ]
+            return ApproveProduct(success=success, product=product)
+        except ObjectDoesNotExist:
+            raise GraphQLError(
+                "The product with Id {} doesn't exist".format(id))
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     update_proposed_product = UpdateProposedProduct.Field()
@@ -275,3 +304,4 @@ class Mutation(graphene.ObjectType):
     create_batch_info = CreateBatchInfo.Field()
     update_batch_info = UpdateBatchInfo.Field()
     delete_batch_info = DeleteBatchInfo.Field()
+    approve_product = ApproveProduct.Field()

@@ -1,10 +1,8 @@
 from django.core.management import call_command
-
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import (
-    backup_supplier, create_product, create_product_2,
-    product_query, proposed_product_query, supplier_mutation, update_product,
-    delete_product)
+    backup_supplier, create_product, create_product_2, proposed_product_query,
+    supplier_mutation, update_product, delete_product)
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -42,25 +40,23 @@ class TestCreateProduct(BaseConfiguration):
         self.assertIn('errors', response)
 
     def test_product_query(self):
-        response = self.query_with_token(self.access_token, product_query)
-        self.assertIn('products', response['data'])
+        response = self.query_with_token(self.access_token,
+                                         proposed_product_query)
+        self.assertIn('proposedProducts', response['data'])
 
     def test_proposed_product_query(self):
-        response = self.query_with_token(
-            self.access_token, proposed_product_query
-        )
+        response = self.query_with_token(self.access_token,
+                                         proposed_product_query)
         self.assertIn('proposedProducts', response['data'])
 
     def test_update_product(self):
         update_name = 'Cold cap'
         response = self.query_with_token(
-            self.access_token, update_product(self.product.id, update_name)
-        )
+            self.access_token, update_product(self.product.id, update_name))
         product_name = response['data']['updateProposedProduct']['product']
         self.assertIn(update_name, product_name['productName'])
 
     def test_delete_product(self):
-        response = self.query_with_token(
-            self.access_token, delete_product(self.product.id)
-        )
+        response = self.query_with_token(self.access_token,
+                                         delete_product(self.product.id))
         self.assertIn("success", response["data"]["deleteProduct"])
