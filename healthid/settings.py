@@ -54,7 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',        
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -174,4 +174,7 @@ CORS_ORIGIN_WHITELIST = (
 cloudinary.config(
     cloud_name=os.getenv('CLOUD_NAME'),
     api_key=os.getenv('API_KEY'),
-    api_secret=os.getenv('API_SECRET'))
+    api_secret=os.getenv('API_SECRET')
+)
+
+PASSWORD_RESET_TIMEOUT_DAYS = 1

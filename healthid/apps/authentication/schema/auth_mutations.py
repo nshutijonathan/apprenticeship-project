@@ -13,20 +13,19 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
+from healthid.apps.authentication.querysets.role_query import RoleModelQuery
+from healthid.apps.authentication.querysets.user_query import UserModelQuery
 from healthid.apps.authentication.schema.auth_queries import RoleType, UserType
 from healthid.apps.authentication.schema.login_mutation import LoginUser
+from healthid.apps.authentication.schema.reset_password_mutation import \
+    ResetPassword
 from healthid.utils.auth_utils import user_update_instance
 from healthid.utils.auth_utils.admin_validation import validate_instance
 from healthid.utils.auth_utils.decorator import master_admin_required
 from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
-from healthid.apps.authentication.querysets.role_query \
-    import RoleModelQuery
-from healthid.apps.authentication.querysets.user_query \
-    import UserModelQuery
-from healthid.utils.business_utils.business_query \
-    import BusinessModelQuery
+from healthid.utils.business_utils.business_query import BusinessModelQuery
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -457,3 +456,4 @@ class Mutation(graphene.ObjectType):
     update_admin_user = UpdateAdminUser.Field()
     admin_update_user = AdminUpdateUserDetails.Field()
     login_user = LoginUser.Field()
+    reset_password = ResetPassword.Field()

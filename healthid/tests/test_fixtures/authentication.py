@@ -144,3 +144,20 @@ add_user_business_query = '''
       }}
     }}
 '''
+
+password_reset_query = '''
+  mutation {{
+    resetPassword(email: "{email}"){{
+      success
+      resetLink
+    }}
+  }}
+'''
+
+password_reset_json = '''
+  {{
+    "user": {{
+      "password": "{password}"
+      }}
+  }}
+'''
