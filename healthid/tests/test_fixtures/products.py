@@ -4,7 +4,7 @@ create_product = '''
         mutation{{
             createProduct(
                 productCategoryId:1,
-                productName :"panadol",
+                productName :"",
                 measurementUnitId :1,
                 packSize :"2kgs",
                 description :"first treatment people try for mild to moderate pain",  # noqa E501
@@ -13,8 +13,8 @@ create_product = '''
                 vatStatus:"VAT",
                 quality : "meet the pharmacopoeia specification",
                 salesPrice :1000,
-                preferedSupplierId :"{supplier_id}",
-                backupSupplierId:"{backup_id}",
+                preferedSupplierId :{supplier_id},
+                backupSupplierId:{backup_id},
                 tags :"painkillers"
                     ){{
                 product{{
@@ -54,9 +54,6 @@ supplier_mutation = '''
                 supplier{
                 supplierId
                 id
-                user{
-                    email
-                }
                 city{
                     name
                 }
@@ -70,7 +67,7 @@ backup_supplier = '''
         mutation{
             addSupplier(input:{
                 name: "shadik.",
-                email: "shadik@email.com",
+                email: "shadick@email.com",
                 mobileNumber:"0702260027",
                 addressLine1:"address",
                 addressLine2:"addressline2",

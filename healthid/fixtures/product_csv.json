@@ -14,6 +14,44 @@
     }
   },
   {
+    "model": "orders.suppliers",
+    "pk": 1,
+    "fields": {
+      "name": "shadik.",
+      "email": "email@ntale.com",
+      "mobile_number": "0702260027",
+      "address_line_1": "address",
+      "address_line_2": "addressline2",
+      "lga": "lga",
+      "tier_id": 1,
+      "city_id": 1,
+      "rating": 5,
+      "credit_days": 4,
+      "logo": "logo",
+      "payment_terms_id": 1,
+      "commentary": "no comment"
+    }
+  },
+  {
+    "model": "orders.suppliers",
+    "pk": 2,
+    "fields": {
+      "name": "ntale",
+      "email": "shadik@ntale.com",
+      "mobile_number": "0702260027",
+      "address_line_1": "address",
+      "address_line_2": "addressline2",
+      "lga": "lga",
+      "tier_id": 1,
+      "city_id": 1,
+      "rating": 5,
+      "credit_days": 4,
+      "logo": "logo",
+      "payment_terms_id": 1,
+      "commentary": "no comment"
+    }
+  },
+  {
     "model": "outlets.country",
     "pk": 1,
     "fields": {

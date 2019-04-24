@@ -25,11 +25,8 @@ class HandleCSV(APIView):
         io_string = io.StringIO(data_set)
         next(io_string)
         if param == 'suppliers':
-            user = request.user
-            add_supplier.handle_csv_upload(user, io_string)
-            message = {
-                "success": "Successfully added supplier(s)"
-            }
+            add_supplier.handle_csv_upload(io_string=io_string)
+            message = {"success": "Successfully added supplier(s)"}
             return Response(message, status.HTTP_201_CREATED)
         if param == 'products':
             handle_csv(io_string=io_string)

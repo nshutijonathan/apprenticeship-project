@@ -1,8 +1,6 @@
 from django.db import models
 
-from healthid.apps.authentication.models import User
 from healthid.apps.outlets.models import City
-from healthid.utils.app_utils.id_generator import id_gen
 
 
 class Tier(models.Model):
@@ -20,9 +18,6 @@ class PaymentTerms(models.Model):
 
 
 class Suppliers(models.Model):
-    id = models.CharField(
-        max_length=9, primary_key=True, default=id_gen, editable=False
-    )
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, unique=True)
     mobile_number = models.CharField(max_length=100)
@@ -37,12 +32,6 @@ class Suppliers(models.Model):
     payment_terms = models.ForeignKey(PaymentTerms, on_delete=models.CASCADE)
     credit_days = models.IntegerField(null=True)
     supplier_id = models.CharField(max_length=9, null=False)
-    is_approved = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    admin_comment = models.TextField(null=True)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE,
-                               related_name="proposedEdit",
-                               null=True, blank=True)
 
     def __str__(self):
         return self.name

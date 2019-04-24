@@ -41,8 +41,8 @@ class CreateProduct(graphene.Mutation):
         quality = graphene.String(required=True)
         sales_price = graphene.Int(required=True)
         nearest_expiry_date = graphene.String()
-        prefered_supplier_id = graphene.String()
-        backup_supplier_id = graphene.String()
+        prefered_supplier_id = graphene.Int()
+        backup_supplier_id = graphene.Int()
         tags = graphene.List(graphene.String)
 
     @login_required

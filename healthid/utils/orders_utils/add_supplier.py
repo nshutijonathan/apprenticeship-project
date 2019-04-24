@@ -1,10 +1,8 @@
 import csv
-
-from django.core.exceptions import ObjectDoesNotExist
 from graphql.error import GraphQLError
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import NotFound, ValidationError
-
-from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
+from healthid.apps.orders.models import Suppliers, Tier, PaymentTerms
 from healthid.apps.outlets.models import City
 
 
@@ -13,8 +11,7 @@ class AddSupplier:
         self.exclude_list = [
             'DoesNotExist', '_meta', 'MultipleObjectsReturned', 'city', 'tier',
             'payment_terms', 'supplier_id', 'id', 'objects', 'prefered',
-            'backup', 'is_approved', 'user_id', 'user', 'admin_comment',
-            'parent_id', 'parent', 'proposedEdit', 'batchinfo_set'
+            'backup'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__
@@ -22,7 +19,7 @@ class AddSupplier:
         ]
 
     @staticmethod
-    def create_supplier(user, instance, input):
+    def create_supplier(instance, input):
         try:
             email = Suppliers.objects.get(email=input.email)
             if email:
@@ -32,10 +29,9 @@ class AddSupplier:
         except ObjectDoesNotExist:
             for (key, value) in input.items():
                 setattr(instance, key, value)
-            instance.user = user
             instance.save()
 
-    def handle_csv_upload(self, user, io_string):
+    def handle_csv_upload(self, io_string):
         for column in csv.reader(io_string, delimiter=','):
             if len(self.safe_list) != len(column):
                 message = {"error": "Missing column(s)"}
@@ -58,7 +54,6 @@ class AddSupplier:
                                                        value.lower(),
                                                        'payment term')
                 setattr(instance, key, value)
-            instance.user = user
             instance.save()
 
     def get_model_instance_id(self, model, name, description):
@@ -75,7 +70,7 @@ class AddSupplier:
             if supplier:
                 message = {
                     "error":
-                    f"supplier with email {supplier.email} already exists"
+                    f"supplier with email {supplier.email} " + "already exists"
                 }
                 raise ValidationError(message)
         except ObjectDoesNotExist:
