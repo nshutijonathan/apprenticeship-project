@@ -8,9 +8,7 @@ from healthid.apps.products.models import BatchInfo, Product, ProductCategory
 from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import (
-    admin_or_manager_required, admin_required,
-    operations_or_master_admin_required)
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils import handle_product_validations
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product_query import ProductQuery
@@ -202,7 +200,7 @@ class UpdateBatchInfo(graphene.Mutation):
 
     @login_required
     @batch_info_instance
-    @admin_required
+    @user_permission('Manager')
     def mutate(self, info, **kwargs):
         batch_id = kwargs.get('batch_id')
         products = kwargs.get('product')
@@ -245,7 +243,7 @@ class DeleteBatchInfo(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @admin_required
+    @user_permission('Manager')
     def mutate(root, info, **kwargs):
         batch_id = kwargs.get('batch_id')
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
@@ -265,7 +263,7 @@ class ApproveProduct(graphene.Mutation):
     product = graphene.Field(ProductType)
     success = graphene.List(graphene.String)
 
-    @operations_or_master_admin_required
+    @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('product_id')
 
@@ -294,7 +292,7 @@ class UpdatePrice(graphene.Mutation):
         auto_price = graphene.Boolean()
         sales_price = graphene.Float()
 
-    @admin_or_manager_required
+    @user_permission('Manager')
     def mutate(self, info, **kwargs):
         set_price = SetPrice()
         markup = kwargs.get('markup')
@@ -330,7 +328,7 @@ class UpdateLoyaltyWeight(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @admin_required
+    @user_permission('Manager')
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
@@ -359,7 +357,7 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @admin_required
+    @user_permission('Manager')
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:

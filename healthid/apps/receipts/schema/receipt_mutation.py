@@ -8,7 +8,7 @@ from healthid.apps.receipts.schema.template_field_mutation import (
     CreateFieldSet, DeleteFieldSet, UpdateFieldSet)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class CreateReceiptTemplate(graphene.Mutation):
@@ -34,7 +34,7 @@ class CreateReceiptTemplate(graphene.Mutation):
         outlet_id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         receipt_template = ReceiptTemplate()
         for(key, value) in kwargs.items():
@@ -70,7 +70,7 @@ class UpdateReceiptTemplate(graphene.Mutation):
         outlet_id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         receipt_template = get_model_object(ReceiptTemplate, 'id', id)
@@ -97,7 +97,7 @@ class DeleteReceiptTemplate(graphene.Mutation):
         id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, id):
         receipt_template = get_model_object(ReceiptTemplate, 'id', id)
         receipt_template.delete()

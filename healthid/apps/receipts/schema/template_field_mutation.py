@@ -5,7 +5,7 @@ from healthid.apps.receipts.models import FieldSet
 from healthid.apps.receipts.schema.receipt_schema import FieldSetType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class CreateFieldSet(graphene.Mutation):
@@ -32,7 +32,7 @@ class CreateFieldSet(graphene.Mutation):
         receipt_template_id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         params = {
             'model_name': 'ReceiptTemplate', 'field': 'receipt_template_id',
@@ -69,7 +69,7 @@ class UpdateFieldSet(graphene.Mutation):
         footer = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         field_set = get_model_object(FieldSet, 'id', id)
@@ -94,7 +94,7 @@ class DeleteFieldSet(graphene.Mutation):
         id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, id):
         field_set = get_model_object(FieldSet, 'id', id)
         field_set.delete()

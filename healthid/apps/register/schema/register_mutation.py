@@ -1,14 +1,13 @@
 import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.receipts.models import ReceiptTemplate
 from healthid.apps.register.models import Register
 from healthid.apps.register.schema.register_schema import RegisterType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class RegisterInput(graphene.InputObjectType):
@@ -29,7 +28,7 @@ class CreateRegister(graphene.Mutation):
         receipt_id = graphene.String(required=True)
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         register_name = kwargs.get('name')
         outlet = get_model_object(Outlet, 'id', kwargs.get('outlet_id'))
@@ -61,7 +60,7 @@ class UpdateRegister(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, id, name):
         register = get_model_object(Register, 'id', id)
         if name.strip() != "":
@@ -85,7 +84,7 @@ class DeleteRegister(graphene.Mutation):
         id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, id):
         register = get_model_object(Register, 'id', id)
         register.delete()

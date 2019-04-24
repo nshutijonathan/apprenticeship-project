@@ -5,7 +5,7 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class UserType(DjangoObjectType):
@@ -29,12 +29,14 @@ class Query(graphene.AbstractType):
         RoleType, id=graphene.String(), name=graphene.String())
     roles = graphene.List(RoleType)
 
+    @login_required
     def resolve_users(self, info):
         """
         Resolver method for users field.
         """
         return User.objects.all()
 
+    @staticmethod
     def resolve_me(self, info):
         """
         Resolver method to check if a user is authenticated.
@@ -46,7 +48,7 @@ class Query(graphene.AbstractType):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def resolve_role(self, info, **kwargs):
         id = kwargs.get("id")
         name = kwargs.get("name")
@@ -60,7 +62,7 @@ class Query(graphene.AbstractType):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def resolve_roles(self, info, **Kwargs):
         return Role.objects.all()
 

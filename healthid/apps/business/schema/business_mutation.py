@@ -1,14 +1,15 @@
 import graphene
 from graphene_django import DjangoObjectType
-from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import User
-from healthid.apps.authentication.schema.auth_queries import UserType
 from healthid.apps.business.models import Business
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.apps.authentication.schema.auth_queries \
+    import UserType
+from healthid.utils.auth_utils.decorator import user_permission
+from graphql import GraphQLError
 
 
 class BusinesType(DjangoObjectType):
@@ -44,7 +45,7 @@ class CreateBusiness(graphene.Mutation):
         user = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         business = Business.objects.create_business(
@@ -97,7 +98,7 @@ class UpdateBusiness(graphene.Mutation):
         user = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         id = kwargs.get('id')
@@ -130,7 +131,7 @@ class AddUserBusiness(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, **kwargs):
         user_id = kwargs.get('user_id')
         business_id = kwargs.get('business_id')
@@ -159,7 +160,7 @@ class DeleteBusiness(graphene.Mutation):
         id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, id):
         business = get_model_object(Business, 'id', id)
         business.delete()

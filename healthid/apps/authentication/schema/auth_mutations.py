@@ -22,7 +22,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils import user_update_instance
 from healthid.utils.auth_utils.admin_validation import validate_instance
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
@@ -119,7 +119,7 @@ class AddUser(graphene.Mutation):
     errors = graphene.List(graphene.String)
 
     @login_required
-    @master_admin_required
+    @user_permission()
     @user_update_instance
     def mutate(self, info, **kwargs):
         password = generate_password()
@@ -209,7 +209,7 @@ class AdminUpdateUserDetails(graphene.Mutation):
 
     @login_required
     @user_update_instance
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         profile_image = kwargs.get('profile_image')
         data = {
@@ -288,7 +288,7 @@ class CreateRole(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, input=None):
         success = True
         errors = ["name", "Role Field is empty"]
@@ -317,7 +317,7 @@ class UpdateUserRole(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, **kwargs):
         user_id = kwargs.get('user_id')
         role_id = kwargs.get('role_id')
@@ -362,7 +362,7 @@ class EditRole(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, id, input=None):
         success = False
         role_instance = get_model_object(Role, 'id', id)
@@ -391,7 +391,7 @@ class DeleteRole(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, id):
         role_instance = get_model_object(Role, 'id', id)
         success = True
@@ -413,7 +413,7 @@ class UpdateAdminUser(graphene.Mutation):
 
     @staticmethod
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(root, info, **kwargs):
         user = info.context.user
         validated_fileds = validate_instance.validate_admin_fields(**kwargs)

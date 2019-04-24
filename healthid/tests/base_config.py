@@ -79,6 +79,13 @@ class BaseConfiguration(TestCase):
             "email": "you@example.com",
             "password": "Password123"
         }
+        self.update_user_data = {
+            'firstname': 'kafuuma',
+            'lastname': 'henry',
+            'username': 'kafuumahenry',
+            'email': 'healthid@gmail.com',
+            'phone': +256788088831
+        }
 
         self.user = self.register_user()
         self.business = create_business()

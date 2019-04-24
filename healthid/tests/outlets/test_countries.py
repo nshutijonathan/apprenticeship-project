@@ -106,7 +106,7 @@ class CountryTestCase(BaseConfiguration):
 
     def test_update_country_doesnot_exist(self):
         country_name = 'fake-name'
-        country_id = 100
+        country_id = 0
         query_string = update_country_string.format(
             id=country_id, name=country_name
         )
