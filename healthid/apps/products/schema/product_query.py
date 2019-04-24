@@ -1,12 +1,13 @@
+from datetime import datetime
+
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from graphene_django import DjangoObjectType
 from graphene_django.converter import convert_django_field
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from taggit.managers import TaggableManager
-
 from healthid.apps.products.models import BatchInfo, Product
+from taggit.managers import TaggableManager
 
 
 @convert_django_field.register(TaggableManager)
@@ -65,6 +66,15 @@ class Query(graphene.AbstractType):
         nearest_expiry_date=graphene.String(),
         tags=graphene.List(graphene.String))
 
+    batch_expiries = graphene.Field(
+        product_batch_info,
+        start_date=graphene.String(),
+        end_date=graphene.String(required=True)
+    )
+    expired_batches = graphene.Field(
+        product_batch_info
+    )
+
     @login_required
     def resolve_products(self, info):
         all_products = Product.objects.all()
@@ -117,3 +127,19 @@ class Query(graphene.AbstractType):
                 "Product with Id {} doesn't "
                 "exist".format(product_id)
             )
+
+    @login_required
+    def resolve_batch_expiries(self, info, **kwargs):
+
+        start_date = kwargs.get("start_date") or datetime.now()
+        end_date = kwargs.get("end_date")
+        try:
+            return BatchInfo.objects.filter(expiry_date__range=(
+                start_date, end_date))
+        except ValidationError as e:
+            raise GraphQLError("The {}".format(e.messages[0]))
+
+    @login_required
+    def resolve_expired_batches(self, info, **kwargs):
+        start_date = datetime.now()
+        return BatchInfo.objects.filter(expiry_date__lt=start_date)

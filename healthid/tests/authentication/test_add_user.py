@@ -124,7 +124,6 @@ class TestAddUser(BaseConfiguration):
         }
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        print(resp)
         self.assertIn('errors', resp)
         self.assertIn("Outlet Id cannot be Empty",
                       resp['errors'][0]['message'])
@@ -145,7 +144,6 @@ class TestAddUser(BaseConfiguration):
         }
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        print(resp)
         self.assertIn('errors', resp)
         self.assertIn(f"Outlet with {outlet_id} id does not exist.",
                       resp['errors'][0]['message'])
