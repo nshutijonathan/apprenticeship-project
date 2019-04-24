@@ -22,6 +22,7 @@ class Query(
         receipt_schema.Query,
         register_schema.Query,
         product_query.Query,
+        product_query.BatchQuery,
         event_querys.Query,
         graphene.ObjectType):
     pass

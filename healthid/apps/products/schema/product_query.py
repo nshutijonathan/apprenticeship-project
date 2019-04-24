@@ -2,8 +2,10 @@ from datetime import datetime
 
 import graphene
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from graphene.utils.resolve_only_args import resolve_only_args
 from graphene_django import DjangoObjectType
 from graphene_django.converter import convert_django_field
+from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from healthid.apps.products.models import BatchInfo, Product
@@ -26,6 +28,13 @@ class ProductType(DjangoObjectType):
 
     class Meta:
         model = Product
+        filter_fields = {
+            'is_approved': ['exact'],
+            'product_name': ['exact', 'icontains', 'istartswith'],
+            'sku_number': ['exact'],
+            'tags__name': ['exact', 'icontains', 'istartswith']
+        }
+        interfaces = (graphene.relay.Node, )
 
     def resolve_product_quantity(self, info, **kwargs):
         if self is not None:
@@ -37,9 +46,14 @@ class ProductType(DjangoObjectType):
             product_quantity = sum(quantities)
             return product_quantity
 
+    id = graphene.ID(required=True)
+
+    @resolve_only_args
+    def resolve_id(self):
+        return self.id
+
 
 class Query(graphene.AbstractType):
-
     products = graphene.List(ProductType)
     proposed_products = graphene.List(ProductType)
     all_batch_info = graphene.List(BatchInfoType)
@@ -51,6 +65,7 @@ class Query(graphene.AbstractType):
         id=graphene.Int(required=True)
     )
     approved_products = graphene.List(ProductType)
+    filter_products = DjangoFilterConnectionField(ProductType)
 
     product = graphene.Field(
         ProductType,
@@ -80,6 +95,20 @@ class Query(graphene.AbstractType):
         all_products = Product.objects.all()
         return all_products
 
+    def resolve_filter_products(self, info, **kwargs):
+
+        for key in kwargs:
+            if isinstance(kwargs[key], str) and kwargs[key].strip() == "":
+                raise GraphQLError('Please provide a valid search keyword')
+
+        response = Product.objects.filter(
+            **kwargs).order_by("product_name")
+        if not response:
+            raise GraphQLError(
+                "Product matching '{}' does not exist".format(
+                    kwargs[key].strip()))
+        return response
+
     @login_required
     def resolve_approved_products(self, info):
         return Product.objects.filter(is_approved=True)
@@ -87,16 +116,25 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_product(self, info, **kwargs):
         id = kwargs.get('id')
-        try:
-            if id:
-                return Product.objects.get(pk=id)
+        if not id:
             raise GraphQLError("Please provide the product id")
+        try:
+            return Product.objects.get(pk=id)
         except ObjectDoesNotExist:
             raise GraphQLError("Product with Id {} doesn't exist".format(id))
 
     @login_required
     def resolve_proposed_products(self, info):
         return Product.objects.filter(is_approved=False)
+
+
+class BatchQuery(graphene.AbstractType):
+    all_batch_info = graphene.List(BatchInfoType)
+    batch_info = graphene.Field(
+        BatchInfoType, id=graphene.String(required=True))
+    product_batch_info = graphene.List(BatchInfoType,
+                                       id=graphene.Int(required=True)
+                                       )
 
     @login_required
     def resolve_all_batch_info(self, info):

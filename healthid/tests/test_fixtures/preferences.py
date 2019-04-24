@@ -1,6 +1,6 @@
 timezone_query = '''
  query{
-  outletTimezone(id:"%s"){
+  outletPreference(id:"%s"){
     outletTimezone{
       id
       timeZone

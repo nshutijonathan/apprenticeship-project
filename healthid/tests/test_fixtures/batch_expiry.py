@@ -4,10 +4,6 @@ query{
       id
       batchNo
       expiryDate
-      product{
-          id
-          productName
-          }
         supplier{
             name
             }
@@ -22,10 +18,6 @@ query{
         id
         batchNo
         expiryDate
-    product {
-      id
-      productName
-    }
     supplier{
       name
     }
@@ -39,10 +31,6 @@ query{
     id
     batchNo
     expiryDate
-    product {
-      id
-      productName
-    }
     supplier{
       name
     }

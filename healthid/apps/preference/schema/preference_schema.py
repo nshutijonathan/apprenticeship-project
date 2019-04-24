@@ -57,8 +57,8 @@ class Query(graphene.ObjectType):
     Return a list of currencies or return a single curency specified.
     """
     timezones = graphene.List(TimezoneType)
-    outlet_timezone = graphene.Field(PreferenceType,
-                                     id=graphene.String())
+    outlet_preference = graphene.Field(PreferenceType,
+                                       id=graphene.String())
 
     currencies = graphene.List(RawCurrency)
     currency = graphene.Field(
@@ -86,7 +86,7 @@ class Query(graphene.ObjectType):
         return Timezone.objects.all()
 
     @login_required
-    def resolve_outlet_timezone(self, info, **kwargs):
+    def resolve_outlet_preference(self, info, **kwargs):
         id = kwargs.get('id')
 
         try:

@@ -4,7 +4,7 @@ create_product = '''
         mutation{{
             createProduct(
                 productCategoryId:1,
-                productName :"",
+                productName :"panadol",
                 measurementUnitId :1,
                 packSize :"2kgs",
                 description :"first treatment people try for mild to moderate pain",  # noqa E501
@@ -207,4 +207,19 @@ approve_product = '''
             success
             }}
         }}
+'''
+product_search_query = '''
+
+    query{{
+        filterProducts(productName_Istartswith: "{search_term}"){{
+            edges {{
+                node {{
+                id
+                quality
+                productName
+                tags
+                }}
+            }}
+        }}
+    }}
 '''

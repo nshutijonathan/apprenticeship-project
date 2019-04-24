@@ -20,10 +20,6 @@ createBatchInfo (
       supplier{{
         name
       }}
-      product {{
-        id
-        productName
-      }}
       unitCost
       quantityReceived
     }}
@@ -56,10 +52,6 @@ updateBatchInfo (
       unitCost,
       quantityReceived,
       commentary
-      product {{
-        id
-        productName
-      }}
       unitCost
     }}
   }}
@@ -90,10 +82,6 @@ query {{
     }}
     unitCost
     dateReceived
-    product {{
-      id
-      productName
-    }}
   }}
 }}
 '''
