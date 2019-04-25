@@ -48,7 +48,6 @@ supplier_mutation = '''
                 logo:"logo",
                 paymentTermsId: 1,
                 commentary: "no comment"
-
             }){
                 supplier{
                 supplierId
@@ -74,6 +73,7 @@ mutation {
         vatStatus:"VAT",
         quality : "meet the pharmacopoeia specification",
         salesPrice :1000,
+        unitCost:10.2,
         preferedSupplierId :1,
         backupSupplierId:2,
         tags:["painkillers","panadol"]
@@ -109,7 +109,6 @@ backup_supplier = '''
                 logo:"logo",
                 paymentTermsId: 1,
                 commentary: "no comment"
-
             }){
                 supplier{
                 supplierId
@@ -130,7 +129,6 @@ product_query = '''
                 productName
             }
         }
-
 '''
 
 proposed_product_query = '''
@@ -140,7 +138,6 @@ proposed_product_query = '''
                 productName
             }
         }
-
 '''
 
 
@@ -158,7 +155,9 @@ def create_product_2(supplier_id, backup_id):
         sales_price=1000,
         prefered_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
-        tags="painkillers")
+        tags="painkillers",
+        unit_cost=10.65
+    )
 
 
 def update_product(product_id, product_name):
@@ -207,6 +206,25 @@ approve_product = '''
             success
             }}
         }}
+    '''
+set_price_string = '''
+    mutation{{
+        updatePrice(
+            markup:{markup}
+            productIds:{product_ids}
+            autoPrice:{auto_price}
+            salesPrice:{sales_price}
+        ){{
+            products{{
+            id
+            unitCost
+            markup
+            salesPrice
+            }}
+            errors
+            message
+        }}
+    }}
 '''
 product_search_query = '''
 

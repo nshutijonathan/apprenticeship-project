@@ -29,7 +29,8 @@ class Product(models.Model):
     manufacturer = models.CharField(max_length=50)
     vat_status = models.CharField(max_length=50)
     quality = models.CharField(max_length=50)
-    sales_price = models.IntegerField()
+    sales_price = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True)
     created_date = models.DateField(auto_now=True, auto_now_add=False)
     nearest_expiry_date = models.DateField(
         auto_now=False, auto_now_add=False, null=True)
@@ -38,13 +39,23 @@ class Product(models.Model):
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
     tags = TaggableManager()
+    markup = models.IntegerField(default=25)
+    pre_tax_retail_price = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        null=True
+    )
+    unit_cost = models.DecimalField(
+        max_digits=12, decimal_places=2, null=False)
+    auto_price = models.BooleanField(default=False)
 
     @property
     def get_tags(self):
         return self.tags.all()
 
     def __str__(self):
-        return self.product_name
+        return (f'''<{self.product_name}>
+        <Price: {self.sales_price}>
+        ''')
 
 
 class BatchInfo(models.Model):

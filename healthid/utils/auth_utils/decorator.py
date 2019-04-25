@@ -1,6 +1,7 @@
 from graphql import GraphQLError
-from healthid.apps.business.models import Business
 from graphql_jwt.decorators import user_passes_test
+
+from healthid.apps.business.models import Business
 
 
 def master_admin_required(func):
@@ -35,3 +36,6 @@ def admin_required(func):
 operations_or_master_admin_required = user_passes_test(lambda u: str(
     u.role).__contains__('Master Admin') or str(u.role).__contains__(
         'Operations Admin'))
+admin_or_manager_required = user_passes_test(
+    lambda u: str(u.role).__contains__('Admin') or str(
+        u.role).__contains__('Manager'))

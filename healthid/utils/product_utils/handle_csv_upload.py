@@ -42,6 +42,7 @@ class HandleCsvValidations(object):
                 sales_price=col[9],
                 prefered_supplier_id=supplier_id,
                 backup_supplier_id=backup_supplier_id,
+                unit_cost=10.34,
                 tags=col[12])
             instance.save()
 

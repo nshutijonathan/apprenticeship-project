@@ -1,18 +1,18 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 import graphene
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.dateparse import parse_date
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.products.models import BatchInfo, Product
 from healthid.apps.products.schema.product_query import BatchInfoType
-from healthid.utils.auth_utils.decorator import admin_required
-from healthid.utils.auth_utils.decorator import \
-    operations_or_master_admin_required
+from healthid.utils.auth_utils.decorator import (
+    admin_or_manager_required, admin_required,
+    operations_or_master_admin_required)
 from healthid.utils.product_utils import handle_product_validations
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product_querysets import ProductModelQuery
+from healthid.utils.product_utils.set_price import SetPrice
 
 from .product_query import ProductType
 
@@ -41,11 +41,12 @@ class CreateProduct(graphene.Mutation):
         manufacturer = graphene.String(required=True)
         vat_status = graphene.String(required=True)
         quality = graphene.String(required=True)
-        sales_price = graphene.Int(required=True)
+        sales_price = graphene.Float()
         nearest_expiry_date = graphene.String()
         prefered_supplier_id = graphene.Int()
         backup_supplier_id = graphene.Int()
         tags = graphene.List(graphene.String)
+        unit_cost = graphene.Float()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -297,11 +298,50 @@ class ApproveProduct(graphene.Mutation):
                 "The product with Id {} doesn't exist".format(id))
 
 
+class UpdatePrice(graphene.Mutation):
+
+    products = graphene.List(ProductType)
+    errors = graphene.List(graphene.String)
+    message = graphene.String()
+
+    class Arguments:
+        markup = graphene.Int()
+        sales_tax = graphene.Float()
+        product_ids = graphene.List(graphene.Int)
+        auto_price = graphene.Boolean()
+        sales_price = graphene.Float()
+
+    @admin_or_manager_required
+    def mutate(self, info, **kwargs):
+        set_price = SetPrice()
+        markup = kwargs.get('markup')
+        sales_tax = kwargs.get('sales_tax')
+        product_ids = kwargs.get('product_ids')
+        auto_price = kwargs.get('auto_price')
+        sales_price = kwargs.get('sales_price')
+        products = set_price.get_products(product_ids)
+        for product in products:
+            set_price.update_product_price(
+                product, markup=markup,
+                sales_tax=sales_tax,
+                auto_price=auto_price,
+                sales_price=sales_price
+            )
+        errors = [error.strip('\t')
+                  for error in set_price.errors if set_price.errors]
+        if errors:
+            return UpdatePrice(products=set_price.products, errors=errors)
+        return UpdatePrice(
+            products=set_price.products,
+            message='successfully set prices for products')
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     update_proposed_product = UpdateProposedProduct.Field()
     delete_product = DeleteProduct.Field()
     create_batch_info = CreateBatchInfo.Field()
     update_batch_info = UpdateBatchInfo.Field()
+    update_price = UpdatePrice.Field()
     delete_batch_info = DeleteBatchInfo.Field()
     approve_product = ApproveProduct.Field()

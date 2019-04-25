@@ -80,20 +80,20 @@ class BaseConfiguration(TestCase):
             "password": "Password123"
         }
 
+        self.user = self.register_user()
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
+        self.supplier = self.create_suppliers()
         self.timezone = Timezone(
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
         self.measurement_unit = self.create_measurement_unit()
-        self.supplier = self.create_suppliers()
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
 
         # register and log in user
-        self.user = self.register_user()
         self.outlet.user.add(self.user)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin()
@@ -186,16 +186,18 @@ class BaseConfiguration(TestCase):
     def create_measurement_unit(self):
         return MeasurementUnit.objects.create(name='kilogram')
 
-    def create_product(self):
+    def create_product(self, product_name='Pizza'):
         product_category = \
             ProductCategory.objects.create(name='Drinks')
         return Product.objects.create(
-            product_name='Pizza',
+            product_name=product_name,
             sales_price=100,
             product_category=product_category,
             measurement_unit=self.measurement_unit,
             prefered_supplier=self.supplier,
-            backup_supplier=self.supplier)
+            backup_supplier=self.supplier,
+            unit_cost=20.3
+        )
 
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(

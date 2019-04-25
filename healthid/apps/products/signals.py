@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -30,3 +31,24 @@ def generate_batch_no(sender, instance, created, **kwargs):
         post_save.disconnect(generate_batch_no, sender=BatchInfo)
         batch_info.save()
         post_save.connect(generate_batch_no, sender=BatchInfo)
+
+
+@receiver(post_save, sender=Product)
+def set_retail_price(sender, update_fields=['sales_price '], *args, **kwargs):
+    """Method to calculate retail price every time a product
+    is saved to the database
+    """
+    product = kwargs['instance']
+    """
+    check if the product is being updated and automatic
+    pricing is enabled
+    """
+    if not product._state.adding and product.auto_price:
+        unit_cost = product.unit_cost
+        markup = product.markup
+        retail_price = unit_cost*Decimal(1 + markup/100)
+        product.sales_price = retail_price
+        post_save.disconnect(set_retail_price, sender=Product)
+        product.auto_price = False
+        product.save()
+        post_save.connect(set_retail_price, sender=Product)
