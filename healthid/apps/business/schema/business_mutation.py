@@ -1,16 +1,14 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
+from healthid.apps.authentication.models import User
+from healthid.apps.authentication.schema.auth_queries import UserType
 from healthid.apps.business.models import Business
-from healthid.apps.authentication.schema.auth_queries \
-    import UserType
-from healthid.apps.authentication.querysets.user_query \
-    import UserModelQuery
-from healthid.utils.business_utils.business_query \
-    import BusinessModelQuery
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import master_admin_required
-from graphql import GraphQLError
 
 
 class BusinesType(DjangoObjectType):
@@ -103,8 +101,7 @@ class UpdateBusiness(graphene.Mutation):
     def mutate(self, info, **kwargs):
         user = info.context.user
         id = kwargs.get('id')
-        business = Business.objects.get(pk=id)
-
+        business = get_model_object(Business, 'id', id)
         business_users = business.user.all()
 
         if user not in business_users:
@@ -113,13 +110,13 @@ not assigned to!")
         for(key, value) in kwargs.items():
             if key is not None:
                 setattr(business, key, value)
-        business.save()
-        success = ["Business has been updated successfully"]
-
-        return UpdateBusiness(
-            business=business,
-            success=success
-        )
+        msg = 'Business with legal name or email provided already exists.'
+        with SaveContextManager(business, message=msg):
+            success = ["Business has been updated successfully"]
+            return UpdateBusiness(
+                business=business,
+                success=success
+            )
 
 
 class AddUserBusiness(graphene.Mutation):
@@ -137,8 +134,8 @@ class AddUserBusiness(graphene.Mutation):
     def mutate(root, info, **kwargs):
         user_id = kwargs.get('user_id')
         business_id = kwargs.get('business_id')
-        user_instance = UserModelQuery().query_user_id(user_id)
-        business_instance = BusinessModelQuery().query_business_id(business_id)
+        user_instance = get_model_object(User, 'id', user_id)
+        business_instance = get_model_object(Business, 'id', business_id)
         business_instance.user.add(user_instance)
         user_instance.save()
         message = [
@@ -164,7 +161,7 @@ class DeleteBusiness(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, id):
-        business = Business.objects.get(pk=id)
+        business = get_model_object(Business, 'id', id)
         business.delete()
         success = ["Business has been deleted successfully"]
 

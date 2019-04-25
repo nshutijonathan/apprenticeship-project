@@ -1,15 +1,17 @@
 from datetime import datetime
 
 import graphene
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from graphene.utils.resolve_only_args import resolve_only_args
 from graphene_django import DjangoObjectType
 from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.products.models import Product, ProductCategory, BatchInfo
 from taggit.managers import TaggableManager
+
+from healthid.apps.products.models import BatchInfo, Product, ProductCategory
+from healthid.utils.app_utils.database import get_model_object
 
 
 @convert_django_field.register(TaggableManager)
@@ -121,12 +123,9 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_product(self, info, **kwargs):
         id = kwargs.get('id')
-        if not id:
-            raise GraphQLError("Please provide the product id")
-        try:
-            return Product.objects.get(pk=id)
-        except ObjectDoesNotExist:
-            raise GraphQLError("Product with Id {} doesn't exist".format(id))
+        if id:
+            return get_model_object(Product, 'id', id)
+        raise GraphQLError("Please provide the product id")
 
     @login_required
     def resolve_proposed_products(self, info):
@@ -147,29 +146,13 @@ class BatchQuery(graphene.AbstractType):
 
     @login_required
     def resolve_batch_info(self, info, **kwargs):
-        batch_info_id = kwargs.get('id')
-        try:
-            if batch_info_id is not None:
-                return BatchInfo.objects.get(id=batch_info_id)
-        except ObjectDoesNotExist:
-            raise GraphQLError(
-                "Batch Info with Id {} doesn't "
-                "exist".format(batch_info_id)
-            )
+        return get_model_object(BatchInfo, 'id', kwargs.get('id'))
 
     @login_required
     def resolve_product_batch_info(self, info, **kwargs):
-        product_id = kwargs.get('id')
-        try:
-            if product_id is not None:
-                product = Product.objects.get(id=product_id)
-                product_batches = product.batch_info.all()
-                return product_batches
-        except ObjectDoesNotExist:
-            raise GraphQLError(
-                "Product with Id {} doesn't "
-                "exist".format(product_id)
-            )
+        product = get_model_object(Product, 'id', kwargs.get('id'))
+        product_batches = product.batch_info.all()
+        return product_batches
 
     @login_required
     def resolve_batch_expiries(self, info, **kwargs):

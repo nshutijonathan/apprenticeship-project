@@ -145,7 +145,7 @@ class TestAddUser(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
         self.assertIn('errors', resp)
-        self.assertIn(f"Outlet with {outlet_id} id does not exist.",
+        self.assertIn(f"Outlet with id {outlet_id} does not exist.",
                       resp['errors'][0]['message'])
 
     def test_invalid_role_id(self):
@@ -165,5 +165,5 @@ class TestAddUser(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
         self.assertIn('errors', resp)
-        self.assertIn(f"Role with {role_id} id does not exist.",
+        self.assertIn(f"Role with id {role_id} does not exist.",
                       resp['errors'][0]['message'])

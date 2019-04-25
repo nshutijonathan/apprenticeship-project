@@ -1,23 +1,14 @@
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.preference.models import Currency, Preference, Timezone
 from healthid.apps.preference.schema.preference_schema import (CurrencyType,
                                                                TimezoneType,
                                                                VatType)
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import master_admin_required
 from healthid.utils.preference_utils.update_currency import update_vate
-
-
-def get_timezone(outlet_timezone_id):
-    try:
-        outlet_timezone = Timezone.objects.get(pk=outlet_timezone_id)
-        return outlet_timezone
-
-    except ObjectDoesNotExist:
-        raise GraphQLError(
-            'Timezone with id {} does not exist'.format(outlet_timezone_id))
 
 
 def get_currency_from_file(name):
@@ -67,26 +58,23 @@ class UpdatePreference(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
-        try:
-            outlet_timezone_id = kwargs.get('outlet_timezone')
-            outlet_currency = kwargs.get('outlet_currency')
-            outlet_vat_rate = kwargs.get('outlet_vat')
-            preference_id = kwargs.get('preference_id')
-            preference = Preference.objects.get(pk=preference_id)
-            if outlet_vat_rate:
-                outlet_vat = update_vate(outlet_vat_rate, preference)
-                preference.vat_rate.rate = outlet_vat
+        outlet_timezone_id = kwargs.get('outlet_timezone')
+        outlet_currency = kwargs.get('outlet_currency')
+        outlet_vat_rate = kwargs.get('outlet_vat')
+        preference_id = kwargs.get('preference_id')
+        preference = get_model_object(Preference, 'id', preference_id)
+        if outlet_vat_rate:
+            outlet_vat = update_vate(outlet_vat_rate, preference)
+            preference.vat_rate.rate = outlet_vat
 
-            if outlet_timezone_id:
-                outlet_timezone = get_timezone(outlet_timezone_id)
-                preference.outlet_timezone = outlet_timezone
-            if outlet_currency:
-                currency = get_currency(outlet_currency, **kwargs)
-                preference.outlet_currency_id = currency.id
-            preference.save()
-
-        except ObjectDoesNotExist:
-            raise GraphQLError('Preference with this id does not exist')
+        if outlet_timezone_id:
+            outlet_timezone = get_model_object(
+                Timezone, 'id', outlet_timezone_id)
+            preference.outlet_timezone = outlet_timezone
+        if outlet_currency:
+            currency = get_currency(outlet_currency, **kwargs)
+            preference.outlet_currency_id = currency.id
+        preference.save()
 
         return UpdatePreference(
             outlet_timezone=preference.outlet_timezone,

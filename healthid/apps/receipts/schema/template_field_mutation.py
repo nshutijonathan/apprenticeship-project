@@ -1,10 +1,10 @@
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.receipts.models import FieldSet
 from healthid.apps.receipts.schema.receipt_schema import FieldSetType
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -34,17 +34,15 @@ class CreateFieldSet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
-        try:
-            field_set = FieldSet()
-            for(key, value) in kwargs.items():
-                setattr(field_set, key, value)
-            field_set.save()
-        except IntegrityError as e:
-            raise IntegrityError(f'Integrity Error occured. {e}')
-
-        return CreateFieldSet(
-            field_set=field_set
-        )
+        params = {
+            'model_name': 'ReceiptTemplate', 'field': 'receipt_template_id',
+            'value': kwargs.get('receipt_template_id')
+        }
+        field_set = FieldSet()
+        for(key, value) in kwargs.items():
+            setattr(field_set, key, value)
+        with SaveContextManager(field_set, **params) as field_set:
+            return CreateFieldSet(field_set=field_set)
 
 
 class UpdateFieldSet(graphene.Mutation):
@@ -73,22 +71,16 @@ class UpdateFieldSet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
-        try:
-            id = kwargs.get('id')
-            field_set = FieldSet.objects.get(pk=id)
-            update_values = []
-            for(key, value) in kwargs.items():
-                setattr(field_set, key, value)
-                if key == 'id':
-                    continue
-                update_values.append(key)
-            field_set.save(update_fields=update_values)
-        except ObjectDoesNotExist as e:
-            raise Exception(e)
-
-        return UpdateFieldSet(
-            field_set=field_set
-        )
+        id = kwargs.get('id')
+        field_set = get_model_object(FieldSet, 'id', id)
+        update_values = []
+        for(key, value) in kwargs.items():
+            setattr(field_set, key, value)
+            if key == 'id':
+                continue
+            update_values.append(key)
+        field_set.save(update_fields=update_values)
+        return UpdateFieldSet(field_set=field_set)
 
 
 class DeleteFieldSet(graphene.Mutation):
@@ -104,7 +96,7 @@ class DeleteFieldSet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, id):
-        field_set = FieldSet.objects.get(pk=id)
+        field_set = get_model_object(FieldSet, 'id', id)
         field_set.delete()
 
         return DeleteFieldSet(

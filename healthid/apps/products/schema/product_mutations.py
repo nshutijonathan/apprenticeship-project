@@ -1,23 +1,22 @@
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.dateparse import parse_date
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
+from healthid.apps.orders.models import Suppliers
 from healthid.apps.products.models import BatchInfo, Product, ProductCategory
 from healthid.apps.products.schema.product_query import BatchInfoType
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import (
     admin_or_manager_required, admin_required,
     operations_or_master_admin_required)
 from healthid.utils.product_utils import handle_product_validations
 from healthid.utils.product_utils.batch_utils import batch_info_instance
-from healthid.utils.product_utils.product_querysets import ProductModelQuery
+from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
 
-from healthid.utils.product_utils.product_query import ProductQuery
-from healthid.apps.register.schema.register_mutation import (
-    get_model_object_by_pk)
-from .product_query import ProductType, ProductCategoryType
+from .product_query import ProductCategoryType, ProductType
 
 
 class ProductInput(graphene.InputObjectType):
@@ -60,11 +59,14 @@ class CreateProduct(graphene.Mutation):
             if type(value) is str and value.strip() == "":
                 raise GraphQLError("The {} field can't be empty".format(key))
             handle_product_validations.handle_validation(**kwargs)
+            if key == 'product_name':
+                params = {'model_name': 'Product',
+                          'field': 'product_name', 'value': value}
             setattr(product, key, value)
-        product.save()
-        for tag in tags:
-            product.tags.add(tag)
-        return CreateProduct(product=product)
+        with SaveContextManager(product, **params):
+            for tag in tags:
+                product.tags.add(tag)
+            return CreateProduct(product=product)
 
 
 class UpdateProposedProduct(graphene.Mutation):
@@ -95,28 +97,24 @@ class UpdateProposedProduct(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
-        try:
-            product = Product.objects.get(pk=id)
-        except ObjectDoesNotExist:
-            raise Exception(f"Product with an id of {id} does not exist")
+        product = get_model_object(Product, 'id', id)
+        handle_product_validations.handle_validation(**kwargs)
         if product.is_approved:
             raise GraphQLError("Approved product can't be edited.")
         tags = kwargs.get("tags")
         kwargs.pop("tags")
-        update_values = []
-        for (key, value) in kwargs.items():
+        for(key, value) in kwargs.items():
+            if key == 'id':
+                continue
             if type(value) is str and value.strip() == "":
                 raise GraphQLError(f"The {key} field can't be empty")
-            if key is not None:
-                handle_product_validations.handle_validation(**kwargs)
-                if key == 'id':
-                    continue
-                update_values.append(key)
-                setattr(product, key, value)
-        product.save(update_fields=update_values)
-        product.tags.set(*tags)
-        message = 'Product successfully updated'
-        return UpdateProposedProduct(product=product, message=message)
+            setattr(product, key, value)
+        params = {'model_name': 'Product',
+                  'field': 'product_name', 'value': product.product_name}
+        with SaveContextManager(product, **params):
+            product.tags.set(*tags)
+            message = 'Product successfully updated'
+            return UpdateProposedProduct(product=product, message=message)
 
 
 class DeleteProduct(graphene.Mutation):
@@ -131,10 +129,7 @@ class DeleteProduct(graphene.Mutation):
 
     @login_required
     def mutate(self, info, id):
-        try:
-            product = Product.objects.get(pk=id)
-        except ObjectDoesNotExist:
-            raise Exception(f"Product with an id of {id} does not exist")
+        product = get_model_object(Product, 'id', id)
         if product.is_approved:
             raise GraphQLError("Approved product can't be deleted.")
         product.delete()
@@ -166,8 +161,8 @@ class CreateBatchInfo(graphene.Mutation):
     def mutate(self, info, **kwargs):
         supplier_id = kwargs.get('supplier_id')
         products = kwargs.get('product')
-        supplier_instance = \
-            ProductModelQuery().query_supplier_id(supplier_id)
+        supplier_instance = get_model_object(
+            Suppliers, 'supplier_id', supplier_id)
         batch_info = BatchInfo.objects.create(
             date_received=parse_date(kwargs.get('date_received')),
             pack_size=kwargs.get('pack_size'),
@@ -175,10 +170,10 @@ class CreateBatchInfo(graphene.Mutation):
             expiry_date=parse_date(kwargs.get('expiry_date')),
             unit_cost=kwargs.get('unit_cost'),
             commentary=kwargs.get('commentary'),
-            supplier=supplier_instance)
-        for product in products:
-            product_instance = \
-                ProductModelQuery().query_product_id(product)
+            supplier=supplier_instance
+        )
+        for product_id in products:
+            product_instance = get_model_object(Product, 'id', product_id)
             batch_info.product.add(product_instance)
         batch_info.save()
         message = [f'Batch successfully created']
@@ -210,39 +205,28 @@ class UpdateBatchInfo(graphene.Mutation):
     @admin_required
     def mutate(self, info, **kwargs):
         batch_id = kwargs.get('batch_id')
-        update_values = []
-        batch_info = ProductModelQuery().query_batch_info(batch_id)
-        if kwargs.get('product'):
-            products = kwargs.get('product')
+        products = kwargs.get('product')
+        supplier_id = kwargs.get('supplier_id')
+        batch_info = get_model_object(BatchInfo, 'id', batch_id)
+        if products:
             batch_info.product.clear()
-            for product in products:
-                product_instance = \
-                    ProductModelQuery().query_product_id(product)
+            for product_id in products:
+                product_instance = get_model_object(Product, 'id', product_id)
                 batch_info.product.add(product_instance)
-        if kwargs.get('supplier_id'):
-            supplier_id = kwargs.get('supplier_id')
-            supplier_instance = \
-                ProductModelQuery().query_supplier_id(supplier_id)
+        if supplier_id:
+            supplier_instance = get_model_object(
+                Suppliers, 'supplier_id', supplier_id)
             batch_info.supplier = supplier_instance
-            update_values.append('supplier')
         for (key, value) in kwargs.items():
             if key is not None:
-                if key == 'batch_id' or \
-                        key == 'supplier_id' \
-                        or key == 'product':
+                if key in ('batch_id', 'supplier_id', 'product'):
                     continue
-                if key == 'date_received' or \
-                        key == 'expiry_date':
-                    update_values.append(key)
-                    setattr(batch_info, key, parse_date(value))
-                    continue
-                update_values.append(key)
+                if key in ('date_received', 'expiry_date'):
+                    value = parse_date(value)
                 setattr(batch_info, key, value)
-        batch_info.save(update_fields=update_values)
-        message = [
-            f'Batch with number {batch_info.batch_no} '
-            f'successfully updated'
-        ]
+        batch_info.save()
+        message = [f'Batch with number {batch_info.batch_no} '
+                   f'successfully updated']
         return UpdateBatchInfo(message=message, batch_info=batch_info)
 
 
@@ -264,7 +248,7 @@ class DeleteBatchInfo(graphene.Mutation):
     @admin_required
     def mutate(root, info, **kwargs):
         batch_id = kwargs.get('batch_id')
-        batch_info = ProductModelQuery().query_batch_info(batch_id)
+        batch_info = get_model_object(BatchInfo, 'id', batch_id)
         batch_info.delete()
         message = [f"Batch with number {batch_info.batch_no} has been deleted"]
         return DeleteBatchInfo(message=message)
@@ -284,21 +268,18 @@ class ApproveProduct(graphene.Mutation):
     @operations_or_master_admin_required
     def mutate(self, info, **kwargs):
         id = kwargs.get('product_id')
-        try:
-            product = Product.objects.get(pk=id)
-            if product.is_approved:
-                raise GraphQLError(
-                    "Product {} has already been approved".format(id))
-            product.is_approved = True
-            product.save()
-            success = [
-                'message',
-                'Product {} has successfully been approved.'.format(id)
-            ]
-            return ApproveProduct(success=success, product=product)
-        except ObjectDoesNotExist:
+
+        product = get_model_object(Product, 'id', id)
+        if product.is_approved:
             raise GraphQLError(
-                "The product with Id {} doesn't exist".format(id))
+                "Product {} has already been approved".format(id))
+        product.is_approved = True
+        product.save()
+        success = [
+            'message',
+            'Product {} has successfully been approved.'.format(id)
+        ]
+        return ApproveProduct(success=success, product=product)
 
 
 class UpdatePrice(graphene.Mutation):
@@ -358,7 +339,7 @@ class UpdateLoyaltyWeight(graphene.Mutation):
         product_category_id = kwargs.get("product_category_id")
         products = ProductQuery().query_product_category(
             product_category_id)
-        category = ProductCategory.objects.get(id=product_category_id)
+        category = get_model_object(ProductCategory, 'id', product_category_id)
         for product in products:
             product.loyalty_weight = loyalty_value
             product.save()
@@ -385,7 +366,7 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
             raise GraphQLError(
                 "Loyalty weight can't be set below one")
         product_id = kwargs.get("id")
-        product = get_model_object_by_pk(Product, product_id)
+        product = get_model_object(Product, 'id', product_id)
         product.loyalty_weight = loyalty_value
         product.save()
         message = 'Loyalty weight was successfully updated'

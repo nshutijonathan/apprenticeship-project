@@ -1,8 +1,11 @@
 
 from functools import wraps
+
 from graphql import GraphQLError
-from healthid.utils.business_utils.business_query \
-    import BusinessModelQuery
+
+from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.database import get_model_object
+
 from .validations import ValidateUser
 
 
@@ -60,7 +63,7 @@ class UpdateUser:
                 for outlet in outlets:
                     if outlet == '':
                         raise GraphQLError('Outlet Id cannot be Empty')
-                    BusinessModelQuery().query_outlet_id(outlet)
+                    get_model_object(Outlet, 'id', outlet)
             return func(*args, **kwargs)
         return wrapper
 

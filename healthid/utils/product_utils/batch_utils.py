@@ -1,8 +1,11 @@
 import datetime
 from functools import wraps
+
 from graphql import GraphQLError
-from healthid.utils.product_utils.product_querysets import \
-    ProductModelQuery
+
+from healthid.apps.orders.models import Suppliers
+from healthid.apps.products.models import BatchInfo, Product
+from healthid.utils.app_utils.database import get_model_object
 
 
 class ProductBatchInfo:
@@ -30,20 +33,19 @@ class ProductBatchInfo:
         def wrapper(*args, **kwargs):
             date_fields = ('date_received', 'expiry_date')
             int_fields = ('quantity_received', 'unit_cost')
-            for field in kwargs.keys():
-                field_value = kwargs.get(field)
+            for field, field_value in kwargs.items():
                 if field in date_fields:
                     self.validate_date_field(field_value, field)
                 if field == 'batch_id':
-                    ProductModelQuery().query_batch_info(field_value)
+                    get_model_object(BatchInfo, 'id', field_value)
                 if field == 'supplier_id':
-                    ProductModelQuery().query_supplier_id(field_value)
+                    get_model_object(Suppliers, 'supplier_id', field_value)
                 if field == 'product':
                     if len(field_value) < 1:
                         raise GraphQLError('This batch must be have '
                                            'to at least 1 (one) Product')
-                    for product in field_value:
-                        ProductModelQuery().query_product_id(product)
+                    for product_id in field_value:
+                        get_model_object(Product, 'id', product_id)
                 if field in int_fields:
                     self.validate_postive_integers(field_value, field)
             return func(*args, **kwargs)

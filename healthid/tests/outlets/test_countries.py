@@ -47,7 +47,7 @@ class CountryTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, query_string)
         self.assertIn(
-            f'The country with country name Uganda already exists',
+            f'Country with name Uganda already exists',
             response['errors'][0]['message']
         )
 
@@ -89,7 +89,7 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn('The country Kenya already exists',
+        self.assertIn('Country with name Kenya already exists',
                       response['errors'][0]['message'])
 
     def test_update_country_no_country_name(self):
@@ -112,7 +112,7 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn(f'he country with Id {country_id} does not exist',
+        self.assertIn(f'Country with id {country_id} does not exist.',
                       response['errors'][0]['message'])
 
     def test_delete_country(self):
@@ -133,7 +133,7 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn(f'The country with Id {country_id} doesnot exist',
+        self.assertIn(f'Country with id {country_id} does not exist',
                       response['errors'][0]['message'])
 
     def test_fetch_all_countries(self):

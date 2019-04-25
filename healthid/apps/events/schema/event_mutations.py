@@ -5,9 +5,11 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.events.models import Event
 from healthid.apps.events.models import EventType as EventTypeModel
-from healthid.utils.events_utils.validate_role import ValidateAdmin
 from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.events_utils.validate_role import ValidateAdmin
 
 
 class EventType(DjangoObjectType):
@@ -37,29 +39,26 @@ class CreateEvent(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
+        msg = "Sorry, calendar is only used by outlet staff!"
 
-        try:
-            outlet = Outlet.objects.get(user=user)
-        except Outlet.DoesNotExist:
-            raise GraphQLError("Sorry, calendar is only used by outlet staff!")
+        outlet = get_model_object(Outlet, 'user', user, message=msg)
         event_type = kwargs.get('event_type')
-        ValidateAdmin().validate_master_admin(user, event_type)
-        try:
-            EventTypeModel.objects.get(id=kwargs.get('event_type_id'))
-        except EventTypeModel.DoesNotExist:
-            raise GraphQLError('Event Type does not exist!')
-        event = Event.objects.create(
+        event_type_id = kwargs.get('event_type_id')
+        event_type = get_model_object(EventTypeModel, 'id', event_type_id)
+        ValidateAdmin().validate_master_admin(user, event_type.name)
+        event = Event(
             event_type_id=kwargs.get('event_type_id'),
             start=kwargs.get('start'),
             end=kwargs.get('end'),
             event_title=kwargs.get('event_title'),
             description=kwargs.get('description')
         )
-        event.user.add(user)
-        event.outlet.add(outlet)
-        event.save()
-        success = ["Event created successfully!"]
-        return CreateEvent(event=event, success=success)
+        with SaveContextManager(event) as event:
+            event.user.add(user)
+            event.outlet.add(outlet)
+            event.save()
+            success = ["Event created successfully!"]
+            return CreateEvent(event=event, success=success)
 
 
 class UpdateEvent(graphene.Mutation):
@@ -81,11 +80,7 @@ class UpdateEvent(graphene.Mutation):
     def mutate(self, info, **kwargs):
         request_user = info.context.user
         _id = kwargs['id']
-        try:
-            event = Event.objects.get(id=_id)
-        except Event.DoesNotExist:
-            raise GraphQLError(f"Event with id {_id} does not exist!")
-
+        event = get_model_object(Event, 'id', _id)
         event_creator = event.user.first()
         if str(request_user.email) != str(event_creator.email):
             raise GraphQLError("Can't update events that don't belong to you!")
@@ -111,18 +106,16 @@ class DeleteEvent(graphene.Mutation):
 
     @login_required
     def mutate(self, info, id):
-        event = Event.objects.get(pk=id)
         request_user = info.context.user
+        event = get_model_object(Event, 'id', id)
         event_creator = event.user.first()
         if request_user != event_creator:
-            raise GraphQLError("You can't delete events that don't belong to \
-you!")
+            raise GraphQLError(
+                "You can't delete events that don't belong to you!"
+            )
         event.delete()
         success = ["Event deleted successfully!"]
-
-        return DeleteEvent(
-            success=success
-        )
+        return DeleteEvent(success=success)
 
 
 class CreateEventType(graphene.Mutation):
@@ -138,14 +131,13 @@ class CreateEventType(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, name):
-        try:
-            events_type = EventTypeModel.objects.get(name=name)
-            raise GraphQLError('This event type already exists!')
-        except EventTypeModel.DoesNotExist:
-            events_type = EventTypeModel.objects.create(name=name)
-            events_type.save()
+        params = {'model_name': 'EventType', 'value': name}
+        event_type = EventTypeModel(name=name)
+        with SaveContextManager(event_type, **params) as event_type:
             success = ['Event Type created successfully!']
-            return CreateEventType(success=success, event_type=events_type)
+            return CreateEventType(
+                success=success, event_type=event_type
+            )
 
 
 class Mutation(graphene.ObjectType):

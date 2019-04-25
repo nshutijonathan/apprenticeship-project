@@ -85,8 +85,9 @@ class TestBatchInfo(BaseConfiguration):
         }
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**batch_data))
-        self.assertIn(f"Supplier with id {supplier_id} does not exist.",
-                      resp['errors'][0]['message'])
+        self.assertIn(
+            f"Suppliers with supplier_id {supplier_id} does not exist.",
+            resp['errors'][0]['message'])
 
     def test_invalid_product_id(self):
         """
@@ -123,9 +124,9 @@ class TestBatchInfo(BaseConfiguration):
         """
         test wrong batch info id
         """
-        batch_info = '12121212121'
+        batch_info_id = '12121212121'
         batch_data = {
-            'batch_id': batch_info,
+            'batch_id': batch_info_id,
             'product_id': self.product.id,
             'supplier_id': self.supplier.supplier_id,
             'quantity_received': 10,
@@ -133,7 +134,7 @@ class TestBatchInfo(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, update_batch_info.format(**batch_data))
         self.assertIn('data', resp)
-        self.assertIn(f"Batch Info with id {batch_info} does not exist.",
+        self.assertIn(f"BatchInfo with id {batch_info_id} does not exist.",
                       resp['errors'][0]['message'])
 
     def test_delete_batch_info(self):

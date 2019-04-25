@@ -5,6 +5,7 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
+from healthid.utils.app_utils.database import get_model_object
 
 
 class OutletType(DjangoObjectType):
@@ -57,7 +58,7 @@ class OutletQuery(graphene.ObjectType):
         id = kwargs.get('id')
 
         if id is not None:
-            return Outlet.objects.get(pk=id)
+            return get_model_object(Outlet, 'id', id)
 
         return None
 

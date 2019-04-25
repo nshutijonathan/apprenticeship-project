@@ -2,11 +2,11 @@ import json
 from collections import namedtuple
 
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
 from graphene_django import DjangoObjectType
-from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -88,14 +88,7 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_outlet_preference(self, info, **kwargs):
         id = kwargs.get('id')
-
-        try:
-            preference = Preference.objects.get(id=id)
-
-            return preference
-        except ObjectDoesNotExist:
-            raise GraphQLError(
-                'Preference with {} id does not exist'.format(id))
+        return get_model_object(Preference, 'id', id)
 
     @login_required
     def resolve_currencies(self, args):
@@ -109,17 +102,11 @@ class Query(graphene.ObjectType):
         name = kwargs.get('name')
 
         if name is not None:
-            return Currency.objects.get(name=name)
+            return get_model_object(Currency, 'name', name)
         return None
 
     @login_required
     def resolve_vat(self, info, **kwargs):
         # returns vat from db by id
         id = kwargs.get('id')
-        try:
-            vat = Vat.objects.get(pk=id)
-
-            return vat
-        except ObjectDoesNotExist:
-            raise GraphQLError(
-                'Vat with {} id does not exist'.format(id))
+        return get_model_object(Vat, 'id', id)

@@ -24,10 +24,10 @@ class LoginTestCase(BaseConfiguration):
         response = self.query(
             login_user_email("me@you", "this"))
         self.assertIn("Invalid login credentials",
-                      response["data"]["loginUser"]['message'])
+                      response["errors"][0]['message'])
 
     def test_invalid_number(self):
         response = self.query(
             login_user("25499999999", "this"))
         self.assertIn("Invalid login credentials",
-                      response["data"]["loginUser"]['message'])
+                      response["errors"][0]['message'])

@@ -1,8 +1,9 @@
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.register.models import Register
+from healthid.utils.app_utils.database import get_model_object
 
 
 class RegisterType(DjangoObjectType):
@@ -26,10 +27,5 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_register(self, info, **kwargs):
         id = kwargs.get('id')
-        get_one_register = Register.objects.get(pk=id)
-        if(get_one_register):
-            return get_one_register
-        else:
-            raise ObjectDoesNotExist(f'Register with id {id} was not found')
-
-        return None
+        register = get_model_object(Register, 'id', id)
+        return register

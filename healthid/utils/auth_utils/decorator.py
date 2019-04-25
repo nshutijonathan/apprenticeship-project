@@ -2,6 +2,7 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import user_passes_test
 
 from healthid.apps.business.models import Business
+from healthid.utils.app_utils.database import get_model_object
 
 
 def master_admin_required(func):
@@ -15,9 +16,8 @@ def master_admin_required(func):
 
 
 def check_user_in_business(user):
-    user_business = Business.objects.filter(user=user)
-    if user_business.count() < 1:
-        raise GraphQLError('Sorry, You are not attached to a Business!.')
+    message = 'Sorry, You must be attached to a business!'
+    get_model_object(Business, 'user', user, message=message)
 
 
 def admin_required(func):

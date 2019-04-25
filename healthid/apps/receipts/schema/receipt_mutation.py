@@ -1,6 +1,4 @@
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
@@ -8,6 +6,8 @@ from healthid.apps.receipts.models import ReceiptTemplate
 from healthid.apps.receipts.schema.receipt_schema import ReceiptTemplateType
 from healthid.apps.receipts.schema.template_field_mutation import (
     CreateFieldSet, DeleteFieldSet, UpdateFieldSet)
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -36,19 +36,14 @@ class CreateReceiptTemplate(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
-        try:
-            receipt_template = ReceiptTemplate()
-            for(key, value) in kwargs.items():
-                if (value is True or value is False) or key == 'outlet_id':
-                    setattr(receipt_template, key, value)
-                else:
-                    raise GraphQLError(f'{key} should be true or false')
-            receipt_template.save()
-        except IntegrityError as e:
-            raise IntegrityError(f'Integrity Error occured. {e}')
-        return CreateReceiptTemplate(
-            receipt_template=receipt_template
-        )
+        receipt_template = ReceiptTemplate()
+        for(key, value) in kwargs.items():
+            if (value is True or value is False) or key == 'outlet_id':
+                setattr(receipt_template, key, value)
+            else:
+                raise GraphQLError(f'{key} should be true or false')
+        with SaveContextManager(receipt_template) as receipt_template:
+            return CreateReceiptTemplate(receipt_template=receipt_template)
 
 
 class UpdateReceiptTemplate(graphene.Mutation):
@@ -77,19 +72,14 @@ class UpdateReceiptTemplate(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, **kwargs):
-        try:
-            id = kwargs.get('id')
-            receipt_template = ReceiptTemplate.objects.get(pk=id)
-            for(key, value) in kwargs.items():
-                if (
-                    value is True or value is False
-                ) or key == 'outlet_id' or key == 'id':
-                    setattr(receipt_template, key, value)
-                else:
-                    raise GraphQLError(f'{key} should be true or false')
-            receipt_template.save()
-        except ObjectDoesNotExist as e:
-            raise Exception(e)
+        id = kwargs.get('id')
+        receipt_template = get_model_object(ReceiptTemplate, 'id', id)
+        for(key, value) in kwargs.items():
+            if type(value) is bool or key in ('outlet_id', 'id'):
+                setattr(receipt_template, key, value)
+            else:
+                raise GraphQLError(f'{key} should be true or false')
+        receipt_template.save()
 
         return UpdateReceiptTemplate(
             receipt_template=receipt_template
@@ -109,7 +99,7 @@ class DeleteReceiptTemplate(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, id):
-        receipt_template = ReceiptTemplate.objects.get(pk=id)
+        receipt_template = get_model_object(ReceiptTemplate, 'id', id)
         receipt_template.delete()
 
         return DeleteReceiptTemplate(

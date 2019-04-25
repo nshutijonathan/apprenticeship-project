@@ -48,7 +48,7 @@ class SuppliersTestCase(BaseConfiguration):
         self.query_with_token(self.access_token, supplier_mutation)
         response = self.query_with_token(self.access_token, supplier_mutation)
         self.assertIn('errors', response)
-        self.assertIn('Supplier with email email@ntale.com already exists',
+        self.assertIn('Suppliers with email email@ntale.com already exists.',
                       response['errors'][0]['message'])
 
     def test_suppliers_query(self):

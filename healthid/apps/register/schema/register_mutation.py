@@ -1,21 +1,14 @@
 import graphene
-from django.db import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.utils.auth_utils.decorator import master_admin_required
-from healthid.apps.register.models import Register
-from healthid.apps.register.schema.register_schema import RegisterType
+
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.receipts.models import ReceiptTemplate
-
-
-def get_model_object_by_pk(model, id):
-    try:
-        model_object = model.objects.get(pk=id)
-        return model_object
-    except ObjectDoesNotExist:
-        raise GraphQLError(f'{str(model)} with id {id} does not exist')
+from healthid.apps.register.models import Register
+from healthid.apps.register.schema.register_schema import RegisterType
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
+from healthid.utils.auth_utils.decorator import master_admin_required
 
 
 class RegisterInput(graphene.InputObjectType):
@@ -39,19 +32,16 @@ class CreateRegister(graphene.Mutation):
     @master_admin_required
     def mutate(self, info, **kwargs):
         register_name = kwargs.get('name')
-        outlet = get_model_object_by_pk(Outlet, kwargs.get('outlet_id'))
-        receipt_template = get_model_object_by_pk(
-            ReceiptTemplate, kwargs.get('receipt_id'))
+        outlet = get_model_object(Outlet, 'id', kwargs.get('outlet_id'))
+        receipt_template = get_model_object(
+            ReceiptTemplate, 'id', kwargs.get('receipt_id'))
         if register_name.strip() != "":
-            try:
-                register = Register(
-                    name=register_name, outlet_id=outlet.id,
-                    receipt_id=receipt_template.id)
-                register.save()
+            params = {'model_name': Register, 'value': register_name}
+            register = Register(
+                name=register_name, outlet_id=outlet.id,
+                receipt_id=receipt_template.id)
+            with SaveContextManager(register, **params) as register:
                 return CreateRegister(register=register)
-            except IntegrityError:
-                raise GraphQLError(
-                    f'Register with {register_name} name exists')
 
         raise GraphQLError(f'{register_name} is not a valid register name')
 
@@ -73,7 +63,7 @@ class UpdateRegister(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(root, info, id, name):
-        register = get_model_object_by_pk(Register, id)
+        register = get_model_object(Register, 'id', id)
         if name.strip() != "":
             register.name = name
             register.save()
@@ -97,7 +87,7 @@ class DeleteRegister(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, id):
-        register = get_model_object_by_pk(Register, id)
+        register = get_model_object(Register, 'id', id)
         register.delete()
         return DeleteRegister(success="Register was deleted successfully")
 

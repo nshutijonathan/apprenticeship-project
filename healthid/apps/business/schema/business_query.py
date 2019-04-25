@@ -3,6 +3,7 @@ from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.business.models import Business
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -40,5 +41,5 @@ class Query(graphene.ObjectType):
     def resolve_business(self, info, **kwargs):
         id = kwargs.get('id')
         if id is not None:
-            return Business.objects.get(pk=id)
+            return get_model_object(Business, 'id', id)
         return None

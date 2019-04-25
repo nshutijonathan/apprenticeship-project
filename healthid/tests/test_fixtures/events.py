@@ -181,7 +181,7 @@ outlet_event = '''
 event_type = '''
                 mutation{
                     createEventType(
-                        name: "Personal"
+                        name: "Test Personal"
                     ){
                         eventType{
                         id

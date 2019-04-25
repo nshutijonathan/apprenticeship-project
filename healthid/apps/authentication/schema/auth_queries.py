@@ -4,6 +4,7 @@ from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import master_admin_required
 
 
@@ -51,10 +52,10 @@ class Query(graphene.AbstractType):
         name = kwargs.get("name")
 
         if id is not None:
-            return Role.objects.get(pk=id)
+            return get_model_object(Role, 'id', id)
 
         if name is not None:
-            return Role.objects.get(name=name)
+            return get_model_object(Role, 'name', name)
         return None
 
     @staticmethod

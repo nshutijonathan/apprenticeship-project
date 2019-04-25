@@ -1,14 +1,13 @@
 import graphene
-from django.db import IntegrityError
-from django.db.models import Q
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import City, Country, Outlet
 from healthid.apps.outlets.schema.outlet_schema import (CityType, CountryType,
                                                         OutletType)
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils.decorator import master_admin_required
-from healthid.utils.outlet_utils.check_citie import CheckCity
 from healthid.utils.outlet_utils.validators import validate_fields
 
 
@@ -73,11 +72,11 @@ class UpdateOutlet(graphene.Mutation):
     def mutate(self, info, **kwargs):
         user = info.context.user
         id = kwargs.get('id')
-        outlet = Outlet.objects.get(pk=id)
+        outlet = get_model_object(Outlet, 'id', id)
         outlet_users = outlet.user.all()
         if user not in outlet_users:
-            raise GraphQLError("You can't update an outlet that you are not \
-assigned to!")
+            raise GraphQLError(
+                "You can't update an outlet that you are not assigned to!")
         for(key, value) in kwargs.items():
             if key is not None:
                 setattr(outlet, key, value)
@@ -101,7 +100,7 @@ class DeleteOutlet(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(self, info, id):
-        outlet = Outlet.objects.get(pk=id)
+        outlet = get_model_object(Outlet, 'id', id)
         outlet.delete()
 
         return DeleteOutlet(
@@ -123,12 +122,10 @@ class CreateCountry(graphene.Mutation):
     def mutate(self, info, **kwargs):
         name = kwargs.get('name').strip().title()
         name = validate_fields.validate_name(name, 'Country')
-        try:
-            country = Country.objects.create(name=name)
-        except IntegrityError:
-            raise GraphQLError(
-                f'The country with country name {name} already exists')
-        return CreateCountry(country=country)
+        country = Country(name=name)
+        params = {'model_name': 'Country', 'value': name}
+        with SaveContextManager(country, **params):
+            return CreateCountry(country=country)
 
 
 class CreateCity(graphene.Mutation):
@@ -149,16 +146,13 @@ class CreateCity(graphene.Mutation):
         city_name = kwargs.get('city_name', '')
         city_name = validate_fields.validate_name(city_name, 'city')
         city_name = city_name.title()
-        try:
-            country = Country.objects.get(id=country_id)
-            if CheckCity.check_city(city_name, country_id)[0]:
-                raise GraphQLError(f'City {city_name} already exists')
-            city = City.objects.create(name=city_name, country=country)
-        except Country.DoesNotExist:
-            raise GraphQLError('The country you selected doesnot exist')
-        return CreateCity(
-            city=city
-        )
+        country = get_model_object(Country, 'id', country_id)
+        cities = [city['name'] for city in list(country.city_set.values())]
+        if city_name in cities:
+            raise GraphQLError(f'City {city_name} already exists')
+        city = City(name=city_name, country=country)
+        with SaveContextManager(city):
+            return CreateCity(city=city)
 
 
 class EditCountry(graphene.Mutation):
@@ -177,21 +171,13 @@ class EditCountry(graphene.Mutation):
         id = kwargs.get('id')
         name = kwargs.get('name', '').strip().title()
         name = validate_fields.validate_name(name, 'country')
+        params = {'model_name': 'Country', 'value': name}
 
-        country_check = Country.objects.filter(name=name).first()
-        if country_check:
-            raise GraphQLError(f'The country {name} already exists')
-
-        try:
-            country = Country.objects.get(id=id)
-            country.name = name
-            country.save()
+        country = get_model_object(Country, 'id', id)
+        country.name = name
+        with SaveContextManager(country, **params):
             success = "Country successfully updated"
-        except Country.DoesNotExist:
-            raise GraphQLError(f'The country with Id {id} does not exist')
-        return EditCountry(
-            country=country, success=success
-        )
+            return EditCountry(country=country, success=success)
 
 
 class EditCity(graphene.Mutation):
@@ -210,15 +196,13 @@ class EditCity(graphene.Mutation):
         id = kwargs.get('id')
         name = kwargs.get('name', '').strip().title()
         name = validate_fields.validate_name(name, 'city')
-        city = City.objects.filter(Q(name=name) | Q(id=id)).first()
-        if city:
-            if city.name == name:
-                raise GraphQLError(f'The city {name} already exists')
-            city.name = name
-            city.save()
-            success = "City successfully updated"
-            return EditCity(city=city, success=success)
-        raise GraphQLError(f'The city with Id {id} doesnot exist')
+        city = get_model_object(City, 'id', id)
+        country_cities = City.objects.filter(country=city.country).all()
+        if name in [str(city) in country_cities]:
+            raise GraphQLError(f'The city {name} already exists')
+        city.name = name
+        city.save()
+        return EditCity(city=city, success='City successfully updated')
 
 
 class DeleteCountry(graphene.Mutation):
@@ -234,15 +218,9 @@ class DeleteCountry(graphene.Mutation):
     @master_admin_required
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
-        try:
-            country = Country.objects.get(pk=id)
-            country.delete()
-            success = 'Country was successfully deleted'
-        except Country.DoesNotExist:
-            raise GraphQLError(f'The country with Id {id} doesnot exist')
-        return DeleteCountry(
-            success=success
-        )
+        country = get_model_object(Country, 'id', id)
+        country.delete()
+        return DeleteCountry(success='Country was successfully deleted')
 
 
 class Mutation(graphene.ObjectType):

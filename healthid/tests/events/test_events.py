@@ -1,8 +1,5 @@
 from django.core.management import call_command
 
-from healthid.apps.authentication.models import User
-from healthid.apps.business.models import Business
-from healthid.apps.events.models import Event
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.events import (business_event, delete_event,
                                                  event_type, new_event,
@@ -103,11 +100,17 @@ class EventTestCase(BaseConfiguration):
         response = self.query_with_token(self.access_token, outlet_event)
         self.assertIn('errors', response)
 
+    def test_create_event_type(self):
+        """Test that user can create event types
+        """
+        response = self.query_with_token(self.access_token_master, event_type)
+        self.assertEqual(
+            response['data']['createEventType']['eventType']['name'],
+            'Test Personal')
+
     def test_view_event_types(self):
         """Test that user can view event types
         """
-        self.query_with_token(self.access_token_master, event_type)
-
         response = self.query_with_token(self.access_token, view_event_types)
         self.assertIn('data', response)
 
@@ -116,7 +119,7 @@ class EventTestCase(BaseConfiguration):
         """
         response = self.query_with_token(self.access_token, wrong_event_type)
         self.assertIn(response['errors'][0]['message'],
-                      'Event Type does not exist!')
+                      'EventType with id f36bw1 does not exist.')
 
     def test_view_events_without_events(self):
         """Test that user can view events without events
@@ -124,10 +127,3 @@ class EventTestCase(BaseConfiguration):
         response = self.query_with_token(self.access_token, view_events)
         self.assertEqual(response['errors'][0]
                          ['message'], 'No events to view yet!')
-
-    def tearDown(self):
-        """Method to delete any db entries
-        """
-        Business.objects.all().delete()
-        Event.objects.all().delete()
-        User.objects.all().delete()

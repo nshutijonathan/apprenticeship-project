@@ -13,19 +13,19 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.authentication.querysets.role_query import RoleModelQuery
-from healthid.apps.authentication.querysets.user_query import UserModelQuery
 from healthid.apps.authentication.schema.auth_queries import RoleType, UserType
 from healthid.apps.authentication.schema.login_mutation import LoginUser
 from healthid.apps.authentication.schema.reset_password_mutation import \
     ResetPassword
+from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
 from healthid.utils.auth_utils import user_update_instance
 from healthid.utils.auth_utils.admin_validation import validate_instance
 from healthid.utils.auth_utils.decorator import master_admin_required
 from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
-from healthid.utils.business_utils.business_query import BusinessModelQuery
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -63,7 +63,7 @@ class RegisterUser(graphene.Mutation):
             email, password, mobile_number)
         try:
             user = User.objects.create_user(**validate_fields)
-            role = RoleModelQuery().query_role_name('Master Admin')
+            role = get_model_object(Role, 'name', 'Master Admin')
             user.set_password(password)
             user.role = role
             user.save()
@@ -138,7 +138,7 @@ class AddUser(graphene.Mutation):
             'birthday': kwargs.get('birthday'),
         }
 
-        role_instance = RoleModelQuery().query_role_id(role_id)
+        role_instance = get_model_object(Role, 'id', role_id)
         try:
             user_fields = {
                 "email": email,
@@ -148,9 +148,8 @@ class AddUser(graphene.Mutation):
             user = User.objects.create_user(**user_fields)
             user_update_instance.add_user(user, **data)
             user.role = role_instance
-            for i in outlet:
-                outlet_instance = \
-                    BusinessModelQuery().query_outlet_id(i)
+            for outlet_id in outlet:
+                outlet_instance = get_model_object(Outlet, 'id', outlet_id)
                 business_instance = outlet_instance.business
                 business_instance.user.add(user)
                 user.users.add(outlet_instance)
@@ -224,7 +223,7 @@ class AdminUpdateUserDetails(graphene.Mutation):
             'birthday': kwargs.get('birthday'),
         }
         user_id = kwargs.get('id')
-        user = UserModelQuery().query_user_id(user_id)
+        user = get_model_object(User, 'id', user_id)
         user_update_instance.add_user(user, **data)
         if profile_image:
             user.profile_image = \
@@ -294,13 +293,11 @@ class CreateRole(graphene.Mutation):
         success = True
         errors = ["name", "Role Field is empty"]
         if input.name != "":
-            try:
-                role = Role.objects.create(name=input.name)
-                message = [f"Successfully created a role: {role}"]
+            role = Role(name=input.name)
+            params = {'model_name': 'Role', 'value': input.name}
+            with SaveContextManager(role, **params):
+                message = [f"Successfully created a role: {input.name}"]
                 return CreateRole(success=success, role=role, message=message)
-            except Exception as e:
-                errors = ["Something went wrong: {}".format(e)]
-                return CreateRole(success=False, errors=errors)
         return CreateRole(errors=errors)
 
 
@@ -324,10 +321,9 @@ class UpdateUserRole(graphene.Mutation):
     def mutate(root, info, **kwargs):
         user_id = kwargs.get('user_id')
         role_id = kwargs.get('role_id')
-        user_instance = UserModelQuery().query_user_id(user_id)
-        role_instance = RoleModelQuery().query_role_id(role_id)
-        admin_instance = \
-            RoleModelQuery().query_role_name('Master Admin')
+        user_instance = get_model_object(User, 'id', user_id)
+        role_instance = get_model_object(Role, 'id', role_id)
+        admin_instance = get_model_object(Role, 'name', 'Master Admin')
         business_users = User.objects.filter(
             business__user=user_instance)
         business_admin = business_users.filter(
@@ -369,21 +365,15 @@ class EditRole(graphene.Mutation):
     @master_admin_required
     def mutate(root, info, id, input=None):
         success = False
-        try:
-            role_instance = Role.objects.get(id=id)
-            if role_instance:
-                success = True
-                role_instance.name = input.name
-                role_instance.save()
-                message = [f"Successfully Edited the role"]
-                return EditRole(
-                    success=success,
-                    role=role_instance,
-                    message=message
-                )
-        except Exception as e:
-            errors = ["Something went wrong: {}".format(e)]
-            return EditRole(success=success, role=None, errors=errors)
+        role_instance = get_model_object(Role, 'id', id)
+        role_instance.name = input.name
+        params = {'model_name': 'Role', 'value': input.name}
+        with SaveContextManager(role_instance, **params):
+            success = True
+            message = [f"Successfully Edited the role"]
+            return EditRole(
+                success=success, role=role_instance, message=message
+            )
 
 
 class DeleteRole(graphene.Mutation):
@@ -403,17 +393,11 @@ class DeleteRole(graphene.Mutation):
     @login_required
     @master_admin_required
     def mutate(root, info, id):
-        success = False
-        try:
-            role_instance = Role.objects.get(id=id)
-            if role_instance:
-                success = True
-                message = [f"Role {role_instance.name} has been deleted"]
-                role_instance.delete()
-                return DeleteRole(success=success, message=message)
-        except Exception as e:
-            errors = ["Something went wrong: {}".format(e)]
-            return DeleteRole(success=success, role=None, errors=errors)
+        role_instance = get_model_object(Role, 'id', id)
+        success = True
+        message = [f"Role {role_instance.name} has been deleted"]
+        role_instance.delete()
+        return DeleteRole(success=success, message=message)
 
 
 class UpdateAdminUser(graphene.Mutation):
@@ -433,10 +417,7 @@ class UpdateAdminUser(graphene.Mutation):
     def mutate(root, info, **kwargs):
         user = info.context.user
         validated_fileds = validate_instance.validate_admin_fields(**kwargs)
-        try:
-            user_instance = User.objects.get(id=user.id)
-        except Exception as e:
-            raise GraphQLError(str(e))
+        user_instance = get_model_object(User, 'id', user.id)
         for (key, value) in validated_fileds.items():
             if key is not None:
                 setattr(user_instance, key, value)

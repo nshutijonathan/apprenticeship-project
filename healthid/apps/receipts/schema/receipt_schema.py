@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from healthid.apps.receipts.models import ReceiptTemplate, FieldSet
+from healthid.utils.app_utils.database import get_model_object
 
 
 class ReceiptTemplateType(DjangoObjectType):
@@ -38,6 +39,6 @@ class Query(graphene.ObjectType):
         id = kwargs.get('id')
 
         if id is not None:
-            return ReceiptTemplate.objects.get(pk=id)
+            return get_model_object(ReceiptTemplate, 'id', id)
 
         return None

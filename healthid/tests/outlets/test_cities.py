@@ -52,7 +52,7 @@ class CityTestCase(CountryTestCase):
             self.access_token_master, query_string
         )
         self.assertEqual(
-            'The country you selected doesnot exist',
+            f'Country with id {country_id} does not exist.',
             response['errors'][0]['message'])
 
     def test_create_city_already_exists(self):
@@ -91,7 +91,7 @@ class CityTestCase(CountryTestCase):
             self.access_token_master, query_string
         )
         self.assertEqual(
-            f'The city with Id {faked_id} doesnot exist',
+            f'City with id {faked_id} does not exist.',
             response['errors'][0]['message'])
 
     def test_fetch_all_cities(self):

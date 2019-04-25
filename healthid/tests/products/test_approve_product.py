@@ -31,7 +31,7 @@ class ApproveProducts(BaseConfiguration):
             products.approve_product.format(product_id=invalid_id))
         self.assertNotIn("success", response)
         self.assertIn("errors", response)
-        self.assertIn(f"The product with Id {invalid_id} doesn't exist",
+        self.assertIn(f"Product with id {invalid_id} does not exist.",
                       response['errors'][0]['message'])
 
     def test_approve_already_approved_product(self):
