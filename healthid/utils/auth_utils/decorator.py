@@ -14,18 +14,17 @@ def master_admin_required(func):
     return wrapper
 
 
-def check_user_business(user):
-    try:
-        Business.objects.get(user=user)
-    except Business.DoesNotExist:
-        raise GraphQLError("Sorry, You must be attached to a business!")
+def check_user_in_business(user):
+    user_business = Business.objects.filter(user=user)
+    if user_business.count() < 1:
+        raise GraphQLError('Sorry, You are not attached to a Business!.')
 
 
 def admin_required(func):
     def wrapper(*args, **kwargs):
         user = args[1].context.user
         allowed_role = ('Master Admin', 'Manager')
-        check_user_business(user)
+        check_user_in_business(user)
         if str(user.role) in allowed_role:
             return func(*args, **kwargs)
         raise GraphQLError("Permission denied")

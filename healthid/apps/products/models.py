@@ -47,6 +47,7 @@ class Product(models.Model):
     unit_cost = models.DecimalField(
         max_digits=12, decimal_places=2, null=False)
     auto_price = models.BooleanField(default=False)
+    loyalty_weight = models.IntegerField(default=0)
 
     @property
     def get_tags(self):

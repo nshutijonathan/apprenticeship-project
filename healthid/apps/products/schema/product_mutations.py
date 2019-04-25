@@ -4,7 +4,7 @@ from django.utils.dateparse import parse_date
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.products.models import BatchInfo, Product
+from healthid.apps.products.models import BatchInfo, Product, ProductCategory
 from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.utils.auth_utils.decorator import (
     admin_or_manager_required, admin_required,
@@ -14,7 +14,10 @@ from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product_querysets import ProductModelQuery
 from healthid.utils.product_utils.set_price import SetPrice
 
-from .product_query import ProductType
+from healthid.utils.product_utils.product_query import ProductQuery
+from healthid.apps.register.schema.register_mutation import (
+    get_model_object_by_pk)
+from .product_query import ProductType, ProductCategoryType
 
 
 class ProductInput(graphene.InputObjectType):
@@ -299,7 +302,6 @@ class ApproveProduct(graphene.Mutation):
 
 
 class UpdatePrice(graphene.Mutation):
-
     products = graphene.List(ProductType)
     errors = graphene.List(graphene.String)
     message = graphene.String()
@@ -336,6 +338,60 @@ class UpdatePrice(graphene.Mutation):
             message='successfully set prices for products')
 
 
+class UpdateLoyaltyWeight(graphene.Mutation):
+    category = graphene.Field(ProductCategoryType)
+
+    class Arguments:
+        product_category_id = graphene.Int(required=True)
+        loyalty_value = graphene.Int(required=True)
+
+    message = graphene.String()
+
+    @staticmethod
+    @login_required
+    @admin_required
+    def mutate(self, info, **kwargs):
+        loyalty_value = kwargs.get("loyalty_value")
+        if loyalty_value < 1:
+            raise GraphQLError(
+                "Loyalty weight can't be set below one")
+        product_category_id = kwargs.get("product_category_id")
+        products = ProductQuery().query_product_category(
+            product_category_id)
+        category = ProductCategory.objects.get(id=product_category_id)
+        for product in products:
+            product.loyalty_weight = loyalty_value
+            product.save()
+
+        message = 'Loyalty weight was successfully updated'
+        return UpdateLoyaltyWeight(category=category, message=message)
+
+
+class UpdateAProductLoyaltyWeight(graphene.Mutation):
+    product = graphene.Field(ProductType)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        loyalty_value = graphene.Int(required=True)
+
+    message = graphene.String()
+
+    @staticmethod
+    @login_required
+    @admin_required
+    def mutate(self, info, **kwargs):
+        loyalty_value = kwargs.get("loyalty_value")
+        if loyalty_value < 1:
+            raise GraphQLError(
+                "Loyalty weight can't be set below one")
+        product_id = kwargs.get("id")
+        product = get_model_object_by_pk(Product, product_id)
+        product.loyalty_weight = loyalty_value
+        product.save()
+        message = 'Loyalty weight was successfully updated'
+        return UpdateAProductLoyaltyWeight(product=product, message=message)
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     update_proposed_product = UpdateProposedProduct.Field()
@@ -345,3 +401,5 @@ class Mutation(graphene.ObjectType):
     update_price = UpdatePrice.Field()
     delete_batch_info = DeleteBatchInfo.Field()
     approve_product = ApproveProduct.Field()
+    update_loyalty_weight = UpdateLoyaltyWeight.Field()
+    product_loyalty_weight_update = UpdateAProductLoyaltyWeight.Field()

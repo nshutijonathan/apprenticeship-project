@@ -13,6 +13,7 @@ create_product = '''
                 vatStatus:"VAT",
                 quality : "meet the pharmacopoeia specification",
                 salesPrice :1000,
+                unitCost:10.65,
                 preferedSupplierId :{supplier_id},
                 backupSupplierId:{backup_id},
                 tags :"painkillers"
@@ -240,4 +241,41 @@ product_search_query = '''
             }}
         }}
     }}
+'''
+
+update_loyalty_weight = '''
+mutation{{
+  updateLoyaltyWeight (productCategoryId:{product_category},
+      loyaltyValue: {loyalty_value}
+) {{
+      category {{
+    id
+    name
+    productSet {{
+       edges {{
+        node {{
+          id
+          productName
+          loyaltyWeight
+        }}
+      }}
+    }}
+  }}
+  }}
+  }}
+'''
+
+
+update_a_product_loyalty_weight = '''
+mutation{{
+  productLoyaltyWeightUpdate (id:{product_id},
+      loyaltyValue: {loyalty_value}
+) {{
+    product{{
+      id
+      productName
+      loyaltyWeight
+    }}
+  }}
+  }}
 '''

@@ -2,7 +2,8 @@ from django.core.management import call_command
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import (
     backup_supplier, create_product, create_product_2, proposed_product_query,
-    supplier_mutation, update_product, delete_product)
+    supplier_mutation, update_product, delete_product,
+    update_loyalty_weight, update_a_product_loyalty_weight)
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -55,6 +56,52 @@ class TestCreateProduct(BaseConfiguration):
             self.access_token, update_product(self.product.id, update_name))
         product_name = response['data']['updateProposedProduct']['product']
         self.assertIn(update_name, product_name['productName'])
+
+    def test_update_loyalty_weight(self):
+        """Test method for updating loyalty weight"""
+        data = {
+            "product_category": self.product.product_category.id,
+            "loyalty_value": 10
+        }
+        response = self.query_with_token(
+            self.access_token_master,
+            update_loyalty_weight.format(**data))
+        self.assertIn("data", response)
+        self.assertNotIn("errors", response)
+
+    def test_update_loyalty_weight_with_invalid_value(self):
+        """Try to update loyalty weight with a less than one value"""
+        data = {
+            "product_category": self.product.product_category.id,
+            "loyalty_value": -1
+        }
+        response = self.query_with_token(
+            self.access_token_master,
+            update_loyalty_weight.format(**data))
+        self.assertIn("errors", response)
+
+    def test_update_a_product_loyalty_weight(self):
+        """Test method for updating a product loyalty weight"""
+        data = {
+            "product_id": self.product.id,
+            "loyalty_value": 10
+        }
+        response = self.query_with_token(
+            self.access_token_master,
+            update_a_product_loyalty_weight.format(**data))
+        self.assertIn("data", response)
+        self.assertNotIn("errors", response)
+
+    def test_update_a_product_loyalty_weight_with_invalid_value(self):
+        """Try to update loyalty weight with a less than one value"""
+        data = {
+            "product_id": self.product.id,
+            "loyalty_value": -1
+        }
+        response = self.query_with_token(
+            self.access_token_master,
+            update_a_product_loyalty_weight.format(**data))
+        self.assertIn("errors", response)
 
     def test_delete_product(self):
         response = self.query_with_token(self.access_token,

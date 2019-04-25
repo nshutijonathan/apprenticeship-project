@@ -8,7 +8,7 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.products.models import BatchInfo, Product
+from healthid.apps.products.models import Product, ProductCategory, BatchInfo
 from taggit.managers import TaggableManager
 
 
@@ -51,6 +51,11 @@ class ProductType(DjangoObjectType):
     @resolve_only_args
     def resolve_id(self):
         return self.id
+
+
+class ProductCategoryType(DjangoObjectType):
+    class Meta:
+        model = ProductCategory
 
 
 class Query(graphene.AbstractType):

@@ -3,11 +3,11 @@ import json
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
-from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
-from healthid.apps.preference.models import Preference, Timezone
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory)
+from healthid.apps.orders.models import PaymentTerms, Tier, Suppliers
+from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 
