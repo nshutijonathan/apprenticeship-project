@@ -4,7 +4,7 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.business.models import Business
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class BusinessType(DjangoObjectType):
@@ -32,12 +32,12 @@ class Query(graphene.ObjectType):
     )
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def resolve_businesses(self, info, **kwargs):
         return Business.objects.all()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def resolve_business(self, info, **kwargs):
         id = kwargs.get('id')
         if id is not None:

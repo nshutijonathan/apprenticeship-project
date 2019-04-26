@@ -8,8 +8,8 @@ from healthid.apps.events.models import EventType as EventTypeModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
 from healthid.utils.events_utils.validate_role import ValidateAdmin
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class EventType(DjangoObjectType):
@@ -129,7 +129,7 @@ class CreateEventType(graphene.Mutation):
         name = graphene.String(required=True)
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, name):
         params = {'model_name': 'EventType', 'value': name}
         event_type = EventTypeModel(name=name)

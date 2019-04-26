@@ -1,48 +1,14 @@
-import json
-
-from django.test import Client, TestCase
-
-from healthid.apps.authentication.models import Role, User
+from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.authentication.test_data import query_str
 
 
-class TestAdminRegistration(TestCase):
-
-    def setUp(self):
-        self._client = Client()
-        self.role = Role.objects.create(name='Master Admin')
-        self.user = User.objects.create_user(
-            email='healthid@gmail.com',
-            password='healthID',
-            mobile_number=78766363,
-        )
-        self.user.role = self.role
-        self.user.is_active = True
-        self.user.save()
-        self._client.login(
-            email="healthid@gmail.com",
-            password="healthID")
-
-        self.user_data = {
-            'firstname': 'kafuuma',
-            'lastname': 'henry',
-            'username': 'kafuumahenry',
-            'email': 'healthid@gmail.com',
-            'phone': +256788088831
-        }
-
-    def query(self, query: str):
-        body = {'query': query}
-        response = self._client.post(
-            '/healthid/', json.dumps(body), content_type='application/json',
-        )
-        json_response = json.loads(response.content.decode())
-        return json_response
+class TestAdminRegistration(BaseConfiguration):
 
     def test_update_admin_profile(self):
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertNotIn('errors', response)
         self.assertIn('success',
                       response['data']['updateAdminUser']
@@ -50,9 +16,9 @@ class TestAdminRegistration(TestCase):
 
     def test_update_admin_profile_doesnot_exists(self):
         self.user.delete()
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        response = self.query_with_token(
+            self.access_token,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
@@ -60,11 +26,11 @@ class TestAdminRegistration(TestCase):
         )
 
     def test_update_admin_profile_with_invalid_email(self):
-        self.user_data['id'] = str(self.user.id)
-        self.user_data['email'] = 'invalidemailadress'
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        self.update_user_data['id'] = str(self.user.id)
+        self.update_user_data['email'] = 'invalidemailadress'
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
@@ -72,11 +38,11 @@ class TestAdminRegistration(TestCase):
         )
 
     def test_update_admin_profile_with_invalid_username(self):
-        self.user_data['id'] = str(self.user.id)
-        self.user_data['username'] = '#$**********'
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        self.update_user_data['id'] = str(self.user.id)
+        self.update_user_data['username'] = '#$**********'
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
@@ -84,11 +50,11 @@ class TestAdminRegistration(TestCase):
         )
 
     def test_update_admin_profile_with_invalid_phone_number(self):
-        self.user_data['id'] = str(self.user.id)
-        self.user_data['phone'] = '00778'
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        self.update_user_data['id'] = str(self.user.id)
+        self.update_user_data['phone'] = '00778'
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
@@ -96,11 +62,11 @@ class TestAdminRegistration(TestCase):
         )
 
     def test_update_admin_profile_with_very_long_name(self):
-        self.user_data['id'] = str(self.user.id)
-        self.user_data['lastname'] = 'verylongne'*100
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        self.update_user_data['id'] = str(self.user.id)
+        self.update_user_data['lastname'] = 'verylongne'*100
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
@@ -108,11 +74,11 @@ class TestAdminRegistration(TestCase):
         )
 
     def test_update_admin_profile_with_empty_name_field(self):
-        self.user_data['id'] = str(self.user.id)
-        self.user_data['lastname'] = ''
-        response = self.query(
-            query_str.format(**self.user_data),
-        )
+        self.update_user_data['id'] = str(self.user.id)
+        self.update_user_data['lastname'] = ''
+        response = self.query_with_token(
+            self.access_token_master,
+            query_str.format(**self.update_user_data))
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],

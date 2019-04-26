@@ -7,7 +7,7 @@ from healthid.apps.preference.schema.preference_schema import (CurrencyType,
                                                                TimezoneType,
                                                                VatType)
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.preference_utils.update_currency import update_vate
 
 
@@ -56,7 +56,7 @@ class UpdatePreference(graphene.Mutation):
         outlet_vat = graphene.Float()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         outlet_timezone_id = kwargs.get('outlet_timezone')
         outlet_currency = kwargs.get('outlet_currency')

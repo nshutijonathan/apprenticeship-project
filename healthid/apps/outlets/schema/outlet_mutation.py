@@ -7,7 +7,7 @@ from healthid.apps.outlets.schema.outlet_schema import (CityType, CountryType,
                                                         OutletType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.outlet_utils.validators import validate_fields
 
 
@@ -32,7 +32,7 @@ class CreateOutlet(graphene.Mutation):
         preference_id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         try:
@@ -68,7 +68,7 @@ class UpdateOutlet(graphene.Mutation):
         preference_id = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         id = kwargs.get('id')
@@ -98,7 +98,7 @@ class DeleteOutlet(graphene.Mutation):
         id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, id):
         outlet = get_model_object(Outlet, 'id', id)
         outlet.delete()
@@ -118,7 +118,7 @@ class CreateCountry(graphene.Mutation):
         name = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         name = kwargs.get('name').strip().title()
         name = validate_fields.validate_name(name, 'Country')
@@ -140,7 +140,7 @@ class CreateCity(graphene.Mutation):
         country_id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         country_id = kwargs.get('country_id', '')
         city_name = kwargs.get('city_name', '')
@@ -166,7 +166,7 @@ class EditCountry(graphene.Mutation):
         name = graphene.String()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         name = kwargs.get('name', '').strip().title()
@@ -191,7 +191,7 @@ class EditCity(graphene.Mutation):
         name = graphene.String(required=True)
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         name = kwargs.get('name', '').strip().title()
@@ -215,7 +215,7 @@ class DeleteCountry(graphene.Mutation):
         id = graphene.Int()
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         country = get_model_object(Country, 'id', id)

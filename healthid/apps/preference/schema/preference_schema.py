@@ -7,7 +7,7 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.auth_utils.decorator import master_admin_required
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class TimezoneType(DjangoObjectType):
@@ -81,7 +81,7 @@ class Query(graphene.ObjectType):
     success = graphene.List(graphene.String)
 
     @login_required
-    @master_admin_required
+    @user_permission()
     def resolve_timezones(self, info, **kwargs):
         return Timezone.objects.all()
 
