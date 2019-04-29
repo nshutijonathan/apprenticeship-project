@@ -73,6 +73,7 @@ class Query(graphene.AbstractType):
     )
     approved_products = graphene.List(ProductType)
     filter_products = DjangoFilterConnectionField(ProductType)
+    proposed_edits = graphene.List(ProductType)
 
     product = graphene.Field(
         ProductType,
@@ -102,6 +103,7 @@ class Query(graphene.AbstractType):
         all_products = Product.objects.all()
         return all_products
 
+    @login_required
     def resolve_filter_products(self, info, **kwargs):
 
         for key in kwargs:
@@ -130,6 +132,10 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_proposed_products(self, info):
         return Product.objects.filter(is_approved=False)
+
+    @login_required
+    def resolve_proposed_edits(self, info):
+        return Product.objects.exclude(parent_id__isnull=True)
 
 
 class BatchQuery(graphene.AbstractType):

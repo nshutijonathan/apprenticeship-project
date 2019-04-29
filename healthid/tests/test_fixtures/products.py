@@ -126,7 +126,7 @@ backup_supplier = '''
             }
 '''
 
-product_query = '''
+approved_product_query = '''
         query{
             approvedProducts{
                 skuNumber
@@ -167,7 +167,7 @@ def create_product_2(supplier_id, backup_id):
 def update_product(product_id, product_name):
     return (f'''
             mutation {{
-                updateProposedProduct(
+                updateProduct(
                     id: {product_id},
                     productName: "{product_name}",
                     packSize :"3kgs",
@@ -181,7 +181,9 @@ def update_product(product_id, product_name):
                 ){{
                 product{{
                     productName
+                    id
                 }}
+                message
                 }}
             }}
         ''')
@@ -281,4 +283,24 @@ mutation{{
     }}
   }}
   }}
+'''
+
+proposed_edits_query = '''
+        query{
+            proposedEdits{
+                id
+                productName
+            }
+        }
+
+'''
+
+product_query = '''
+        query{
+            products{
+                id
+                productName
+            }
+        }
+
 '''

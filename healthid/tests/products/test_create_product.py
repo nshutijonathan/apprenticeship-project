@@ -1,9 +1,11 @@
 from django.core.management import call_command
+
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import (
-    backup_supplier, create_product, create_product_2, proposed_product_query,
-    supplier_mutation, update_product, delete_product,
-    update_loyalty_weight, update_a_product_loyalty_weight)
+    approved_product_query, backup_supplier, create_product, create_product_2,
+    delete_product, product_query, proposed_edits_query,
+    proposed_product_query, supplier_mutation, update_a_product_loyalty_weight,
+    update_loyalty_weight, update_product)
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -42,19 +44,29 @@ class TestCreateProduct(BaseConfiguration):
 
     def test_product_query(self):
         response = self.query_with_token(self.access_token,
-                                         proposed_product_query)
-        self.assertIn('proposedProducts', response['data'])
+                                         product_query)
+        self.assertIn('products', response['data'])
+
+    def test_proposed_edits_query(self):
+        response = self.query_with_token(
+            self.access_token, proposed_edits_query)
+        self.assertIn('proposedEdits', response['data'])
 
     def test_proposed_product_query(self):
         response = self.query_with_token(self.access_token,
                                          proposed_product_query)
         self.assertIn('proposedProducts', response['data'])
 
+    def test_approved_product_query(self):
+        response = self.query_with_token(self.access_token,
+                                         approved_product_query)
+        self.assertIn('approvedProducts', response['data'])
+
     def test_update_product(self):
         update_name = 'Cold cap'
         response = self.query_with_token(
             self.access_token, update_product(self.product.id, update_name))
-        product_name = response['data']['updateProposedProduct']['product']
+        product_name = response['data']['updateProduct']['product']
         self.assertIn(update_name, product_name['productName'])
 
     def test_update_loyalty_weight(self):
@@ -102,6 +114,20 @@ class TestCreateProduct(BaseConfiguration):
             self.access_token_master,
             update_a_product_loyalty_weight.format(**data))
         self.assertIn("errors", response)
+
+    def test_update_approved_product(self):
+        update_name = 'Cold cap'
+        message = 'Proposed update pending approval'
+        product = self.product
+        product.is_approved = True
+        product.save()
+        response = self.query_with_token(
+            self.access_token, update_product(self.product.id, update_name))
+        self.assertIn(message, response['data']
+                      ['updateProduct']['message'])
+        self.assertNotEqual(
+            str(product.id),
+            response['data']['updateProduct']['product']['id'])
 
     def test_delete_product(self):
         response = self.query_with_token(self.access_token,

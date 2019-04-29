@@ -48,6 +48,9 @@ class Product(models.Model):
         max_digits=12, decimal_places=2, null=False)
     auto_price = models.BooleanField(default=False)
     loyalty_weight = models.IntegerField(default=0)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="proposedEdit",
+        null=True, blank=True)
 
     @property
     def get_tags(self):
