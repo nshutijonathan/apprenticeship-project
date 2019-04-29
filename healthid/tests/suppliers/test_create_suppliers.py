@@ -52,7 +52,8 @@ class SuppliersTestCase(BaseConfiguration):
                       response['errors'][0]['message'])
 
     def test_suppliers_query(self):
-        response = self.query_with_token(self.access_token, suppliers_query)
+        response = self.query_with_token(self.access_token_master,
+                                         suppliers_query)
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
 

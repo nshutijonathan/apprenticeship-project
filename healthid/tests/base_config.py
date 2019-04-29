@@ -90,7 +90,7 @@ class BaseConfiguration(TestCase):
         self.user = self.register_user()
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
-        self.supplier = self.create_suppliers()
+        self.supplier = self.create_suppliers(self.user)
         self.timezone = Timezone(
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
@@ -177,18 +177,20 @@ class BaseConfiguration(TestCase):
     def create_role(self, role_name):
         return Role.objects.create(name=role_name)
 
-    def create_suppliers(self):
+    def create_suppliers(self, user):
         payment_terms = \
             PaymentTerms.objects.create(name="Mobile Banking")
         city = City.objects.get(name="Chiclayo")
         tier = Tier.objects.create(name="exporter")
+
         return Suppliers.objects.create(
             name='Sport Direct',
             email='sportdirect@mail.com',
             mobile_number='254745345342',
-            city=city,
-            tier=tier,
-            payment_terms=payment_terms)
+            city=city, tier=tier,
+            payment_terms=payment_terms,
+            user=user
+        )
 
     def create_measurement_unit(self):
         return MeasurementUnit.objects.create(name='kilogram')

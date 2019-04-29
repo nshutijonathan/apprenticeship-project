@@ -1,7 +1,9 @@
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from healthid.apps.orders.models import Suppliers
 from random import randint
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from healthid.apps.orders.models import Suppliers
 
 
 @receiver(signal=post_save, sender=Suppliers)

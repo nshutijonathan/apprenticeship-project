@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 from healthid.apps.authentication.models import User
 from healthid.utils.auth_utils.tokens import account_activation_token
-from healthid.utils.orders_utils import add_supplier
+from healthid.utils.orders_utils.add_supplier import add_supplier
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
 
 
@@ -30,8 +30,11 @@ class HandleCSV(APIView):
         io_string = io.StringIO(data_set)
         next(io_string)
         if param == 'suppliers':
-            add_supplier.handle_csv_upload(io_string=io_string)
-            message = {"success": "Successfully added supplier(s)"}
+            user = request.user
+            add_supplier.handle_csv_upload(user, io_string)
+            message = {
+                "success": "Successfully added supplier(s)"
+            }
             return Response(message, status.HTTP_201_CREATED)
         if param == 'products':
             handle_csv(io_string=io_string)

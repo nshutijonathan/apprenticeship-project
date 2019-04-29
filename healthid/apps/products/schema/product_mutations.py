@@ -9,7 +9,6 @@ from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.product_utils import handle_product_validations
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
@@ -43,8 +42,8 @@ class CreateProduct(graphene.Mutation):
         quality = graphene.String(required=True)
         sales_price = graphene.Float()
         nearest_expiry_date = graphene.String()
-        prefered_supplier_id = graphene.Int()
-        backup_supplier_id = graphene.Int()
+        prefered_supplier_id = graphene.String()
+        backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         unit_cost = graphene.Float()
 
@@ -56,7 +55,6 @@ class CreateProduct(graphene.Mutation):
         for (key, value) in kwargs.items():
             if type(value) is str and value.strip() == "":
                 raise GraphQLError("The {} field can't be empty".format(key))
-            handle_product_validations.handle_validation(**kwargs)
             if key == 'product_name':
                 params = {'model_name': 'Product',
                           'field': 'product_name', 'value': value}
@@ -96,7 +94,6 @@ class UpdateProposedProduct(graphene.Mutation):
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         product = get_model_object(Product, 'id', id)
-        handle_product_validations.handle_validation(**kwargs)
         if product.is_approved:
             raise GraphQLError("Approved product can't be edited.")
         tags = kwargs.get("tags")

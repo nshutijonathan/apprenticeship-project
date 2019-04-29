@@ -14,8 +14,8 @@ create_product = '''
                 quality : "meet the pharmacopoeia specification",
                 salesPrice :1000,
                 unitCost:10.65,
-                preferedSupplierId :{supplier_id},
-                backupSupplierId:{backup_id},
+                preferedSupplierId :"{supplier_id}",
+                backupSupplierId:"{backup_id}",
                 tags :"painkillers"
                     ){{
                 product{{
@@ -53,6 +53,9 @@ supplier_mutation = '''
                 supplier{
                 supplierId
                 id
+                user{
+                    email
+                }
                 city{
                     name
                 }
@@ -62,7 +65,7 @@ supplier_mutation = '''
             }
 '''
 create_proposed_product = '''
-mutation {
+mutation {{
     createProduct(
         productCategoryId:1,
         productName :"gfcds",
@@ -75,12 +78,12 @@ mutation {
         quality : "meet the pharmacopoeia specification",
         salesPrice :1000,
         unitCost:10.2,
-        preferedSupplierId :1,
-        backupSupplierId:2,
+        preferedSupplierId : "{0}",
+        backupSupplierId:"{0}",
         tags:["painkillers","panadol"]
 
-    ){
-      product{
+    ){{
+      product{{
         id
         salesPrice
         quality
@@ -89,16 +92,16 @@ mutation {
         vatStatus
         skuNumber
         tags
-      }
+      }}
 
-    }
-}
+    }}
+}}
 '''
 backup_supplier = '''
         mutation{
             addSupplier(input:{
                 name: "shadik.",
-                email: "shadick@email.com",
+                email: "shadik@email.com",
                 mobileNumber:"0702260027",
                 addressLine1:"address",
                 addressLine2:"addressline2",

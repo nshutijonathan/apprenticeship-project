@@ -19,5 +19,12 @@
       "fields": {
          "name": "Manager"
       }
+   },
+   {
+      "model":"authentication.role",
+      "pk":"6lbwaaf32",
+      "fields":{
+         "name":"Operations Admin"
+      }
    }
 ]

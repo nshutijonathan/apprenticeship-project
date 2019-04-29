@@ -7,10 +7,15 @@ class ApproveProducts(BaseConfiguration):
     def setUp(self):
         super().setUp()
         call_command('loaddata', 'healthid/fixtures/product_csv')
-        self.backup_id = 1,
-        self.supplier_id = 1,
+        self.supplier = self.query_with_token(self.access_token,
+                                              products.supplier_mutation)
+        self.supplier_id = self.supplier['data']['addSupplier']['supplier'][
+            'id']
+        self.backup_id = self.supplier['data']['addSupplier']['supplier'][
+            'id'],
         self.product = self.query_with_token(self.access_token,
-                                             products.create_proposed_product)
+                                             products.create_proposed_product
+                                             .format(self.supplier_id))
 
     def test_approve_product(self):
         """method for approving a product succesflully """

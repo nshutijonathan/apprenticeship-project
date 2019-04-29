@@ -1,3 +1,4 @@
+import re
 from django.db import IntegrityError, DatabaseError, OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -19,9 +20,14 @@ class SaveContextManager():
         try:
             self.model_instance.save()
             return self.model_instance
-        except IntegrityError:
+        except IntegrityError as e:
             if self.message is not None:
                 errors.custom_message(self.message, error_type=self.error)
+            if 'violates foreign key constraint' in str(e):
+                self.model_name, self.value = self.get_model_value(str(e))
+                errors.db_object_do_not_exists(
+                    self.model_name, 'id', self.value,
+                    error_type=self.error)
             errors.check_conflict(
                 self.model_name, self.field, self.value, error_type=self.error)
         except (DatabaseError, OperationalError) as e:
@@ -30,6 +36,11 @@ class SaveContextManager():
 
     def __exit__(self, exception_type, exception_value, traceback):
         return False
+
+    def get_model_value(self, error):
+        model = re.findall(r'[table\s]"[a-zA-Z_]+', error)[-1].split('_')[-1]
+        value = re.findall(r'[=(][0-9a-zA-Z]+', error)[-1].replace("(", "")
+        return model.capitalize(), value
 
 
 def get_model_object(model, column_name, column_value, **kwargs):
