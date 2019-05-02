@@ -304,3 +304,34 @@ product_query = '''
         }
 
 '''
+
+
+def deactivate_product(product_ids):
+    return (f'''
+            mutation {{
+                deactivateProduct(productIds: {product_ids}){{
+                    success
+                }}
+            }}
+    ''')
+
+
+def retrieve_deactivated_products():
+    return (f'''
+            query {{
+                deactivatedProducts {{
+                    id
+                    productName
+                }}
+            }}
+    ''')
+
+
+def activate_product(product_ids):
+    return (f'''
+            mutation {{
+                activateProduct(productIds: {product_ids}){{
+                    success
+                }}
+            }}
+    ''')

@@ -15,6 +15,11 @@ class MeasurementUnit(models.Model):
     name = models.CharField(max_length=50)
 
 
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True)
+
+
 class Product(models.Model):
     product_category = models.ForeignKey(
         ProductCategory, on_delete=models.CASCADE)
@@ -51,6 +56,17 @@ class Product(models.Model):
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, related_name="proposedEdit",
         null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    '''all_products model manager returns both all products including
+    deactivated products i.e Products.all_products.all() returns both
+    active and deactivated products use it when you need deactive
+    products as well.'''
+    all_products = models.Manager()
+    '''objects model manager returns only activated products i.e
+    Products.objects.all() returns only active products use it when
+    you don't need deactivated products.'''
+    objects = ProductManager()
 
     @property
     def get_tags(self):

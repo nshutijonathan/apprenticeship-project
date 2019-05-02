@@ -8,6 +8,7 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
+from healthid.utils.auth_utils.decorator import user_permission
 from taggit.managers import TaggableManager
 
 from healthid.apps.products.models import BatchInfo, Product, ProductCategory
@@ -97,6 +98,7 @@ class Query(graphene.AbstractType):
     expired_batches = graphene.Field(
         product_batch_info
     )
+    deactivated_products = graphene.List(ProductType)
 
     @login_required
     def resolve_products(self, info):
@@ -175,3 +177,8 @@ class BatchQuery(graphene.AbstractType):
     def resolve_expired_batches(self, info, **kwargs):
         start_date = datetime.now()
         return BatchInfo.objects.filter(expiry_date__lt=start_date)
+
+    @login_required
+    @user_permission('Operations Admin')
+    def resolve_deactivated_products(self, info, **kwargs):
+        return Product.all_products.filter(is_active=False)

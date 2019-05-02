@@ -10,6 +10,8 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.product import set_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
+from healthid.utils.product_utils.activate_deactivate_product import \
+    activate_deactivate_products
 
 from .product_query import ProductCategoryType, ProductType
 
@@ -233,6 +235,47 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
         return UpdateAProductLoyaltyWeight(product=product, message=message)
 
 
+class ActivateDeactivateProducts(graphene.Mutation):
+    class Arguments:
+        product_ids = graphene.List(graphene.Int, required=True)
+
+    success = graphene.String()
+    products = graphene.List(ProductType)
+
+    def mutate(self, info, **kwargs):
+        pass
+
+
+class ActivateProduct(ActivateDeactivateProducts):
+    """
+    Mutation class to activate a product
+    """
+    @login_required
+    @user_permission('Operations Admin')
+    def mutate(self, info, **kwargs):
+        product_ids = kwargs.get('product_ids')
+        error_msg = \
+            'Product with id {product_id} doen\'t exist or is activated.'
+        products = activate_deactivate_products(product_ids, False, error_msg)
+        success = f'Products with ids {product_ids} have been activated.'
+        return ActivateProduct(success=success, products=products)
+
+
+class DeativateProduct(ActivateDeactivateProducts):
+    """
+    Mutation class to deactivate a product
+    """
+    @login_required
+    @user_permission('Operations Admin')
+    def mutate(self, info, **kwargs):
+        product_ids = kwargs.get('product_ids')
+        error_msg = \
+            'Product with id {product_id} doen\'t exist or is deactivated'
+        products = activate_deactivate_products(product_ids, True, error_msg)
+        success = f'Products with ids {product_ids} have been deactivated.'
+        return DeativateProduct(success=success, products=products)
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     update_product = UpdateProduct.Field()
@@ -244,3 +287,5 @@ class Mutation(graphene.ObjectType):
     approve_product = ApproveProduct.Field()
     update_loyalty_weight = UpdateLoyaltyWeight.Field()
     product_loyalty_weight_update = UpdateAProductLoyaltyWeight.Field()
+    deactivate_product = DeativateProduct.Field()
+    activate_product = ActivateProduct.Field()
