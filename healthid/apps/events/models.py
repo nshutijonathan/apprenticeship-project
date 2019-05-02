@@ -23,8 +23,10 @@ class Event(models.Model):
     outlet = models.ManyToManyField(Outlet, blank=True)
     event_type = models.ForeignKey(EventType, null=True, blank=True,
                                    on_delete=models.CASCADE)
-    start = models.DateField()
-    end = models.DateField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     event_title = models.CharField("title", max_length=255)
     description = models.TextField("description", null=True, blank=True)
     user = models.ManyToManyField(User)

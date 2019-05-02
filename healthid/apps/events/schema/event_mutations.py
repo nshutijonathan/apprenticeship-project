@@ -1,4 +1,5 @@
 import graphene
+from datetime import datetime
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
@@ -31,8 +32,10 @@ class CreateEvent(graphene.Mutation):
 
     class Arguments:
         event_type_id = graphene.String(required=True)
-        start = graphene.Date(required=True)
-        end = graphene.Date(required=True)
+        start_date = graphene.Date()
+        end_date = graphene.Date(required=True)
+        start_time = graphene.Time()
+        end_time = graphene.Time(required=True)
         event_title = graphene.String(required=True)
         description = graphene.String()
 
@@ -48,8 +51,11 @@ class CreateEvent(graphene.Mutation):
         ValidateAdmin().validate_master_admin(user, event_type.name)
         event = Event(
             event_type_id=kwargs.get('event_type_id'),
-            start=kwargs.get('start'),
-            end=kwargs.get('end'),
+            start_date=kwargs.get('start_date', datetime.today().date()),
+            end_date=kwargs.get('end_date'),
+            start_time=kwargs.get(
+                'start_time', datetime.now().time().strftime("%H:%M:%S")),
+            end_time=kwargs.get('end_time'),
             event_title=kwargs.get('event_title'),
             description=kwargs.get('description')
         )
@@ -70,10 +76,12 @@ class UpdateEvent(graphene.Mutation):
 
     class Arguments:
         id = graphene.String(required=True)
-        event_type_id = graphene.String(required=True)
-        start = graphene.Date(required=True)
-        end = graphene.Date(required=True)
-        event_title = graphene.String(required=True)
+        event_type_id = graphene.String()
+        start_date = graphene.Date()
+        end_date = graphene.Date()
+        start_time = graphene.Time()
+        end_time = graphene.Time()
+        event_title = graphene.String()
         description = graphene.String()
 
     @login_required

@@ -3,15 +3,17 @@ personal_event = '''
         mutation{
             createEvent(
                 eventTypeId: "xaf36lbw1",
-                start: "2019-04-06",
-                end: "2019-04-06",
+                startDate: "2019-04-06",
+                endDate: "2019-04-06",
+                startTime: "12:30",
+                endTime: "01:30",
                 eventTitle: "HealthID end of year party",
                 description: "This is the party of the year"
             ){
                 event{
                     id,
-                    start,
-                    end,
+                    startDate,
+                    endDate,
                     eventTitle,
                     description
             }
@@ -23,15 +25,17 @@ business_event = '''
             mutation{
                 createEvent(
                     eventType: "852k75gnn",
-                    start: "2019-04-06",
-                    end: "2019-04-06",
+                    startDate: "2019-04-06",
+                    endDate: "2019-04-06",
+                    startTime: "12:30",
+                    endTime: "01:30",
                     eventTitle: "HealthID end of year party",
                     description: "This is the party of the year"
                 ){
                     event{
                         id,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         eventTitle,
                         description
                 }
@@ -44,15 +48,17 @@ new_event = '''
                 updateEvent(
                     id: "4",
                     eventTypeId: "xaf36lbw1",
-                    start: "2019-04-06",
-                    end: "2019-04-06",
+                    startDate: "2019-04-06",
+                    endDate: "2019-04-06",
+                    startTime: "12:30",
+                    endTime: "01:30",
                     eventTitle: "HealthID end of party",
                     description: "This is the party of the year"
                 ){
                     event{
                         id,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         eventTitle,
                         description
                 }
@@ -67,15 +73,17 @@ def wrong_user_update_event(event_id):
                 updateEvent(
                     id: \"{event_id}\",
                     eventTypeId: "xaf36lbw1",
-                    start: "2019-04-06",
-                    end: "2019-04-06",
+                    startDate: "2019-04-06",
+                    endDate: "2019-04-06",
+                    startTime: "12:30",
+                    endTime: "01:30",
                     eventTitle: "HealthID end of party",
                     description: "This is the party of the year"
                 ){{
                     event{{
                         id,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         eventTitle,
                         description
                 }}
@@ -101,8 +109,10 @@ view_events = '''
                     events{
                         id,
                         eventTitle,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
                         description,
                         user{
                         id,
@@ -118,8 +128,8 @@ def view_event(event_id):
                 query{{
                     event(id: \"{event_id}\"){{
                         eventTitle,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         description,
                         user{{
                         id,
@@ -134,8 +144,8 @@ view_wrong_event = '''
                 query{
                     event(id: "2"){
                         eventTitle,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         description,
                         user{
                         id,
@@ -162,15 +172,17 @@ outlet_event = '''
             mutation{
                 createEvent(
                     eventType: "16lbwaaf3",
-                    start: "2019-04-06",
-                    end: "2019-04-06",
+                    startDate: "2019-04-06",
+                    endDate: "2019-04-06",
+                    startTime: "12:30",
+                    endTime: "01:30",
                     eventTitle: "HealthID end of year party",
                     description: "This is the party of the year"
                 ){
                     event{
                         id,
-                        start,
-                        end,
+                        startDate,
+                        endDate,
                         eventTitle,
                         description
                 }
@@ -204,15 +216,19 @@ wrong_event_type = '''
         mutation{
             createEvent(
                 eventTypeId: "f36bw1",
-                start: "2019-04-06",
-                end: "2019-04-06",
+                startDate: "2019-04-06",
+                endDate: "2019-04-06",
+                startTime: "12:30",
+                endTime: "01:30",
                 eventTitle: "HealthID end of year party",
                 description: "This is the party of the year"
             ){
                 event{
                     id,
-                    start,
-                    end,
+                    startDate,
+                    endDate,
+                    startTime,
+                    endTime,
                     eventTitle,
                     description
             }
