@@ -1,6 +1,8 @@
+import csv
 import io
 import re
 
+from django.http import HttpResponse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
@@ -10,8 +12,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from healthid.apps.authentication.models import User
+from healthid.apps.products.models import Product
+from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.orders_utils.add_supplier import add_supplier
+from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
 
 
@@ -40,6 +45,38 @@ class HandleCSV(APIView):
             handle_csv(io_string=io_string)
             message = {"success": "Successfully added products"}
             return Response(message, status.HTTP_201_CREATED)
+
+
+class HandleCsvExport(APIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ProductsSerializer
+
+    def post(self, request, param):
+        if param == 'products':
+            limit = request.data.get('limit', None)
+            query_set = Product.objects.filter(is_approved=True)[:limit]
+            serializer = self.serializer_class(query_set, many=True)
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = \
+                'attachment; filename="products.csv"'
+            headers = self.serializer_class.Meta.fields.copy()
+            if request.data is not None:
+                custom_headers = list()
+                for key, value in request.data.items():
+                    handle_csv_export.validate_request_data(
+                        custom_headers, headers, key, value)
+            headers = custom_headers if custom_headers else headers
+            headers = \
+                [handle_csv_export.capitalize(word) for word in headers]
+            writer = csv.DictWriter(
+                response,
+                fieldnames=headers,
+                extrasaction='ignore')
+            writer.writeheader()
+            for product in serializer.data:
+                product = handle_csv_export.write_csv(product, request)
+                writer.writerow(product)
+            return response
 
 
 class ResetPassword(APIView):
