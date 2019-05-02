@@ -160,8 +160,7 @@ def create_product_2(supplier_id, backup_id):
         prefered_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
         tags="painkillers",
-        unit_cost=10.65
-    )
+        unit_cost=10.65)
 
 
 def update_product(product_id, product_name):
@@ -270,7 +269,6 @@ mutation{{
   }}
 '''
 
-
 update_a_product_loyalty_weight = '''
 mutation{{
   productLoyaltyWeightUpdate (id:{product_id},
@@ -302,6 +300,83 @@ product_query = '''
                 productName
             }
         }
+        '''
+create_product_category = '''
+    mutation {
+    createProductCategory(
+        name:"panadol"
+        ){
+        productCategory{
+            id
+            name
+        }
+        message
+        }
+}
+    '''
+
+edit_product_category = '''
+    mutation {
+    editProductCategory(
+      id:6,
+        name:"panadolextra"
+
+    ){
+      productCategory{
+        id
+        name
+      }
+    message
+
+    }
+}
+
+'''
+
+delete_product_category = '''
+    mutation{
+    deleteProductCategory(
+        id:7
+    ){
+    success
+    }
+    }
+
+'''
+create_measuremt_unit = '''
+        mutation {
+        createMeasurementUnit(
+            name:"tablets"
+
+        ){
+        measurementUnit{
+            id
+            name
+        }
+        message
+
+        }
+    }
+
+
+'''
+
+edit_measurement_unit = '''
+    mutation {
+        editMeasurementUnit(
+        id:6,
+            name:"syrup"
+
+        ){
+        measuremntUnit{
+            id
+            name
+        }
+        message
+
+    }
+}
+
 
 '''
 

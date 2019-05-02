@@ -9,9 +9,9 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+                                           ProductCategory)
 from taggit.managers import TaggableManager
-
-from healthid.apps.products.models import BatchInfo, Product, ProductCategory
 from healthid.utils.app_utils.database import get_model_object
 
 
@@ -21,9 +21,18 @@ def convert_field_to_string(field, registry=None):
 
 
 class BatchInfoType(DjangoObjectType):
-
     class Meta:
         model = BatchInfo
+
+
+class ProductCategoryType(DjangoObjectType):
+    class Meta:
+        model = ProductCategory
+
+
+class MeasurementUnitType(DjangoObjectType):
+    class Meta:
+        model = MeasurementUnit
 
 
 class ProductType(DjangoObjectType):
@@ -56,22 +65,14 @@ class ProductType(DjangoObjectType):
         return self.id
 
 
-class ProductCategoryType(DjangoObjectType):
-    class Meta:
-        model = ProductCategory
-
-
 class Query(graphene.AbstractType):
     products = graphene.List(ProductType)
     proposed_products = graphene.List(ProductType)
     all_batch_info = graphene.List(BatchInfoType)
     batch_info = graphene.Field(
-        BatchInfoType,
-        id=graphene.String(required=True))
+        BatchInfoType, id=graphene.String(required=True))
     product_batch_info = graphene.List(
-        BatchInfoType,
-        id=graphene.Int(required=True)
-    )
+        BatchInfoType, id=graphene.Int(required=True))
     approved_products = graphene.List(ProductType)
     filter_products = DjangoFilterConnectionField(ProductType)
     proposed_edits = graphene.List(ProductType)
@@ -99,6 +100,8 @@ class Query(graphene.AbstractType):
         product_batch_info
     )
     deactivated_products = graphene.List(ProductType)
+    product_categories = graphene.List(ProductCategoryType)
+    measurement_unit = graphene.List(MeasurementUnitType)
 
     @login_required
     def resolve_products(self, info):
@@ -112,12 +115,10 @@ class Query(graphene.AbstractType):
             if isinstance(kwargs[key], str) and kwargs[key].strip() == "":
                 raise GraphQLError('Please provide a valid search keyword')
 
-        response = Product.objects.filter(
-            **kwargs).order_by("product_name")
+        response = Product.objects.filter(**kwargs).order_by("product_name")
         if not response:
-            raise GraphQLError(
-                "Product matching '{}' does not exist".format(
-                    kwargs[key].strip()))
+            raise GraphQLError("Product matching '{}' does not exist".format(
+                kwargs[key].strip()))
         return response
 
     @login_required
@@ -132,21 +133,24 @@ class Query(graphene.AbstractType):
         raise GraphQLError("Please provide the product id")
 
     @login_required
-    def resolve_proposed_products(self, info):
-        return Product.objects.filter(is_approved=False)
-
-    @login_required
     def resolve_proposed_edits(self, info):
         return Product.objects.exclude(parent_id__isnull=True)
+
+    @login_required
+    def resolve_product_categories(self, info):
+        return ProductCategory.objects.all()
+
+    @login_required
+    def resolve_measurement_unit(self, info):
+        return MeasurementUnit.objects.all()
 
 
 class BatchQuery(graphene.AbstractType):
     all_batch_info = graphene.List(BatchInfoType)
     batch_info = graphene.Field(
         BatchInfoType, id=graphene.String(required=True))
-    product_batch_info = graphene.List(BatchInfoType,
-                                       id=graphene.Int(required=True)
-                                       )
+    product_batch_info = graphene.List(
+        BatchInfoType, id=graphene.Int(required=True))
 
     @login_required
     def resolve_all_batch_info(self, info):
@@ -168,8 +172,8 @@ class BatchQuery(graphene.AbstractType):
         start_date = kwargs.get("start_date") or datetime.now()
         end_date = kwargs.get("end_date")
         try:
-            return BatchInfo.objects.filter(expiry_date__range=(
-                start_date, end_date))
+            return BatchInfo.objects.filter(
+                expiry_date__range=(start_date, end_date))
         except ValidationError as e:
             raise GraphQLError("The {}".format(e.messages[0]))
 

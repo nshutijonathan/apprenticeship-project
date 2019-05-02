@@ -97,6 +97,7 @@ class BaseConfiguration(TestCase):
         self.outlet = self.create_outlet()
         self.role = self.create_role(role_name="Cashier")
         self.measurement_unit = self.create_measurement_unit()
+        self.product_category = self.create_product_category()
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
 
@@ -187,26 +188,26 @@ class BaseConfiguration(TestCase):
             name='Sport Direct',
             email='sportdirect@mail.com',
             mobile_number='254745345342',
-            city=city, tier=tier,
+            city=city,
+            tier=tier,
             payment_terms=payment_terms,
-            user=user
-        )
+            user=user)
 
     def create_measurement_unit(self):
         return MeasurementUnit.objects.create(name='kilogram')
 
+    def create_product_category(self):
+        return ProductCategory.objects.create(name='Drinks')
+
     def create_product(self, product_name='Pizza'):
-        product_category = \
-            ProductCategory.objects.create(name='Drinks')
         return Product.objects.create(
             product_name=product_name,
             sales_price=100,
-            product_category=product_category,
+            product_category=self.product_category,
             measurement_unit=self.measurement_unit,
             prefered_supplier=self.supplier,
             backup_supplier=self.supplier,
-            unit_cost=20.3
-        )
+            unit_cost=20.3)
 
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(

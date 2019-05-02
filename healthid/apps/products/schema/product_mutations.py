@@ -2,10 +2,13 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from healthid.apps.products.models import Product, ProductCategory
-from healthid.apps.products.schema.batch_info_mutation import (CreateBatchInfo,
-                                                               DeleteBatchInfo,
-                                                               UpdateBatchInfo)
-from healthid.utils.app_utils.database import (get_model_object)
+from healthid.apps.products.schema.batch_info_mutation import (
+    CreateBatchInfo, DeleteBatchInfo, UpdateBatchInfo)
+from healthid.apps.products.schema.measurement_unit_mutation import (
+    CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
+from healthid.apps.products.schema.product_category_mutation import (
+    CreateProductCategory, DeleteProductCategory, EditProductCategory)
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.product import set_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
@@ -138,8 +141,7 @@ class ApproveProduct(graphene.Mutation):
         product.is_approved = True
         product.save()
         success = [
-            'message',
-            'Product {} has successfully been approved.'.format(id)
+            'message', 'Product {} has successfully been approved.'.format(id)
         ]
         return ApproveProduct(success=success, product=product)
 
@@ -167,13 +169,14 @@ class UpdatePrice(graphene.Mutation):
         products = set_price.get_products(product_ids)
         for product in products:
             set_price.update_product_price(
-                product, markup=markup,
+                product,
+                markup=markup,
                 sales_tax=sales_tax,
                 auto_price=auto_price,
-                sales_price=sales_price
-            )
-        errors = [error.strip('\t')
-                  for error in set_price.errors if set_price.errors]
+                sales_price=sales_price)
+        errors = [
+            error.strip('\t') for error in set_price.errors if set_price.errors
+        ]
         if errors:
             return UpdatePrice(products=set_price.products, errors=errors)
         return UpdatePrice(
@@ -196,11 +199,9 @@ class UpdateLoyaltyWeight(graphene.Mutation):
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
-            raise GraphQLError(
-                "Loyalty weight can't be set below one")
+            raise GraphQLError("Loyalty weight can't be set below one")
         product_category_id = kwargs.get("product_category_id")
-        products = ProductQuery().query_product_category(
-            product_category_id)
+        products = ProductQuery().query_product_category(product_category_id)
         category = get_model_object(ProductCategory, 'id', product_category_id)
         for product in products:
             product.loyalty_weight = loyalty_value
@@ -225,8 +226,7 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
-            raise GraphQLError(
-                "Loyalty weight can't be set below one")
+            raise GraphQLError("Loyalty weight can't be set below one")
         product_id = kwargs.get("id")
         product = get_model_object(Product, 'id', product_id)
         product.loyalty_weight = loyalty_value
@@ -289,3 +289,9 @@ class Mutation(graphene.ObjectType):
     product_loyalty_weight_update = UpdateAProductLoyaltyWeight.Field()
     deactivate_product = DeativateProduct.Field()
     activate_product = ActivateProduct.Field()
+    create_product_category = CreateProductCategory.Field()
+    create_measurement_unit = CreateMeasurementUnit.Field()
+    edit_product_category = EditProductCategory.Field()
+    delete_product_category = DeleteProductCategory.Field()
+    edit_measurement_unit = EditMeasurementUnit.Field()
+    delete_measurement_unit = DeleteMeasurementUnit.Field()
