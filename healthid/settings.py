@@ -169,6 +169,7 @@ django_heroku.settings(locals())
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:8080',
     'localhost:8080',
+    os.getenv('FRONTEND_URL'),
 )
 
 cloudinary.config(
