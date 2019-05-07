@@ -7,6 +7,7 @@ from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory)
 from healthid.apps.orders.models import PaymentTerms, Tier, Suppliers
+from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
@@ -100,6 +101,7 @@ class BaseConfiguration(TestCase):
         self.product_category = self.create_product_category()
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
+        self.sales_prompt = self.create_sales_prompt()
 
         # register and log in user
         self.outlet.user.add(self.user)
@@ -217,3 +219,11 @@ class BaseConfiguration(TestCase):
         batch_info.product.add(self.product)
         batch_info.save()
         return batch_info
+
+    def create_sales_prompt(self):
+        return SalesPrompt.objects.create(
+            prompt_title="Title for Sales Prompt",
+            description="Sales Prompt Description",
+            product=self.product,
+            outlet=self.outlet
+        )

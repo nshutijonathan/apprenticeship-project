@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'healthid.apps.consultation',
     'healthid.apps.receipts',
     'healthid.apps.products',
+    'healthid.apps.sales',
     'rest_framework',
     'corsheaders',
     'cloudinary',

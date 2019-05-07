@@ -58,10 +58,9 @@ class UpdateRegister(graphene.Mutation):
         id = graphene.Int(required=True)
         name = graphene.String(required=True)
 
-    @staticmethod
     @login_required
     @user_permission()
-    def mutate(root, info, id, name):
+    def mutate(self, info, id, name):
         register = get_model_object(Register, 'id', id)
         if name.strip() != "":
             register.name = name
