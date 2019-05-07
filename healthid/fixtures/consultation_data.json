@@ -1,0 +1,81 @@
+[
+  {
+    "model": "consultation.approveddeliveryformat",
+    "pk": 1,
+    "fields": {
+      "name": "In person"
+    }
+  },
+
+  {
+    "model": "consultation.approveddeliveryformat",
+    "pk": 2,
+    "fields": {
+      "name": "Telephonic"
+    }
+  },
+  {
+    "model": "consultation.approveddeliveryformat",
+    "pk": 3,
+    "fields": {
+      "name": "Vedio Conference"
+    }
+  },
+
+  {
+    "model": "consultation.expectedtimeduration",
+    "pk": 1,
+    "fields": {
+      "time": "15mins"
+    }
+  },
+  {
+    "model": "consultation.expectedtimeduration",
+    "pk": 2,
+    "fields": {
+      "time": "30mins"
+    }
+  },
+  {
+    "model": "consultation.expectedtimeduration",
+    "pk": 3,
+    "fields": {
+      "time": "45mins"
+    }
+  },
+  {
+    "model": "consultation.consultantrole",
+    "pk": 1,
+    "fields": {
+      "name": "Doctor"
+    }
+  },
+  {
+    "model": "consultation.consultantrole",
+    "pk": 2,
+    "fields": {
+      "name": "Nurse"
+    }
+  },
+  {
+    "model": "consultation.consultantrole",
+    "pk": 3,
+    "fields": {
+      "name": "Health Coach"
+    }
+  },
+  {
+    "model": "consultation.consultantrole",
+    "pk": 3,
+    "fields": {
+      "name": "Pharmacist"
+    }
+  },
+  {
+    "model": "consultation.consultantrole",
+    "pk": 3,
+    "fields": {
+      "name": "Sales Associate"
+    }
+  }
+]

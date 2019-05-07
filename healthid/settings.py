@@ -44,11 +44,12 @@ INSTALLED_APPS = [
     'healthid.apps.preference',
     'healthid.apps.register',
     'healthid.apps.events',
+    'healthid.apps.consultation',
+    'healthid.apps.receipts',
+    'healthid.apps.products',
     'rest_framework',
     'corsheaders',
-    'healthid.apps.receipts',
     'cloudinary',
-    'healthid.apps.products',
     'taggit',
     'django_extensions',
 ]
@@ -175,7 +176,6 @@ CORS_ORIGIN_WHITELIST = (
 cloudinary.config(
     cloud_name=os.getenv('CLOUD_NAME'),
     api_key=os.getenv('API_KEY'),
-    api_secret=os.getenv('API_SECRET')
-)
+    api_secret=os.getenv('API_SECRET'))
 
 PASSWORD_RESET_TIMEOUT_DAYS = 1

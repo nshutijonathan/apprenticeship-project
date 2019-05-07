@@ -21,13 +21,12 @@ class SaveContextManager():
             self.model_instance.save()
             return self.model_instance
         except IntegrityError as e:
-            if self.message is not None:
-                errors.custom_message(self.message, error_type=self.error)
             if 'violates foreign key constraint' in str(e):
                 self.model_name, self.value = self.get_model_value(str(e))
                 errors.db_object_do_not_exists(
-                    self.model_name, 'id', self.value,
-                    error_type=self.error)
+                    self.model_name, 'id', self.value, error_type=self.error)
+            if self.message is not None:
+                errors.custom_message(self.message, error_type=self.error)
             errors.check_conflict(
                 self.model_name, self.field, self.value, error_type=self.error)
         except (DatabaseError, OperationalError) as e:
