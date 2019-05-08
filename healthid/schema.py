@@ -13,7 +13,6 @@ from healthid.apps.preference.schema import (preference_mutation,
 from healthid.apps.products.schema import product_mutations, product_query
 from healthid.apps.receipts.schema import receipt_mutation, receipt_schema
 from healthid.apps.register.schema import register_mutation, register_schema
-from healthid.apps.events.schema import event_querys, event_mutations
 from healthid.apps.sales.schema import sales_mutation, sales_schema
 
 

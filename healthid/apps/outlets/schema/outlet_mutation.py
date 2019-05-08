@@ -42,7 +42,7 @@ class CreateOutlet(graphene.Mutation):
             outlet.save()
             outlet.user.add(user)
         except Exception as e:
-            raise Exception(f'Something went wrong {e}')
+            raise GraphQLError(f'Something went wrong {e}')
 
         return CreateOutlet(
             outlet=outlet,
@@ -55,17 +55,20 @@ class UpdateOutlet(graphene.Mutation):
     Updates an outlet
     """
     outlet = graphene.Field(OutletType)
+    success = graphene.String()
 
     class Arguments:
-        id = graphene.Int()
+        id = graphene.Int(required=True)
         name = graphene.String()
         address_line1 = graphene.String()
         address_line2 = graphene.String()
         phone_number = graphene.String()
         lga = graphene.String()
-        date_launched = graphene.String()
+        date_launched = graphene.types.datetime.Date()
         prefix_id = graphene.String()
         preference_id = graphene.String()
+        kind_id = graphene.Int()
+        city_id = graphene.Int()
 
     @login_required
     @user_permission()
@@ -78,13 +81,14 @@ class UpdateOutlet(graphene.Mutation):
             raise GraphQLError(
                 "You can't update an outlet that you are not assigned to!")
         for(key, value) in kwargs.items():
-            if key is not None:
+            if value is not None:
                 setattr(outlet, key, value)
-        outlet.save()
-
-        return UpdateOutlet(
-            outlet=outlet
-        )
+        params = {'model_name': 'Outlet', 'value': outlet.name}
+        with SaveContextManager(outlet, **params) as outlet:
+            success = f'Successfully updated outlet {outlet.name}'
+            return UpdateOutlet(
+                outlet=outlet, success=success
+            )
 
 
 class DeleteOutlet(graphene.Mutation):
