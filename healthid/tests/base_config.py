@@ -215,6 +215,8 @@ class BaseConfiguration(TestCase):
         batch_info = BatchInfo.objects.create(
             supplier=self.supplier,
             quantity_received=10,
+            outlet=self.outlet,
+            user=self.user
         )
         batch_info.product.add(self.product)
         batch_info.save()

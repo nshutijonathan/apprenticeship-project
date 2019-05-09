@@ -86,6 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         on_delete=models.CASCADE
     )
     is_staff = models.BooleanField(default=False)
+    email_notification_permissions = models.BooleanField(default=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

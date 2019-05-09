@@ -12,6 +12,7 @@ import django_heroku
 import cloudinary
 # Helps load enviromental variable in .env file
 from dotenv import load_dotenv
+from pusher import pusher
 
 load_dotenv()
 
@@ -48,11 +49,13 @@ INSTALLED_APPS = [
     'healthid.apps.receipts',
     'healthid.apps.products',
     'healthid.apps.sales',
+    'healthid.apps.notifications',
     'rest_framework',
     'corsheaders',
     'cloudinary',
     'taggit',
     'django_extensions',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -180,3 +183,22 @@ cloudinary.config(
     api_secret=os.getenv('API_SECRET'))
 
 PASSWORD_RESET_TIMEOUT_DAYS = 1
+
+SCHEDULER_CONFIG = {
+    "apscheduler.jobstores.default": {
+        "class": "django_apscheduler.jobstores:DjangoJobStore"
+    },
+    'apscheduler.executors.processpool': {
+        "type": "threadpool"
+    },
+}
+
+SCHEDULER_AUTOSTART = True
+
+pusher = pusher.Pusher(
+    app_id=os.environ.get('PUSHER_APP_ID'),
+    key=os.environ.get('PUSHER_KEY'),
+    secret=os.environ.get('PUSHER_SECRET'),
+    cluster=os.environ.get('PUSHER_CLUSTER'),
+    ssl=True
+)

@@ -8,6 +8,7 @@ from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.utils.app_utils.database import (get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.batch_utils import batch_info_instance
+from healthid.apps.outlets.models import Outlet
 
 
 class CreateBatchInfo(graphene.Mutation):
@@ -32,6 +33,8 @@ class CreateBatchInfo(graphene.Mutation):
     @login_required
     @batch_info_instance
     def mutate(self, info, **kwargs):
+        user = info.context.user
+        outlet = get_model_object(Outlet, 'user', user)
         supplier_id = kwargs.get('supplier_id')
         products = kwargs.get('product')
         supplier_instance = get_model_object(
@@ -43,7 +46,9 @@ class CreateBatchInfo(graphene.Mutation):
             expiry_date=parse_date(kwargs.get('expiry_date')),
             unit_cost=kwargs.get('unit_cost'),
             commentary=kwargs.get('commentary'),
-            supplier=supplier_instance
+            supplier=supplier_instance,
+            outlet=outlet,
+            user=user
         )
         for product_id in products:
             product_instance = get_model_object(Product, 'id', product_id)

@@ -1,22 +1,24 @@
 import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.products.models import Product, ProductCategory
-from healthid.apps.products.schema.batch_info_mutation import (
-    CreateBatchInfo, DeleteBatchInfo, UpdateBatchInfo)
+from healthid.apps.products.schema.batch_info_mutation import (CreateBatchInfo,
+                                                               DeleteBatchInfo,
+                                                               UpdateBatchInfo)
 from healthid.apps.products.schema.measurement_unit_mutation import (
     CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
 from healthid.apps.products.schema.product_category_mutation import (
     CreateProductCategory, DeleteProductCategory, EditProductCategory)
+from healthid.apps.products.schema.product_query import (
+    ProductCategoryType, ProductType)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.product_utils.activate_deactivate_product import \
+    activate_deactivate_products
 from healthid.utils.product_utils.product import set_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
-from healthid.utils.product_utils.activate_deactivate_product import \
-    activate_deactivate_products
-
-from .product_query import ProductCategoryType, ProductType
 
 
 class ProductInput(graphene.InputObjectType):

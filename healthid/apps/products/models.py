@@ -5,6 +5,8 @@ from taggit.managers import TaggableManager
 
 from healthid.apps.orders.models import Suppliers
 from healthid.utils.app_utils.id_generator import id_gen
+from healthid.apps.outlets.models import Outlet
+from healthid.apps.authentication.models import User
 
 
 class ProductCategory(models.Model):
@@ -90,6 +92,8 @@ class BatchInfo(models.Model):
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
     commentary = models.TextField(blank=True, null=True)
     product = models.ManyToManyField(Product, related_name='batch_info')
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.batch_no

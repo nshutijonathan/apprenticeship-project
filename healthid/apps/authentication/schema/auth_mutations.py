@@ -247,6 +247,7 @@ class UpdateUserDetails(graphene.Mutation):
         username = graphene.String()
         profile_image = graphene.String()
         email = graphene.String()
+        email_notification_permissions = graphene.Boolean()
 
     user = graphene.Field(UserType)
     error = graphene.Field(graphene.String)
