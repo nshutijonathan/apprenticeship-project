@@ -109,6 +109,7 @@ class BaseConfiguration(TestCase):
         self.master_admin_user = self.register_master_admin()
         self.access_token_master = self.admin_login()
         self.preference = Preference.objects.get()
+        self.outlet.user.add(self.master_admin_user)
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")

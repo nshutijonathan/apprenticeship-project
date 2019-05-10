@@ -69,3 +69,85 @@ query_all_sales_prompt = '''
 
 def query_a_sales_prompt(sales_prompt_id):
     return (f'''query{{salesPrompt(id: {sales_prompt_id}){{id}}}}''')
+
+
+def create_promotion(promotion):
+    return (f'''
+            mutation {{
+                createPromotion(
+                    title: "{promotion['title']}",
+                    promotionTypeId: "{promotion['promotion_type_id']}",
+                    description: "{promotion['description']}",
+                    discount: {promotion['discount']},
+                    outletId: {promotion['outlet_id']}
+                    ) {{
+                    success
+                    promotion {{
+                        id
+                    }}
+                }}
+            }}
+    ''')
+
+
+def retrieve_promotions(outlet_id):
+    return (f'''
+            query {{
+                outletPromotions(outletId: {outlet_id}){{
+                    id
+                }}
+            }}
+    ''')
+
+
+def update_promotion(promotion_id, promotion):
+    return (f'''
+            mutation {{
+                updatePromotion(
+                    promotionId: "{promotion_id}"
+                    title: "{promotion}"
+                ){{
+                    success
+                    promotion {{
+                        id
+                    }}
+                }}
+            }}
+    ''')
+
+
+def delete_promotion(promotion_id):
+    return (f'''
+            mutation {{
+                deletePromotion(
+                    promotionId: "{promotion_id}"
+                ){{
+                    success
+                }}
+            }}
+    ''')
+
+
+def create_promotion_type(name):
+    return (f'''
+            mutation {{
+                createPromotionType(
+                    name: "{name}"
+                    ) {{
+                    success
+                    promotionType {{
+                        id
+                    }}
+                }}
+            }}
+    ''')
+
+
+def retrieve_promotion_types():
+    return (f'''
+            query {{
+                promotionTypes{{
+                    id
+                }}
+            }}
+    ''')
