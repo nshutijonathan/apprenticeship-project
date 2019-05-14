@@ -30,5 +30,4 @@ class TestFilterProducts(TestCreateProduct):
 
         self.assertIn('errors', response)
         self.assertEquals(response['errors'][0]['message'],
-                          "Product matching '{}' does not exist".format(
-                              search_term))
+                          "Product matching search query does not exist")

@@ -23,10 +23,10 @@ class ProductBatchInfo:
                 f"{date_field}, should be YYYY-MM-DD"
             )
 
-    def validate_postive_integers(self, integer, field):
+    def validate_positive_integers(self, integer, field):
         if integer <= 0:
             raise GraphQLError(
-                f"Input a postive number, {field} cannot be less than 1")
+                f"Input a positive number, {field} cannot be less than 1")
 
     def __call__(self, func):
         @wraps(func)
@@ -47,7 +47,7 @@ class ProductBatchInfo:
                     for product_id in field_value:
                         get_model_object(Product, 'id', product_id)
                 if field in int_fields:
-                    self.validate_postive_integers(field_value, field)
+                    self.validate_positive_integers(field_value, field)
             return func(*args, **kwargs)
         return wrapper
 

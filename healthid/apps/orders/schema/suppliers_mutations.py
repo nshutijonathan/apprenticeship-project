@@ -103,7 +103,7 @@ class EditSupplier(graphene.Mutation):
         edit_request = Suppliers()
         supplier = get_model_object(Suppliers, 'id', id)
         if not supplier.is_approved:
-            msg = "You can only propose an edit to an approved product!"
+            msg = "You can only propose an edit to an approved supplier!"
             raise GraphQLError(msg)
         if kwargs.get('email') is not None:
             email = kwargs.get('email')

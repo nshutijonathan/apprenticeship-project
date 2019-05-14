@@ -5,6 +5,7 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.products.models import Product, ProductCategory
 from healthid.apps.products.schema.batch_info_mutation import (CreateBatchInfo,
                                                                DeleteBatchInfo,
+                                                               ProposeQuantity,
                                                                UpdateBatchInfo)
 from healthid.apps.products.schema.measurement_unit_mutation import (
     CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
@@ -285,6 +286,7 @@ class Mutation(graphene.ObjectType):
     delete_product = DeleteProduct.Field()
     create_batch_info = CreateBatchInfo.Field()
     update_batch_info = UpdateBatchInfo.Field()
+    proposed_quantity = ProposeQuantity.Field()
     update_price = UpdatePrice.Field()
     delete_batch_info = DeleteBatchInfo.Field()
     approve_product = ApproveProduct.Field()

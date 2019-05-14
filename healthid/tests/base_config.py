@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from healthid.apps.authentication.models import Role, User
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
-                                           ProductCategory)
+                                           ProductCategory, Quantity)
 from healthid.apps.orders.models import (PaymentTerms, Tier, Suppliers,
                                          SupplierNote)
 from healthid.apps.sales.models import SalesPrompt
@@ -155,6 +155,7 @@ class BaseConfiguration(TestCase):
         user.is_active = True
         user.role = Role.objects.create(name='Master Admin')
         self.business.user.add(user)
+        self.outlet.user.add(user)
         user.save()
         return user
 
@@ -230,11 +231,13 @@ class BaseConfiguration(TestCase):
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(
             supplier=self.supplier,
-            quantity_received=10,
             outlet=self.outlet,
             user=self.user
         )
         batch_info.product.add(self.product)
+        batch_quantities = Quantity.objects.create(
+            batch=batch_info, quantity_received=8)
+        batch_quantities.product.add(self.product)
         batch_info.save()
         return batch_info
 

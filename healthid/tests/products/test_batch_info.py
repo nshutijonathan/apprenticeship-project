@@ -10,32 +10,34 @@ class TestBatchInfo(BaseConfiguration):
     Testing Adding user by the Master Admin
     """
 
-    def test_add_batch_info(self):
-        """
-        test batch info creation
-        """
-        batch_data = {
+    def setUp(self):
+        super().setUp()
+        self.batch_data = {
             'product_id': self.product.id,
             'supplier_id': self.supplier.supplier_id,
             'expiry_date': '2020-02-10'
         }
+
+    def test_add_batch_info(self):
+        """
+        test batch info creation
+        """
         resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**batch_data))
+            self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn('data', resp)
         self.assertEqual(resp['data']['createBatchInfo']['errors'], None)
         self.assertEqual(resp['data']['createBatchInfo']
                          ['batchInfo']['supplier']['name'], self.supplier.name)
 
-    def test_update_user(self):
-        batch_data = {
-            'batch_id': self.batch_info.id,
-            'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
-            'quantity_received': 10,
-        }
-
+    def test_update_batch(self):
+        """
+        Test if batch can be updated.
+        """
+        self.batch_data['batch_id'] = self.batch_info.id
         resp = self.query_with_token(
-            self.access_token_master, update_batch_info.format(**batch_data))
+            self.access_token_master, update_batch_info.format(
+                **self.batch_data))
+
         self.assertIn('data', resp)
         self.assertEqual(resp['data']['updateBatchInfo']['errors'], None)
         self.assertEqual(resp['data']['updateBatchInfo']
@@ -78,13 +80,9 @@ class TestBatchInfo(BaseConfiguration):
         test wrong supplier id
         """
         supplier_id = 'S-UNI2021'
-        batch_data = {
-            'product_id': self.product.id,
-            'supplier_id': supplier_id,
-            'expiry_date': '2020-02-10'
-        }
+        self.batch_data['supplier_id'] = supplier_id
         resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**batch_data))
+            self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn(
             f"Suppliers with supplier_id {supplier_id} does not exist.",
             resp['errors'][0]['message'])
@@ -94,13 +92,9 @@ class TestBatchInfo(BaseConfiguration):
         test wrong product id
         """
         product_id = 0
-        batch_data = {
-            'product_id': product_id,
-            'supplier_id': self.supplier.supplier_id,
-            'expiry_date': '2020-02-10'
-        }
+        self.batch_data['product_id'] = product_id
         resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**batch_data))
+            self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn(f"Product with id {product_id} does not exist.",
                       resp['errors'][0]['message'])
 
@@ -109,13 +103,9 @@ class TestBatchInfo(BaseConfiguration):
         test wrong date format
         """
         date_field = 'expiry_date'
-        batch_data = {
-            'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
-            'expiry_date': '10:02:2020'
-        }
+        self.batch_data['expiry_date'] = date_field
         resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**batch_data))
+            self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn(f"Incorrect data format for {date_field}, "
                       f"should be YYYY-MM-DD",
                       resp['errors'][0]['message'])
@@ -125,14 +115,11 @@ class TestBatchInfo(BaseConfiguration):
         test wrong batch info id
         """
         batch_info_id = '12121212121'
-        batch_data = {
-            'batch_id': batch_info_id,
-            'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
-            'quantity_received': 10,
-        }
+        self.batch_data['batch_id'] = batch_info_id
         resp = self.query_with_token(
-            self.access_token_master, update_batch_info.format(**batch_data))
+            self.access_token_master, update_batch_info.format(
+                **self.batch_data))
+
         self.assertIn('data', resp)
         self.assertIn(f"BatchInfo with id {batch_info_id} does not exist.",
                       resp['errors'][0]['message'])

@@ -5,7 +5,7 @@ createBatchInfo (
      product: [{product_id}],
     dateReceived:"2019-12-03",
     packSize:"10",
-    quantityReceived:10,
+    quantities: [10],
     expiryDate:"{expiry_date}",
     unitCost:100,
     commentary:"5 packs pending"
@@ -21,7 +21,6 @@ createBatchInfo (
         name
       }}
       unitCost
-      quantityReceived
     }}
   }}
 }}
@@ -35,7 +34,6 @@ updateBatchInfo (
     supplierId: "{supplier_id}",
     dateReceived: "2019-04-12",
     packSize:"56",
-    quantityReceived: {quantity_received},
     expiryDate: "2020-04-02",
     unitCost: 50,
     commentary:"Delivered on time"
@@ -50,7 +48,6 @@ updateBatchInfo (
         name
       }}
       unitCost,
-      quantityReceived,
       commentary
       unitCost
     }}
@@ -62,7 +59,7 @@ query_product_batch_info = '''
 query {{
   productBatchInfo (id:{product_id}){{
     batchNo
-    quantityReceived
+    quantity
     unitCost
     supplier {{
       id
@@ -94,7 +91,7 @@ query {
         name
       }
       unitCost
-      quantityReceived
+      quantity
       }
       }
 '''

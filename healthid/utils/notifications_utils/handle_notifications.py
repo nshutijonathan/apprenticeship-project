@@ -4,7 +4,7 @@ from healthid.apps.notifications.models import Notification
 from healthid.utils.app_utils.database import SaveContextManager
 
 
-def notify(users, subject, message, html_body):
+def notify(users, message, subject=None, html_body=None):
     '''Function to notify the appropriate user
     '''
     notification = Notification(message=message)
@@ -12,8 +12,8 @@ def notify(users, subject, message, html_body):
         for user in users:
             notification.recipient.add(user)
             notification.save()
-
-            send_email_notifications(subject, user, html_body)
+            if html_body and subject:
+                send_email_notifications(subject, user, html_body)
 
 
 def send_email_notifications(subject, user, html_body=None):

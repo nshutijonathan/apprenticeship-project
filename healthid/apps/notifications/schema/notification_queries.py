@@ -6,13 +6,11 @@ from graphql import GraphQLError
 
 
 class NotificationType(DjangoObjectType):
-
     class Meta:
         model = Notification
 
 
 class Query(graphene.ObjectType):
-
     notifications = graphene.List(NotificationType)
 
     @login_required

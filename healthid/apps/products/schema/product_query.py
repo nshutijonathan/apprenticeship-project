@@ -8,11 +8,12 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.utils.auth_utils.decorator import user_permission
-from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
-                                           ProductCategory)
 from taggit.managers import TaggableManager
+
+from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+                                           ProductCategory, Quantity)
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 @convert_django_field.register(TaggableManager)
@@ -21,8 +22,13 @@ def convert_field_to_string(field, registry=None):
 
 
 class BatchInfoType(DjangoObjectType):
+    quantity = graphene.Int()
+
     class Meta:
         model = BatchInfo
+
+    def resolve_quantity(self, info, **kwargs):
+        return self.quantity
 
 
 class ProductCategoryType(DjangoObjectType):
@@ -49,20 +55,18 @@ class ProductType(DjangoObjectType):
         interfaces = (graphene.relay.Node, )
 
     def resolve_product_quantity(self, info, **kwargs):
-        if self is not None:
-            product = Product.objects.get(product_name=self)
-            product_batches = product.batch_info.all()
-            quantities = []
-            for product_batch in product_batches:
-                quantities.append(int(product_batch.quantity_received))
-            product_quantity = sum(quantities)
-            return product_quantity
+        return self.quantity
 
     id = graphene.ID(required=True)
 
     @resolve_only_args
     def resolve_id(self):
         return self.id
+
+
+class QuantityType(graphene.ObjectType):
+    id = graphene.String()
+    quantity_received = graphene.Int()
 
 
 class Query(graphene.AbstractType):
@@ -117,8 +121,7 @@ class Query(graphene.AbstractType):
 
         response = Product.objects.filter(**kwargs).order_by("product_name")
         if not response:
-            raise GraphQLError("Product matching '{}' does not exist".format(
-                kwargs[key].strip()))
+            raise GraphQLError("Product matching search query does not exist")
         return response
 
     @login_required
@@ -149,8 +152,12 @@ class BatchQuery(graphene.AbstractType):
     all_batch_info = graphene.List(BatchInfoType)
     batch_info = graphene.Field(
         BatchInfoType, id=graphene.String(required=True))
-    product_batch_info = graphene.List(
-        BatchInfoType, id=graphene.Int(required=True))
+    batch_quantity = graphene.Field(
+        QuantityType, id=graphene.String(required=True))
+    product_batch_info = graphene.List(BatchInfoType,
+                                       id=graphene.Int(required=True)
+                                       )
+    proposed_quantity_edits = graphene.List(QuantityType)
 
     @login_required
     def resolve_all_batch_info(self, info):
@@ -158,7 +165,9 @@ class BatchQuery(graphene.AbstractType):
 
     @login_required
     def resolve_batch_info(self, info, **kwargs):
-        return get_model_object(BatchInfo, 'id', kwargs.get('id'))
+        id = kwargs.get('id')
+        batch = get_model_object(BatchInfo, 'id', id)
+        return batch
 
     @login_required
     def resolve_product_batch_info(self, info, **kwargs):
@@ -186,3 +195,7 @@ class BatchQuery(graphene.AbstractType):
     @user_permission('Operations Admin')
     def resolve_deactivated_products(self, info, **kwargs):
         return Product.all_products.filter(is_active=False)
+
+    @login_required
+    def resolve_proposed_quantity_edits(self, info):
+        return Quantity.objects.exclude(parent_id__isnull=True)

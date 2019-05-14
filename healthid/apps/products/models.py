@@ -4,9 +4,9 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from healthid.apps.orders.models import Suppliers
-from healthid.utils.app_utils.id_generator import id_gen
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.authentication.models import User
+from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.id_generator import id_gen
 
 
 class ProductCategory(models.Model):
@@ -45,6 +45,8 @@ class Product(models.Model):
         Suppliers, related_name='prefered', on_delete=models.CASCADE)
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
+    outlet = models.ManyToManyField(Outlet)
+    user = models.ManyToManyField(User)
     tags = TaggableManager()
     markup = models.IntegerField(default=25)
     pre_tax_retail_price = models.DecimalField(
@@ -73,9 +75,21 @@ class Product(models.Model):
         return self.tags.all()
 
     def __str__(self):
+        return self.product_name
+
+    def __repr__(self):
         return (f'''<{self.product_name}>
         <Price: {self.sales_price}>
         ''')
+
+    @property
+    def quantity(self):
+        """
+        Get the total quantity of a given product.
+        """
+        product_quantities = self.product_quantities.filter(
+            parent_id__isnull=True).aggregate(models.Sum('quantity_received'))
+        return product_quantities['quantity_received__sum']
 
 
 class BatchInfo(models.Model):
@@ -86,17 +100,44 @@ class BatchInfo(models.Model):
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
     date_received = models.DateField(auto_now=False, null=True, blank=True)
     pack_size = models.CharField(max_length=100, null=True, blank=True)
-    quantity_received = models.PositiveIntegerField(blank=True, null=True)
     expiry_date = models.DateField(auto_now=False, null=True, blank=True)
     unit_cost = models.DecimalField(
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
     commentary = models.TextField(blank=True, null=True)
     product = models.ManyToManyField(Product, related_name='batch_info')
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='user_batches')
+    outlet = models.ForeignKey(
+        Outlet, on_delete=models.CASCADE, related_name='outlet_batches')
 
     def __str__(self):
         return self.batch_no
 
     def __unicode__(self):
         return self.batch_no
+
+    @property
+    def quantity(self):
+        """
+        Property to return the total quantities of products
+        in a batch.
+        """
+        batch_quantities = self.batch_quantities.filter(
+            parent_id__isnull=True).aggregate(models.Sum('quantity_received'))
+        return batch_quantities['quantity_received__sum']
+
+
+class Quantity(models.Model):
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    product = models.ManyToManyField(
+        Product, related_name='product_quantities')
+    batch = models.ForeignKey(
+        BatchInfo, on_delete=models.CASCADE, related_name='batch_quantities')
+    quantity_received = models.PositiveIntegerField(null=True, blank=True)
+    proposed_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='proposing_user',
+        null=True, blank=True)
+    parent = models.ForeignKey("self", on_delete=models.CASCADE,
+                               related_name="proposedQuantityChange",
+                               null=True, blank=True)

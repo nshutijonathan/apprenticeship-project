@@ -7,7 +7,8 @@ from healthid.apps.business.schema import business_mutation, business_query
 from healthid.apps.consultation.schema import (consultation_mutation,
                                                consultation_query)
 from healthid.apps.events.schema import event_mutations, event_querys
-from healthid.apps.notifications.schema import notification_queries
+from healthid.apps.notifications.schema import (notification_mutations,
+                                                notification_queries)
 from healthid.apps.orders.schema import SuppliersMutation, SuppliersQuery
 from healthid.apps.outlets.schema import outlet_mutation, outlet_schema
 from healthid.apps.preference.schema import (preference_mutation,
@@ -50,6 +51,7 @@ class Mutation(
         register_mutation.Mutation,
         product_mutations.Mutation,
         event_mutations.Mutation,
+        notification_mutations.Mutation,
         sales_mutation.Mutation,
         consultation_mutation.Mutation,
         promotions_mutation.Mutation,

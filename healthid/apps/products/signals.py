@@ -4,8 +4,9 @@ from decimal import Decimal
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from healthid.apps.products.models import BatchInfo, Product
+from healthid.apps.products.models import BatchInfo, Product, Quantity
 from healthid.utils.app_utils.id_generator import id_gen
+from healthid.utils.notifications_utils.handle_notifications import notify
 
 
 @receiver(post_save, sender=Product)
@@ -52,3 +53,24 @@ def set_retail_price(sender, update_fields=['sales_price '], *args, **kwargs):
         product.auto_price = False
         product.save()
         post_save.connect(set_retail_price, sender=Product)
+
+
+@receiver(post_save, sender=Quantity)
+def notify_quantity_proposal(sender, instance, created, **kwargs):
+    """
+    Method to generate notifications for proposed change in batch quantity.
+    """
+    if created:
+        if instance.parent_id:
+            batch = instance.batch
+            outlet_users = batch.outlet.user.exclude(
+                id=instance.proposed_by.id)
+            all_users = []
+            for user in outlet_users:
+                if str(user.role) == "Master Admin" or str(user.role) == \
+                        "Operations Admin":
+                    all_users.append(user)
+            message = ("Batch no: {} has a"
+                       " proposed quantity edit.").format(
+                batch.batch_no)
+            notify(all_users, message)
