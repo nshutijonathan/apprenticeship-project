@@ -5,8 +5,9 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models import Suppliers
+from healthid.apps.orders.models import Suppliers, SupplierNote
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.app_utils.database import get_model_object
 
 
 class SuppliersType(DjangoObjectType):
@@ -32,12 +33,20 @@ class SuppliersType(DjangoObjectType):
         return self.id
 
 
+class SupplierNoteType(DjangoObjectType):
+    class Meta:
+        model = SupplierNote
+
+
 class Query(graphene.AbstractType):
     all_suppliers = graphene.List(SuppliersType)
     edit_requests = graphene.List(SuppliersType)
     approved_suppliers = graphene.List(SuppliersType)
     user_requests = graphene.List(SuppliersType)
     filter_suppliers = DjangoFilterConnectionField(SuppliersType)
+    all_suppliers_note = graphene.List(SupplierNoteType)
+    suppliers_note = graphene.List(SupplierNoteType,
+                                   id=graphene.String(required=True))
 
     @user_permission('Operations Admin')
     def resolve_all_suppliers(self, info):
@@ -69,3 +78,13 @@ class Query(graphene.AbstractType):
             raise GraphQLError(message)
 
         return supplier
+
+    @login_required
+    def resolve_suppliers_note(self, info, **kwargs):
+        id = kwargs.get('id')
+        supplier = get_model_object(Suppliers, 'id', id)
+        return SupplierNote.objects.filter(supplier_id=supplier)
+
+    @login_required
+    def resolve_all_suppliers_note(self, info):
+        return SupplierNote.objects.all()

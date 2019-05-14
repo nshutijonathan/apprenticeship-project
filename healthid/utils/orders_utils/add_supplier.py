@@ -14,7 +14,8 @@ class AddSupplier:
             'DoesNotExist', '_meta', 'MultipleObjectsReturned', 'city', 'tier',
             'payment_terms', 'supplier_id', 'id', 'objects', 'prefered',
             'backup', 'is_approved', 'user_id', 'user', 'admin_comment',
-            'parent_id', 'parent', 'proposedEdit', 'batchinfo_set'
+            'parent_id', 'parent', 'proposedEdit', 'batchinfo_set',
+            'suppliernote_set'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__

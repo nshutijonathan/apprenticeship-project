@@ -1,7 +1,7 @@
 from django.db import models
 
 from healthid.apps.authentication.models import User
-from healthid.apps.outlets.models import City
+from healthid.apps.outlets.models import City, Outlet
 from healthid.utils.app_utils.id_generator import id_gen
 
 
@@ -46,3 +46,11 @@ class Suppliers(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SupplierNote(models.Model):
+    supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
+    outlet = models.ManyToManyField(Outlet, related_name='supplier_note')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    note = models.TextField(default="user note about this supplier")
+    created_at = models.DateField(auto_now_add=True)

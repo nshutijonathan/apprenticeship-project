@@ -3,11 +3,14 @@ from django.forms.models import model_to_dict
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models import Suppliers
-from healthid.apps.orders.schema.suppliers_query import SuppliersType
+from healthid.apps.orders.models import Suppliers, SupplierNote
+from healthid.apps.outlets.models import Outlet
+from healthid.apps.orders.schema.suppliers_query import (SuppliersType,
+                                                         SupplierNoteType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.app_utils.validators import special_cahracter_validation
 from healthid.utils.orders_utils.add_supplier import add_supplier
 
 
@@ -230,6 +233,106 @@ class DeclineEditRequest(graphene.Mutation):
         return cls(msg, edit_request)
 
 
+class CreateSupplierNote(graphene.Mutation):
+    """ This creates a Supplier's note"""
+
+    class Arguments:
+        supplier_id = graphene.String(required=True)
+        outlet_ids = graphene.List(graphene.Int, required=True)
+        note = graphene.String(required=True)
+
+    message = graphene.Field(graphene.String)
+    supplier_note = graphene.Field(SupplierNoteType)
+    supplier = graphene.Field(SuppliersType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, **kwargs):
+        supplier_id = kwargs.get("supplier_id")
+        user = info.context.user
+        outlet_ids = kwargs.get("outlet_ids")
+        note = kwargs.get("note")
+        special_cahracter_validation(note)
+        if len(note.split()) < 2:
+            raise GraphQLError("Suppliers note must be two or more words")
+        supplier = get_model_object(Suppliers, "id", supplier_id)
+        outlets = [get_model_object(Outlet, 'id', outlet_id)
+                   for outlet_id in outlet_ids]
+        supplier_note = SupplierNote(
+                                      supplier=supplier,
+                                      note=note,
+                                      user=user
+        )
+
+        with SaveContextManager(supplier_note) as supplier_note:
+            supplier_note.outlet.add(*outlets)
+            supplier_note.save()
+            return cls(
+                       supplier_note=supplier_note,
+                       supplier=supplier,
+                       message="Successfully created Note")
+
+
+class UpdateSupplierNote(graphene.Mutation):
+    """
+         This Updates a Supplier Note
+    """
+    class Arguments:
+        id = graphene.Int(required=True)
+        supplier_id = graphene.Int()
+        outlet_ids = graphene.List(graphene.Int)
+        note = graphene.String()
+    success = graphene.Field(graphene.String)
+    supplier_note = graphene.Field(SupplierNoteType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, id, **kwargs):
+        outlet_ids = kwargs.pop('outlet_ids')
+        supplier_note = get_model_object(SupplierNote, "id", id)
+        if info.context.user != supplier_note.user:
+            raise GraphQLError(
+                        "You can't update a note you didn't create")
+        for key, value in kwargs.items():
+            if key in ["note"]:
+                special_cahracter_validation(value)
+                if len(value.split()) < 2:
+                    raise GraphQLError(
+                        "Suppliers note must be two or more words")
+            setattr(supplier_note, key, value)
+
+        if outlet_ids:
+            outlets = [get_model_object(Outlet, 'id', outlet_id)
+                       for outlet_id in outlet_ids]
+            supplier_note.outlet.clear()
+            supplier_note.outlet.add(*outlets)
+        with SaveContextManager(supplier_note) as supplier_note:
+            return cls(
+                       success="Suppliers Note was updated successfully",
+                       supplier_note=supplier_note)
+
+
+class DeleteSupplierNote(graphene.Mutation):
+    """
+    This deletes a Supplier Note
+    """
+    id = graphene.Int()
+    success = graphene.String()
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    @login_required
+    def mutate(self, info, id):
+        supplier_note = get_model_object(SupplierNote, "id", id)
+        if info.context.user != supplier_note.user:
+            raise GraphQLError(
+                        "You can't delete a note you didn't create")
+        supplier_note.delete()
+        return DeleteSupplierNote(
+            success="Supplier note was deleted successfully")
+
+
 class Mutation(graphene.ObjectType):
     add_supplier = AddSupplier.Field()
     approve_supplier = ApproveSupplier.Field()
@@ -238,3 +341,6 @@ class Mutation(graphene.ObjectType):
     edit_proposal = EditProposal.Field()
     approve_edit_request = ApproveEditRequest.Field()
     decline_edit_request = DeclineEditRequest.Field()
+    create_suppliernote = CreateSupplierNote.Field()
+    update_suppliernote = UpdateSupplierNote.Field()
+    delete_suppliernote = DeleteSupplierNote.Field()

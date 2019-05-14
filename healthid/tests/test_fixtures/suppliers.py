@@ -190,3 +190,85 @@ user_requests = '''
           }
         }
 '''
+
+create_suppliers_note = '''
+      mutation{{
+        createSuppliernote(
+          supplierId:"{supplier_id}",
+          note:"{note}",
+          outletIds:[{outlet_id}]
+        ){{
+          message
+          supplierNote{{
+            id
+            note
+            user{{
+              id
+              email
+            }}
+          }}
+          supplier{{
+            id
+            name
+            email
+          }}
+
+        }}
+      }}
+
+'''
+
+update_suppliers_note = '''
+      mutation{{
+        updateSuppliernote(
+          id:{supplier_note},
+          note:"{note}",
+          outletIds:[{outlet_id}]
+        ){{
+          success
+          supplierNote{{
+                id
+                note
+                user{{
+                  id
+                  email
+                  }}
+            supplier{{
+              id
+              name
+              email
+            }}
+          }}
+        }}
+      }}
+
+'''
+
+
+all_suppliers_note = '''
+    query{
+      allSuppliersNote{
+        id
+        note
+        user{
+          id
+          email
+        }
+        supplier{
+          id
+          name
+        }
+      }
+    }
+
+'''
+
+
+def supplier_notes(supplier_id):
+    return (f'''query{{suppliersNote(id: "{supplier_id}"){{id}}}}''')
+
+
+def delete_supplier_note(supplier_note):
+    return f'''mutation{{
+                deleteSuppliernote(id: {supplier_note}){{success}}
+                    }}'''
