@@ -13,6 +13,7 @@ from healthid.apps.products.schema.product_category_mutation import (
 from healthid.apps.products.schema.product_query import (
     ProductCategoryType, ProductType)
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.app_utils.query_objects import GetObjectList
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.activate_deactivate_product import \
     activate_deactivate_products
@@ -168,7 +169,7 @@ class UpdatePrice(graphene.Mutation):
         product_ids = kwargs.get('product_ids')
         auto_price = kwargs.get('auto_price')
         sales_price = kwargs.get('sales_price')
-        products = set_price.get_products(product_ids)
+        products = GetObjectList.get_objects(Product, product_ids)
         for product in products:
             set_price.update_product_price(
                 product,

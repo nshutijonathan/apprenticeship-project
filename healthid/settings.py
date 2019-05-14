@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'taggit',
     'django_extensions',
     'django_apscheduler',
+    'healthid.apps.stock',
 ]
 
 MIDDLEWARE = [
@@ -74,7 +75,9 @@ ROOT_URLCONF = 'healthid.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            'healthid/templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -202,3 +205,5 @@ pusher = pusher.Pusher(
     cluster=os.environ.get('PUSHER_CLUSTER'),
     ssl=True
 )
+
+STOCK_JOB_TIME_INTERVAL = os.environ.get('STOCK_JOB_TIME_INTERVAL', '1440')

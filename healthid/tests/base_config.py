@@ -1,5 +1,5 @@
 import json
-
+from datetime import datetime
 from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
@@ -11,6 +11,9 @@ from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
+from healthid.apps.events.models import EventType
+from healthid.apps.stock.models import StockCountTemplate
+from healthid.apps.events.models import Event
 
 
 class BaseConfiguration(TestCase):
@@ -67,6 +70,16 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256 770777777",
             "password": "Password123"
         }
+        self.stock_count_user1 = {
+            "email": "arkafuuma@gmail.com",
+            "mobile_number": "+256 470777777",
+            "password": "Password123"
+        }
+        self.stock_count_user2 = {
+            "email": "arkafuuma2@gmail.com",
+            "mobile_number": "+256 570777777",
+            "password": "Password123"
+        }
         self.master_admin = {
             "email": "you@example.com",
             "mobile_number": "+256 770777797",
@@ -88,7 +101,7 @@ class BaseConfiguration(TestCase):
             'phone': +256788088831
         }
 
-        self.user = self.register_user()
+        self.user = self.register_user(self.new_user)
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
         self.supplier = self.create_suppliers(self.user)
@@ -115,13 +128,13 @@ class BaseConfiguration(TestCase):
         self.assertNotIn("errors", resp, "Response had errors")
         self.assertEqual(resp["data"], expected, "Response has correct data")
 
-    def register_user(self):
+    def register_user(self, user):
         """
         register a new user
         """
-        email = self.new_user["email"]
-        mobile_number = self.new_user["mobile_number"]
-        password = self.new_user["password"]
+        email = user["email"]
+        mobile_number = user["mobile_number"]
+        password = user["password"]
         user = User.objects.create_user(
             email=email, mobile_number=mobile_number, password=password)
         user.is_active = True
@@ -230,3 +243,29 @@ class BaseConfiguration(TestCase):
             product=self.product,
             outlet=self.outlet
         )
+
+    def create_event(
+        self, event_title='some event',
+        description='urgent event',
+    ):
+        event_type = EventType.objects.create(name='Outlet Event')
+        event = Event.objects.create(
+            event_title=event_title, start_date=datetime.now(),
+            end_date=datetime.now(), description=description,
+            event_type=event_type, start_time=datetime.now(),
+            end_time=datetime.now(),
+        )
+        event.user.add(self.user)
+        event.outlet.add(self.outlet)
+        return event
+
+    def create_stock_template(self):
+        stock_template = StockCountTemplate.objects.create(
+            outlet=self.outlet,
+            schedule_time=self.event
+        )
+        stock_template.products.add(self.product)
+        stock_template.assigned_users.add(self.user)
+        stock_template.designated_users.add(self.user)
+        stock_template.save()
+        return stock_template
