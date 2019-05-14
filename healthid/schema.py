@@ -9,7 +9,8 @@ from healthid.apps.consultation.schema import (consultation_mutation,
 from healthid.apps.events.schema import event_mutations, event_querys
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
-from healthid.apps.orders.schema import SuppliersMutation, SuppliersQuery
+from healthid.apps.orders.schema import (SuppliersMutation, SuppliersQuery,
+                                         order_mutations)
 from healthid.apps.outlets.schema import outlet_mutation, outlet_schema
 from healthid.apps.preference.schema import (preference_mutation,
                                              preference_schema)
@@ -56,6 +57,7 @@ class Mutation(
         consultation_mutation.Mutation,
         promotions_mutation.Mutation,
         stock_mutation.Mutation,
+        order_mutations.Mutation,
         graphene.ObjectType):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
