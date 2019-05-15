@@ -1,9 +1,12 @@
 import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
+
 from healthid.apps.consultation.models import Consultation
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.consultation.schema.consultation_query import ConsultantType
+from healthid.apps.consultation.schema.schedule_consultation_mutation import \
+    Schedule
+from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -100,3 +103,4 @@ class Mutation(graphene.ObjectType):
     create_consultation = CreateConsultation.Field()
     edit_consultation = EditConsultation.Field()
     delete_consultation = DeleteConsultation.Field()
+    schedule = Schedule.Field()

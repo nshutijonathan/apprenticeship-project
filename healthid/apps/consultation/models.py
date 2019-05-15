@@ -1,5 +1,9 @@
 from django.db import models
+
+from healthid.apps.authentication.models import User
+from healthid.apps.events.models import Event
 from healthid.apps.outlets.models import Outlet
+from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 
 
 class ExpectedTimeDuration(models.Model):
@@ -29,3 +33,22 @@ class Consultation(models.Model):
     class Meta:
         unique_together = (("consultation_name", "approved_delivery_formats",
                             "expected_time"))
+
+
+class ScheduleConsultation(models.Model):
+    id = models.CharField(
+        max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
+    )
+    consultants = models.ManyToManyField(User)
+    customer_name = models.CharField(max_length=255)
+    payment_status = models.CharField(max_length=100, default='Not Paid')
+    consultation_type = models.ForeignKey(
+        Consultation, on_delete=models.CASCADE)
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, null=True, blank=True)
+    created_on = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return (f'''{self.id}
+        Customer Name: {self.customer_name}
+        ''')

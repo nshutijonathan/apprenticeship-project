@@ -19,5 +19,12 @@
         "fields": {
            "name": "Personal"
         }
-     }
+     },
+     {
+      "model": "events.eventtype",
+      "pk": "x7f36lbw1",
+      "fields": {
+         "name": "Consultation"
+      }
+   }
   ]
