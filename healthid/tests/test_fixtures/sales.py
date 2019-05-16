@@ -151,26 +151,3 @@ def retrieve_promotion_types():
                 }}
             }}
     ''')
-
-
-def approve_promotion(promotion_id):
-    return (f'''
-            mutation {{
-                approvePromotion(promotionId: "{promotion_id}"){{
-                    success
-                    promotion {{
-                        id
-                    }}
-                }}
-            }}
-    ''')
-
-
-def retrieve_promotions_pending_approval(outlet_id):
-    return (f'''
-            query {{
-                promotionsPendingApproval(outletId: {outlet_id}){{
-                    id
-                }}
-            }}
-    ''')

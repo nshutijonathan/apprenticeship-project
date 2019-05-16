@@ -22,7 +22,6 @@ class Promotion(models.Model):
     products = models.ManyToManyField(Product, blank=True)
     discount = models.DecimalField(decimal_places=2, max_digits=10)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
-    is_approved = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title

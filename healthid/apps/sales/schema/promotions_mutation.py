@@ -130,32 +130,8 @@ class DeletePromotion(graphene.Mutation):
         return DeletePromotion(success='Promotion has been deleted.')
 
 
-class ApprovePromotion(graphene.Mutation):
-    class Arguments:
-        promotion_id = graphene.String(required=True)
-
-    success = graphene.String()
-    promotion = graphene.Field(PromotionType)
-
-    @login_required
-    @user_permission('Manager')
-    def mutate(self, info, **kwargs):
-        promotion_id = kwargs.get('promotion_id')
-        user = info.context.user
-        promotion = get_model_object(Promotion, 'id', promotion_id)
-        if user not in promotion.outlet.user.all():
-            raise GraphQLError(
-                'You don\'t belong to outlet with this promomtion.'
-            )
-        promotion.is_approved = True
-        promotion.save()
-        return ApprovePromotion(success='Promotion has been approved.',
-                                promotion=promotion)
-
-
 class Mutation(graphene.ObjectType):
     create_promotion = CreatePromotion.Field()
     update_promotion = UpdatePromotion.Field()
     delete_promotion = DeletePromotion.Field()
     create_promotion_type = CreatePromotionType.Field()
-    approve_promotion = ApprovePromotion.Field()
