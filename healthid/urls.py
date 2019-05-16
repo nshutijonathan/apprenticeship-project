@@ -18,8 +18,8 @@ from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 
-from .apps.authentication.views import activate
-from .views import HandleCSV, ResetPassword, HandleCsvExport
+from .apps.authentication.views import activate, PasswordResetView
+from .views import HandleCSV, HandleCsvExport
 
 admin.site.site_header = "HealthID Admin"
 admin.site.site_title = "HealthID Admin"
@@ -28,10 +28,10 @@ admin.site.index_title = "Welcome to HealthID"
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthid/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-    path('activate/<uidb64>/<token>/', activate, name='activate'),
+    path('healthid/activate/<uidb64>/<token>', activate, name='activate'),
     path('healthid/csv/<param>', HandleCSV.as_view(), name='handle_csv'),
     path('healthid/export_csv/<param>', HandleCsvExport.as_view(),
          name='export_csv'),
     path('healthid/password_reset/<uidb64>/<token>',
-         ResetPassword.as_view(), name='password_reset')
+         csrf_exempt(PasswordResetView.as_view()), name='password_reset')
 ]
