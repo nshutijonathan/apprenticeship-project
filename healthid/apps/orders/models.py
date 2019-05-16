@@ -1,7 +1,7 @@
 from django.db import models
 
 from healthid.apps.authentication.models import User
-from healthid.apps.outlets.models import City, Outlet
+from healthid.apps.outlets.models import City
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.apps.outlets.models import Outlet
 
@@ -22,8 +22,7 @@ class PaymentTerms(models.Model):
 
 class Suppliers(models.Model):
     id = models.CharField(
-        max_length=9, primary_key=True, default=id_gen, editable=False
-    )
+        max_length=9, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, unique=True, null=True)
     mobile_number = models.CharField(max_length=100)
@@ -41,9 +40,12 @@ class Suppliers(models.Model):
     is_approved = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     admin_comment = models.TextField(null=True)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE,
-                               related_name="proposedEdit",
-                               null=True, blank=True)
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="proposedEdit",
+        null=True,
+        blank=True)
 
     def __str__(self):
         return self.name
@@ -62,8 +64,7 @@ class Order(models.Model):
     '''
     id = models.AutoField(primary_key=True)
     order_number = models.CharField(
-        max_length=9, default=id_gen, editable=False
-    )
+        max_length=9, default=id_gen, editable=False)
     name = models.TextField(null=False)
     product_autofill = models.BooleanField(default=True)
     supplier_autofill = models.BooleanField(default=True)

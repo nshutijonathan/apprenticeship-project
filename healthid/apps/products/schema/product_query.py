@@ -80,6 +80,7 @@ class Query(graphene.AbstractType):
     approved_products = graphene.List(ProductType)
     filter_products = DjangoFilterConnectionField(ProductType)
     proposed_edits = graphene.List(ProductType)
+    user_product_requests = graphene.List(ProductType)
 
     product = graphene.Field(
         ProductType,
@@ -98,11 +99,8 @@ class Query(graphene.AbstractType):
     batch_expiries = graphene.Field(
         product_batch_info,
         start_date=graphene.String(),
-        end_date=graphene.String(required=True)
-    )
-    expired_batches = graphene.Field(
-        product_batch_info
-    )
+        end_date=graphene.String(required=True))
+    expired_batches = graphene.Field(product_batch_info)
     deactivated_products = graphene.List(ProductType)
     product_categories = graphene.List(ProductCategoryType)
     measurement_unit = graphene.List(MeasurementUnitType)
@@ -146,6 +144,11 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_measurement_unit(self, info):
         return MeasurementUnit.objects.all()
+
+    @login_required
+    def resolve_user_product_requests(self, info):
+        user = info.context.user
+        return Product.objects.filter(user=user).exclude(parent=None)
 
 
 class BatchQuery(graphene.AbstractType):
