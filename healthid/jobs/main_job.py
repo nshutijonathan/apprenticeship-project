@@ -7,9 +7,13 @@ from healthid.utils.product_utils.batch_expiries import \
     notify_about_expired_products
 from healthid.utils.stock_utils.stock_count_alert import \
     generate_stock_counts_notifications
+from healthid.utils.product_utils.product_expiry import \
+    check_for_expiry_products
 
 time_interval = os.environ.get('EXPIRY_NOTIFICATION_DURATION', '43200')
 job_run_interval = int(settings.STOCK_JOB_TIME_INTERVAL)
+generate_promotion_interval = os.environ.get('GENERATE_PROMOTION_INTERVAL',
+                                             1440)
 
 
 def start():
@@ -18,6 +22,9 @@ def start():
     scheduler = BackgroundScheduler()
     scheduler.add_job(notify_about_expired_products, 'interval',
                       minutes=int(time_interval))
+    scheduler.add_job(check_for_expiry_products,
+                      'interval',
+                      minutes=int(generate_promotion_interval))
     scheduler.start()
 
 
