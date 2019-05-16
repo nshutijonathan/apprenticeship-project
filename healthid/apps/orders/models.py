@@ -3,7 +3,6 @@ from django.db import models
 from healthid.apps.authentication.models import User
 from healthid.apps.outlets.models import City
 from healthid.utils.app_utils.id_generator import id_gen
-from healthid.apps.outlets.models import Outlet
 
 
 class Tier(models.Model):

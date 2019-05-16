@@ -1,6 +1,8 @@
 from healthid.tests.sales.promotion_base import TestPromotion
-from healthid.tests.test_fixtures.sales import (retrieve_promotions,
-                                                retrieve_promotion_types)
+from healthid.tests.test_fixtures.sales import (
+    retrieve_promotions, retrieve_promotion_types,
+    retrieve_promotions_pending_approval
+)
 
 
 class TestRetrievePromotion(TestPromotion):
@@ -26,3 +28,29 @@ class TestRetrievePromotion(TestPromotion):
                                          retrieve_promotion_types())
         self.assertEqual(response['data']['promotionTypes'][0]['id'],
                          str(self.promotion_type.id))
+
+    def test_admin_can_retrieve_outlet_promotions_pending_approval(self):
+        self.promotion.is_approved = False
+        self.promotion.save()
+        response = self.query_with_token(
+            self.access_token_master,
+            retrieve_promotions_pending_approval(self.outlet.id)
+        )
+        self.assertEqual(
+            response['data']['promotionsPendingApproval'][0]['id'],
+            str(self.promotion.id)
+        )
+
+    def test_cant_retrieve_unapproved_promotion_for_outlet_dont_belong(self):
+        self.outlet.user.remove(self.master_admin_user)
+        response = self.query_with_token(
+            self.access_token_master,
+            retrieve_promotions_pending_approval(self.outlet.id)
+        )
+        self.assertIsNotNone(response['errors'])
+
+    def test_cant_retrieve_outlet_unapproved_promotion_unauthenticated(self):
+        response = self.query_with_token(
+            '', retrieve_promotions_pending_approval(self.outlet.id)
+        )
+        self.assertIsNotNone(response['errors'])
