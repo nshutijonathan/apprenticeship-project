@@ -127,7 +127,6 @@ class DeleteStockCountTemplate(graphene.Mutation):
             'small_text_detail': 'Hello, stock counts has been canceled'
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
-        stock_tempalate.delete()
         send_mail.send()
         message = 'Stock template was successfully deleted'
         return DeleteStockCountTemplate(success=message)

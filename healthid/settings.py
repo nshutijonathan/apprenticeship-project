@@ -172,13 +172,12 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
+django_heroku.settings(locals())
 
-FRONTEND_URL = os.environ.get(
-    'FRONTEND_URL', 'https: // healthid-fe.herokuapp.com')
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:8080',
     'localhost:8080',
-    FRONTEND_URL,
+    os.getenv('FRONTEND_URL'),
 )
 
 cloudinary.config(
@@ -208,6 +207,3 @@ pusher = pusher.Pusher(
 )
 
 STOCK_JOB_TIME_INTERVAL = os.environ.get('STOCK_JOB_TIME_INTERVAL', '1440')
-
-
-django_heroku.settings(locals())

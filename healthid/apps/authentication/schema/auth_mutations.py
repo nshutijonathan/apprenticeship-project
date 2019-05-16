@@ -57,7 +57,6 @@ class RegisterUser(graphene.Mutation):
 
     success = graphene.List(graphene.String)
     errors = graphene.List(graphene.String)
-    verification_link = graphene.Field(graphene.String)
 
     def mutate(self, info, email, password, mobile_number):
         validate_fields = ValidateUser().validate_user_fields(
@@ -70,13 +69,12 @@ class RegisterUser(graphene.Mutation):
             user.save()
             # account verification
             token = account_activation_token.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(
-                user.pk)).decode()
             html_body = render_to_string(
                 'emails/verification_email.html', {
                     'email': email,
                     'domain': DOMAIN,
-                    'uid': uid,
+                    'uid': urlsafe_base64_encode(force_bytes(
+                        user.pk)).decode(),
                     'token': token,
                 })
             msg = EmailMessage(
@@ -92,9 +90,7 @@ class RegisterUser(graphene.Mutation):
                 "You have successfully registered with healthID."
                 " Please check your email to verify your account"
             ]
-            verification_link = f"{DOMAIN}/healthid/activate/{uid}/{token}"
-            return RegisterUser(success=success, user=user,
-                                verification_link=verification_link)
+            return RegisterUser(success=success, user=user)
         except Exception as e:
             errors = ["Something went wrong: {}".format(e)]
             return RegisterUser(errors=errors)
@@ -105,7 +101,6 @@ class AddUser(graphene.Mutation):
         Mutation to register a user.
     """
     user = graphene.Field(UserType)
-    verification_link = graphene.Field(graphene.String)
 
     class Arguments:
         outlet_id = graphene.List(graphene.String, required=True)
@@ -164,13 +159,12 @@ class AddUser(graphene.Mutation):
             user.save()
             # Email verification
             token = account_activation_token.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(
-                user.pk)).decode()
             html_body = render_to_string(
                 'emails/add_user_verification.html', {
                     'email': email,
                     'domain': DOMAIN,
-                    'uid': uid,
+                    'uid': urlsafe_base64_encode(force_bytes(
+                        user.pk)).decode(),
                     'token': token,
                     'password': password
                 })
@@ -181,14 +175,12 @@ class AddUser(graphene.Mutation):
                 to=[email])
             msg.content_subtype = 'html'
             msg.send()
-            verification_link = f"{DOMAIN}/healthid/activate/{uid}/{token}"
             success = [
                 'message',
                 'You have successfully registered a User.'
             ]
 
-            return AddUser(success=success, user=user,
-                           verification_link=verification_link)
+            return AddUser(success=success, user=user)
         except Exception as e:
             errors = ['Something went wrong: {}'.format(e)]
             return AddUser(errors=errors)
