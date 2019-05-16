@@ -56,14 +56,10 @@ class Product(models.Model):
     auto_price = models.BooleanField(default=False)
     loyalty_weight = models.IntegerField(default=0)
     parent = models.ForeignKey(
-        "self",
-        on_delete=models.CASCADE,
-        related_name="proposedEdit",
-        null=True,
-        blank=True)
+        "self", on_delete=models.CASCADE, related_name="proposedEdit",
+        null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    admin_comment = models.TextField(null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     '''all_products model manager returns both all products including
     deactivated products i.e Products.all_products.all() returns both
     active and deactivated products use it when you need deactive

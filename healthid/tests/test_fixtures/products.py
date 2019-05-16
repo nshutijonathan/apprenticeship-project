@@ -145,7 +145,7 @@ proposed_product_query = '''
 '''
 
 
-def create_product_2(supplier_id, backup_id, user):
+def create_product_2(supplier_id, backup_id):
     return Product.objects.create(
         product_category_id=1,
         product_name='Panadol',
@@ -160,8 +160,7 @@ def create_product_2(supplier_id, backup_id, user):
         prefered_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
         tags="painkillers",
-        unit_cost=10.65,
-        user=user)
+        unit_cost=10.65)
 
 
 def update_product(product_id, product_name):
@@ -182,7 +181,6 @@ def update_product(product_id, product_name):
                 product{{
                     productName
                     id
-                    user{{id}}
                 }}
                 message
                 }}
@@ -412,43 +410,3 @@ def activate_product(product_ids):
                 }}
             }}
     ''')
-
-
-approve_proposed_edits = '''
-    mutation {{
-        approveProposedEdits(
-        editRequestId:{edit_request_id}
-
-        ){{
-        product{{
-        productName
-        parent{{
-            id
-        }}
-            isApproved
-        }}
-        message
-        }}
-    }}
-'''
-
-decline_proposed_edits = '''
-    mutation {{
-        declineProposedEdits(
-        id:{edit_request_id},
-        comment:"Your edit request has not been accepted"
-
-        ){{
-        editRequest{{
-        productName
-        parent{{
-            id
-        }}
-            isApproved
-
-        }}
-                message
-
-        }}
-    }}
-'''
