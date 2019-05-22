@@ -58,6 +58,10 @@ class Product(models.Model):
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, related_name="proposedEdit",
         null=True, blank=True)
+    image = models.URLField(
+        default='https://res.cloudinary.com/dojaopytm/image/upload/'
+        'v1558444184/productPlaceholder.png'
+    )
     is_active = models.BooleanField(default=True)
 
     '''all_products model manager returns both all products including

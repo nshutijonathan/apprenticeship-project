@@ -53,6 +53,7 @@ class CreateProduct(graphene.Mutation):
         backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         unit_cost = graphene.Float()
+        image = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -85,6 +86,7 @@ class UpdateProduct(graphene.Mutation):
         prefered_supplier_id = graphene.Int()
         backup_supplier_id = graphene.Int()
         tags = graphene.List(graphene.String)
+        image = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
