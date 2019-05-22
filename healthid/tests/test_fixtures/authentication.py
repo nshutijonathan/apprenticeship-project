@@ -7,6 +7,7 @@ register_user_query = '''
                ) {{
                  errors
                  success
+                 verificationLink
                }}
             }}
             '''
@@ -161,3 +162,10 @@ password_reset_json = '''
       }}
   }}
 '''
+
+
+user = {
+    'email': "arkafuuma@gmail.com",
+    'mobileNumber': "+256 788088831",
+    'password': "Password@1"
+}
