@@ -14,14 +14,16 @@ class Notification(models.Model):
     )
     recipient = models.ManyToManyField(User)
     message = models.TextField(null=False)
+    event_name = models.CharField(
+        max_length=100, default='general_notification')
     read_status = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
 
 
 def save_notify(sender, instance, **kwargs):
-    pusher.trigger('batch-expiry-notification-channel',
-                   'batch-expiry-notification-event',
-                   {'message':  instance.message})
+    pusher.trigger(
+        'notification-channel',
+        instance.event_name, {'message':  instance.message})
 
 
 post_save.connect(save_notify, Notification)

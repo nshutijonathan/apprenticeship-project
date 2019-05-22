@@ -1,0 +1,42 @@
+[
+  {
+      "model":"outlets.outlet",
+      "pk":2,
+      "fields":{
+         "kind":1,
+         "name":"Eco Pharm",
+         "address_line1":"Bukoto St",
+         "address_line2":"Bukoto",
+         "lga":"Jolof",
+         "city":1,
+         "phone_number":"256703201606",
+         "date_launched":"2018-01-27",
+         "business":"112t0mti8"
+      }
+   },
+ {
+        "model": "events.event",
+        "pk": 1,
+        "fields": {
+           "event_type_id": "16lbwaaf3",
+          "start_date": "2019-10-10",
+          "end_date": "2019-10-12",
+          "event_title": "Nothing",
+          "description": "Simple",
+          "end_time":"19:10:25-07",
+          "start_time": "19:10:25-07"
+        }
+     },
+  {
+    "model": "stock.stockcounttemplate",
+        "pk": "1",
+        "fields": {
+          "schedule_time": 1,
+          "outlet": "2",
+          "created_at": "2019-10-12",
+          "designated_users": ["aul5xrp73"],
+          "assigned_users": ["aul5xrp73"],
+          "products": [4, 5]
+        }
+  }
+]

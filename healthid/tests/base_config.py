@@ -6,8 +6,8 @@ from healthid.apps.authentication.models import Role, User
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity)
-from healthid.apps.orders.models import (PaymentTerms, Tier, Suppliers,
-                                         SupplierNote)
+from healthid.apps.orders.models import (
+    PaymentTerms, Tier, Suppliers, SupplierNote)
 from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
@@ -117,6 +117,7 @@ class BaseConfiguration(TestCase):
         self.batch_info = self.create_batch_info()
         self.sales_prompt = self.create_sales_prompt()
         self.suppliers_note = self.create_suppliers_note()
+        self.event = self.create_event()
 
         # register and log in user
         self.outlet.user.add(self.user)

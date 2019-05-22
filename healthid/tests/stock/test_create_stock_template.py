@@ -22,7 +22,7 @@ class StockTemplateTestCase(BaseConfiguration):
         self.user_id1 = self.register_user(self.stock_count_user1).id
         self.user_id2 = self.register_user(self.stock_count_user2).id
         self.outlet_id = self.outlet.id
-        self.event_id = self.create_event().id
+        self.event_id = self.event.id
         self.stock_template_data = {
             'product_ids': f'[{self.product_id1}, {self.product_id2}]',
             'assigned_user_ids': f'["{self.user_id1}", "{self.user_id2}"]',

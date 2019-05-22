@@ -7,10 +7,10 @@
       }
    },
    {
-      "model":"authentication.role",
-      "pk":"6lbwaaf31",
-      "fields":{
-         "name":"Master Admin"
+      "model": "authentication.role",
+      "pk": "6lbwaaf31",
+      "fields": {
+         "name": "Master Admin"
       }
    },
    {
@@ -21,10 +21,10 @@
       }
    },
    {
-      "model":"authentication.role",
-      "pk":"6lbwaaf32",
-      "fields":{
-         "name":"Operations Admin"
+      "model": "authentication.role",
+      "pk": "6lbwaaf32",
+      "fields": {
+         "name": "Operations Admin"
       }
    }
 ]

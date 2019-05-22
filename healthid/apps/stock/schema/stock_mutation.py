@@ -1,20 +1,20 @@
 from datetime import datetime
-
 import graphene
-from graphene_django import DjangoObjectType
+from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.app_utils.send_mail import SendMail
+from healthid.utils.stock_utils.stock_count_utils import validate_stock
+from healthid.utils.stock_utils.stock_counts import stock_counts
 from graphql_jwt.decorators import login_required
-
-from healthid.apps.stock.models import StockCountTemplate
+from healthid.apps.stock.models import (
+    StockCount, StockCountTemplate, StockCountRecord)
+from healthid.apps.stock.schema.stock_query import (
+    StockCountType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.app_utils.send_mail import SendMail
-from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.stock_utils.stock_counts import stock_counts
-
-
-class StockCountTemplateType(DjangoObjectType):
-    class Meta:
-        model = StockCountTemplate
+from healthid.utils.notifications_utils.handle_notifications import notify
+from healthid.apps.stock.schema.stock_query import StockCountTemplateType
+from healthid.utils.app_utils.error_handler import errors
+from healthid.apps.products.models import Product, BatchInfo
 
 
 class CreateStockCountTemplate(graphene.Mutation):
@@ -49,7 +49,7 @@ class CreateStockCountTemplate(graphene.Mutation):
             'by': str(info.context.user.email),
             'template_type': 'Stock counts',
             'small_text_detail': 'Hello, you have been assigned to carry'
-            ' out stock counts'
+                                 ' out stock counts'
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
         send_mail.send()
@@ -90,7 +90,7 @@ class EditStockCountTemplate(graphene.Mutation):
             'by': str(info.context.user.email),
             'template_type': 'Stock counts',
             'small_text_detail': 'Hello, stock counts shcedule has '
-            'been modified'
+                                 'been modified'
         }
         params = {'moel_name': StockCountTemplate}
         with SaveContextManager(stock_tempalate, **params) as stock_tempalate:
@@ -133,7 +133,211 @@ class DeleteStockCountTemplate(graphene.Mutation):
         return DeleteStockCountTemplate(success=message)
 
 
+class VarianceEnum(graphene.Enum):
+    IncorrectInitialEntry = 'Incorrect Initial Entry'
+    ReturnedToDistributor = 'Returned to Distributor'
+    DamagedProduct = 'Damaged Product'
+    WrongSale = 'Wrong Sale'
+    UnIdentified = 'Unidentified'
+    NoVariance = 'No Variance'
+    Others = 'Others'
+
+
+class InitiateStockCount(graphene.Mutation):
+    """
+        Mutation to create a Stock Count Information
+    """
+    stock_count = graphene.Field(StockCountType)
+
+    class Arguments:
+        batch_info = graphene.List(graphene.String, required=True)
+        stock_template_id = graphene.Int(required=True)
+        product = graphene.Int(required=True)
+        quantity_counted = graphene.List(graphene.Int, required=True)
+        variance_reason = graphene.Argument(VarianceEnum, required=True)
+        remarks = graphene.String()
+        specify_reason = graphene.String()
+        is_completed = graphene.Boolean(required=True)
+
+    errors = graphene.List(graphene.String)
+    message = graphene.List(graphene.String)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        validate_stock.stock_validate(kwargs)
+        batch_info = kwargs.get('batch_info')
+        quantity_counted = kwargs.get('quantity_counted')
+        product = kwargs.get('product')
+        product_instance = get_model_object(Product, 'id', product)
+        all_batches = product_instance.batch_info.all()
+        stock_template = get_model_object(
+            StockCountTemplate, 'id', kwargs.get('stock_template_id'))
+        stock_template_products = stock_template.products.all()
+        if product_instance not in stock_template_products:
+            errors.custom_message(
+                'Product must belong to this stock template')
+        for batch in batch_info:
+            batch_instance = get_model_object(BatchInfo, 'id', batch)
+            if batch_instance not in all_batches:
+                errors.custom_message(
+                    f'Product {product_instance.product_name} '
+                    f'does not have a batch with id {batch_instance}')
+        stock_count = StockCount()
+        validate_stock.add_stock(kwargs, stock_count)
+        with SaveContextManager(stock_count) as stock_count:
+            message = [f' Stock Count has been saved in progress']
+            for index, value in enumerate(batch_info):
+                record_instance = StockCountRecord.objects.create(
+                    quantity_counted=quantity_counted[index],
+                    batch_info_id=value,
+                )
+                stock_count.stock_count_record.add(record_instance)
+            if stock_count.is_completed:
+                users_instance = \
+                    stock_count.stock_template.designated_users.all()
+                email_stock_count = \
+                    'email_alerts/stocks/stock_count_email.html'
+                event_name = 'stock_count_approval'
+                subject = 'Stock Count sent for approval'
+                context = {
+                    'template_type': 'Stock Count Approval',
+                    'small_text_detail': 'Stock Count Details',
+                    'email': str(info.context.user.email),
+                    'quantity_counted': str(stock_count.quantity_counted),
+                    'variance_reason': str(stock_count.variance_reason),
+                    'product_quantity': str(stock_count.product.quantity)
+                }
+                notify(
+                    users=users_instance,
+                    message=subject, event_name=event_name,
+                    subject=context, html_body=email_stock_count,
+                )
+                message = [f'Stock Count has been sent for approval']
+        return InitiateStockCount(message=message, stock_count=stock_count)
+
+
+class UpdateStockCount(graphene.Mutation):
+    stock_count = graphene.Field(StockCountType)
+
+    class Arguments:
+        batch_info = graphene.List(graphene.String)
+        stock_count_id = graphene.String(required=True)
+        stock_template_id = graphene.Int()
+        product = graphene.Int()
+        quantity_counted = graphene.List(graphene.Int)
+        variance_reason = graphene.Argument(VarianceEnum)
+        remarks = graphene.String()
+        specify_reason = graphene.String()
+        is_completed = graphene.Boolean()
+
+    errors = graphene.List(graphene.String)
+    message = graphene.List(graphene.String)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        batch_info = kwargs.get('batch_info')
+        quantity_counted = kwargs.get('quantity_counted')
+        stock_count_id = kwargs.get('stock_count_id')
+        validate_stock.stock_validate(kwargs)
+        validate_stock.check_empty_id(stock_count_id, name='Stock Count')
+        stock_count = get_model_object(StockCount, 'id', stock_count_id)
+        validate_stock.check_approved_stock(info, stock_count)
+        validate_stock.add_stock(kwargs, stock_count)
+        validate_stock.validate_batch_ids(stock_count, batch_info)
+        with SaveContextManager(stock_count) as stock_count:
+            if batch_info and quantity_counted:
+                for field, data in enumerate(batch_info):
+                    record_instance = \
+                        stock_count.stock_count_record.get(batch_info=data)
+                    record_instance.quantity_counted = \
+                        quantity_counted[field]
+                    record_instance.save()
+            if stock_count.is_completed:
+                users_instance = \
+                    stock_count.stock_template.designated_users.all()
+                email_stock_count = \
+                    'email_alerts/stocks/stock_count_email.html'
+                event_name = 'stock_count_approval'
+                subject = 'Stock Count sent for approval'
+                context = {
+                    'template_type': 'Stock Count Approval',
+                    'small_text_detail': 'Stock Count Details',
+                    'email': str(info.context.user.email),
+                    'quantity_counted': str(stock_count.quantity_counted),
+                    'variance_reason': str(stock_count.variance_reason),
+                    'product_quantity': str(stock_count.product.quantity)
+                }
+                notify(
+                    users=users_instance,
+                    message=subject, event_name=event_name,
+                    subject=context, html_body=email_stock_count,
+                )
+        message = ['Stock Count has been updated successfully']
+        return UpdateStockCount(
+            message=message, stock_count=stock_count)
+
+
+class RemoveBatchStock(graphene.Mutation):
+    stock_count = graphene.Field(StockCountType)
+
+    class Arguments:
+        batch_info = graphene.List(graphene.String, required=True)
+        stock_count_id = graphene.String(required=True)
+
+    errors = graphene.List(graphene.String)
+    message = graphene.List(graphene.String)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        batch_info = kwargs.get('batch_info')
+        validate_stock.stock_validate(kwargs)
+        stock_count_id = kwargs.get('stock_count_id')
+        validate_stock.check_empty_id(stock_count_id, name='Stock Count')
+        stock_count = get_model_object(
+            StockCount, 'id', stock_count_id)
+        validate_stock.validate_batch_ids(
+            stock_count, batch_info_ids=batch_info)
+        if len(stock_count.stock_count_record.values_list('batch_info')) <= 1:
+            errors.custom_message(
+                'Stock must contain at least (one) 1 batch')
+        for batch_id in batch_info:
+            record_instance = stock_count.stock_count_record.get(
+                batch_info=batch_id)
+            stock_count.stock_count_record.remove(record_instance)
+        message = [f'{len(batch_info)} Batch Deleted from stock count']
+        return RemoveBatchStock(message=message, stock_count=stock_count)
+
+
+class DeleteStockCount(graphene.Mutation):
+    """
+        Delete a Product batch Info Mutation
+    """
+
+    stock_count = graphene.Field(StockCountType)
+
+    class Arguments:
+        stock_count_id = graphene.String(required=True)
+
+    errors = graphene.List(graphene.String)
+    message = graphene.String()
+
+    @staticmethod
+    @login_required
+    def mutate(root, info, **kwargs):
+        stock_count_id = kwargs.get('stock_count_id')
+        validate_stock.check_empty_id(stock_count_id, name='Stock Count')
+        stock_count = get_model_object(StockCount, 'id', stock_count_id)
+        validate_stock.check_approved_stock(info, stock_count)
+        message = f'Stock Count with id {stock_count.id} has been deleted'
+        stock_count.delete()
+        return DeleteStockCount(message=message)
+
+
 class Mutation(graphene.ObjectType):
+    initiate_stock = InitiateStockCount.Field()
+    update_stock = UpdateStockCount.Field()
+    delete_stock = DeleteStockCount.Field()
+    remove_batch_stock = RemoveBatchStock.Field()
     create_stock_count_template = CreateStockCountTemplate.Field()
     edit_stock_count_template = EditStockCountTemplate.Field()
     delete_stock_count_template = DeleteStockCountTemplate.Field()

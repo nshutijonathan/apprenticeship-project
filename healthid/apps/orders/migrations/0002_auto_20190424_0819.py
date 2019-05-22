@@ -27,12 +27,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='suppliers',
             name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='proposedEdit', to='orders.Suppliers'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='proposedEdit', to='orders.Suppliers'),
         ),
         migrations.AddField(
             model_name='suppliers',
             name='user',
-            field=models.ForeignKey(default='aul5xrp73', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                default='aul5xrp73', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
             preserve_default=False,
         ),
         migrations.AlterField(
@@ -43,6 +45,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='suppliers',
             name='id',
-            field=models.CharField(default=healthid.utils.app_utils.id_generator.id_gen, editable=False, max_length=9, primary_key=True, serialize=False),
+            field=models.CharField(default=healthid.utils.app_utils.id_generator.id_gen,
+                                   editable=False, max_length=9, primary_key=True, serialize=False),
         ),
     ]

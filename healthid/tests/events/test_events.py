@@ -120,10 +120,3 @@ class EventTestCase(BaseConfiguration):
         response = self.query_with_token(self.access_token, wrong_event_type)
         self.assertIn(response['errors'][0]['message'],
                       'EventType with id f36bw1 does not exist.')
-
-    def test_view_events_without_events(self):
-        """Test that user can view events without events
-        """
-        response = self.query_with_token(self.access_token, view_events)
-        self.assertEqual(response['errors'][0]
-                         ['message'], 'No events to view yet!')

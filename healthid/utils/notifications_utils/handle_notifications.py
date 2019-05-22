@@ -2,18 +2,19 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from healthid.apps.notifications.models import Notification
 from healthid.utils.app_utils.database import SaveContextManager
+from django.template.loader import render_to_string
 
 
-def notify(users, message, subject=None, html_body=None):
+def notify(users, message, event_name, subject=None, html_body=None):
     '''Function to notify the appropriate user
     '''
-    notification = Notification(message=message)
+    notification = Notification(message=message, event_name=event_name)
     with SaveContextManager(notification) as notification:
         for user in users:
             notification.recipient.add(user)
             notification.save()
             if html_body and subject:
-                send_email_notifications(subject, user, html_body)
+                send_email_notifications(message, subject, user, html_body)
 
 
 def send_email_to(subject, email, html_body=None):
@@ -30,8 +31,18 @@ def send_email_to(subject, email, html_body=None):
     email.send()
 
 
-def send_email_notifications(subject, user, html_body=None):
+def send_email_notifications(message, subject, user, html_body=None):
     '''Function to send email notifications
     '''
     if user.email_notification_permissions and html_body:
-        send_email_to(subject, str(user.email), html_body)
+        html = render_to_string(
+            html_body,
+            subject
+        )
+        email = EmailMessage(subject=message,
+                             body=html,
+                             from_email=settings.DEFAULT_FROM_EMAIL,
+                             to=[str(user.email)])
+
+        email.content_subtype = 'html'
+        email.send()

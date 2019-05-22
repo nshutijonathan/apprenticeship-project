@@ -1,15 +1,13 @@
 from os import environ, getenv
 
 import graphene
-from django.conf import settings
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from graphql import GraphQLError
 
 from healthid.apps.authentication.models import User
 from healthid.utils.auth_utils.tokens import account_activation_token
+from healthid.utils.app_utils.send_mail import SendMail
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -46,22 +44,25 @@ class ResetPassword(graphene.Mutation):
             user_firstname = "User"
 
         # Send email to the user
-        html_body = render_to_string(
-            'emails/password_reset_email.html', {
-                'name': user_firstname,
-                'email': email,
-                'domain': DOMAIN,
-                'uid': uid,
-                'token': token,
-            })
-
-        msg = EmailMessage(
-            subject='Password Reset',
-            body=html_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[email])
-        msg.content_subtype = 'html'
-        msg.send()
+        to_email = [
+            user.email
+        ]
+        email_verify_template = \
+            'email_alerts/authentication/password_reset_email.html'
+        subject = 'Account Verification'
+        context = {
+            'template_type': 'Password reset requested '
+                             'for your HealthID Account.',
+            'small_text_detail': '',
+            'name': user_firstname,
+            'email': email,
+            'domain': DOMAIN,
+            'uid': uid,
+            'token': token,
+        }
+        send_mail = SendMail(
+            email_verify_template, context, subject, to_email)
+        send_mail.send()
 
         reset_link = "{}/healthid/password_reset/{}/{}".format(
             DOMAIN, uid, token)

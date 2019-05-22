@@ -4,9 +4,6 @@ import cloudinary
 import cloudinary.api
 import cloudinary.uploader
 import graphene
-from django.conf import settings
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from graphql import GraphQLError
@@ -26,6 +23,7 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
+from healthid.utils.app_utils.send_mail import SendMail
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -72,20 +70,26 @@ class RegisterUser(graphene.Mutation):
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(
                 user.pk)).decode()
-            html_body = render_to_string(
-                'emails/verification_email.html', {
-                    'email': email,
-                    'domain': DOMAIN,
-                    'uid': uid,
-                    'token': token,
-                })
-            msg = EmailMessage(
-                subject='Account Verification',
-                body=html_body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[email])
-            msg.content_subtype = 'html'
-            msg.send()
+            to_email = [
+                user.email
+            ]
+            email_verify_template = \
+                'email_alerts/authentication/verification_email.html'
+            subject = 'Account Verification'
+            context = {
+                'template_type': 'Verify your email',
+                'small_text_detail': 'Thank you for '
+                                     'creating a HealthID account. '
+                                     'Please verify your email '
+                                     'address to set up your account.',
+                'email': user.email,
+                'domain': DOMAIN,
+                'uid': uid,
+                'token': token,
+            }
+            send_mail = SendMail(
+                email_verify_template, context, subject, to_email)
+            send_mail.send()
 
             success = [
                 "message",
@@ -166,21 +170,26 @@ class AddUser(graphene.Mutation):
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(
                 user.pk)).decode()
-            html_body = render_to_string(
-                'emails/add_user_verification.html', {
-                    'email': email,
-                    'domain': DOMAIN,
-                    'uid': uid,
-                    'token': token,
-                    'password': password
-                })
-            msg = EmailMessage(
-                subject='Account Verification',
-                body=html_body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[email])
-            msg.content_subtype = 'html'
-            msg.send()
+            to_email = [
+                user.email
+            ]
+            email_verify_template = \
+                'email_alerts/authentication/add_user_verification.html'
+            subject = 'Account Verification'
+            context = {
+                'template_type': 'Verify your email',
+                'small_text_detail': ' A HealthID account has been created '
+                                     'for you. Please verify your email '
+                                     'address to set up your account.',
+                'email': email,
+                'domain': DOMAIN,
+                'uid': uid,
+                'token': token,
+                'password': password
+            }
+            send_mail = SendMail(
+                email_verify_template, context, subject, to_email)
+            send_mail.send()
             verification_link = f"{DOMAIN}/healthid/activate/{uid}/{token}"
             success = [
                 'message',

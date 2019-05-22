@@ -6,7 +6,6 @@ from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
 from healthid.apps.business.schema import business_mutation, business_query
 from healthid.apps.consultation.schema import (consultation_mutation,
                                                consultation_query)
-from healthid.apps.events.schema import event_mutations, event_querys
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
 from healthid.apps.orders.schema import (SuppliersMutation, SuppliersQuery,
@@ -17,9 +16,11 @@ from healthid.apps.preference.schema import (preference_mutation,
 from healthid.apps.products.schema import product_mutations, product_query
 from healthid.apps.receipts.schema import receipt_mutation, receipt_schema
 from healthid.apps.register.schema import register_mutation, register_schema
-from healthid.apps.sales.schema import (promotions_mutation, promotions_query,
-                                        sales_mutation, sales_schema)
-from healthid.apps.stock.schema import stock_mutation, stock_query
+from healthid.apps.sales.schema import (sales_mutation, sales_schema,
+                                        promotions_mutation, promotions_query)
+from healthid.apps.events.schema import event_querys, event_mutations
+from healthid.apps.stock.schema import stock_mutation
+from healthid.apps.stock.schema import stock_query
 
 
 class Query(

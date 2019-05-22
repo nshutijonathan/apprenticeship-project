@@ -73,4 +73,4 @@ def notify_quantity_proposal(sender, instance, created, **kwargs):
             message = ("Batch no: {} has a"
                        " proposed quantity edit.").format(
                 batch.batch_no)
-            notify(all_users, message)
+            notify(all_users, message, event_name='batch_quantity')

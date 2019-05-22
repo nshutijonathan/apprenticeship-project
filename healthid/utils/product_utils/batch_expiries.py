@@ -54,7 +54,8 @@ def trigger_notification(expired_batches):
                 'days_to_expiry': batch["days_to_expiry"]
             })
         subject = 'Expired Products!'
-
+        event_name = 'batch-expiry-notification-event'
         thread = threading.Thread(target=notify(
-            outlet_master_admins, subject, message, html_body))
+            outlet_master_admins, message,
+            event_name, subject, html_body, ))
         thread.start()
