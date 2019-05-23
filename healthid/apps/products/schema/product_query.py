@@ -11,7 +11,7 @@ from graphql_jwt.decorators import login_required
 from taggit.managers import TaggableManager
 
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
-                                           ProductCategory, Quantity)
+                                           ProductCategory, Quantity, Survey)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 
@@ -69,6 +69,11 @@ class QuantityType(graphene.ObjectType):
     quantity_received = graphene.Int()
 
 
+class SurveyType(DjangoObjectType):
+    class Meta:
+        model = Survey
+
+
 class Query(graphene.AbstractType):
     products = graphene.List(ProductType)
     proposed_products = graphene.List(ProductType)
@@ -80,6 +85,9 @@ class Query(graphene.AbstractType):
     approved_products = graphene.List(ProductType)
     filter_products = DjangoFilterConnectionField(ProductType)
     proposed_edits = graphene.List(ProductType)
+    price_check_surveys = graphene.List(SurveyType)
+    price_check_survey = graphene.Field(SurveyType,
+                                        id=graphene.String(required=True))
 
     product = graphene.Field(
         ProductType,
@@ -146,6 +154,14 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_measurement_unit(self, info):
         return MeasurementUnit.objects.all()
+
+    @login_required
+    def resolve_price_check_surveys(self, info):
+        return Survey.objects.all()
+
+    @login_required
+    def resolve_price_check_survey(self, info, **kwargs):
+        return get_model_object(Survey, 'id', kwargs.get('id'))
 
 
 class BatchQuery(graphene.AbstractType):

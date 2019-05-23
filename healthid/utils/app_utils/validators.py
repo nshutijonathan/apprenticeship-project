@@ -24,3 +24,13 @@ def validate_password(new_password):
         error = ('password must have at least 8 characters,'
                  ' a number and a capital letter.')
         return error
+
+
+def validate_empty_field(field, value):
+    """
+    Utility method to check if a field value is blank
+    and return an error message if it is so.
+    """
+    if value.strip() == "":
+        message = "{} field cannot be blank!".format(field)
+        raise GraphQLError(message)

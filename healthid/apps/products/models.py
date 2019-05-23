@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.db import models
 from taggit.managers import TaggableManager
 
-from healthid.apps.orders.models import Suppliers
 from healthid.apps.authentication.models import User
+from healthid.apps.orders.models import Suppliers
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import id_gen
 
@@ -145,3 +145,35 @@ class Quantity(models.Model):
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedQuantityChange",
                                null=True, blank=True)
+
+
+class Survey(models.Model):
+    """
+    Model class for survey used to conduct supplier
+    price checks for products.
+    """
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    name = models.CharField(max_length=50, unique=True)
+    outlet = models.ForeignKey(
+        Outlet, on_delete=models.CASCADE, related_name='outlet_price_surveys')
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='user_price_surveys')
+    survey_closed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PriceCheckSurvey(models.Model):
+    """
+    Model class for price check surveys.
+    """
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='product_price_checks')
+    supplier = models.ForeignKey(
+        Suppliers, on_delete=models.CASCADE, related_name='supplier_prices')
+    price = models.DecimalField(
+        max_digits=20, decimal_places=2, default=Decimal('0.00'))
+    survey = models.ManyToManyField(
+        Survey, related_name='survey_price_checks')

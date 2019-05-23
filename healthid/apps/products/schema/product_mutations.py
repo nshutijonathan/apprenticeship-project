@@ -9,6 +9,8 @@ from healthid.apps.products.schema.batch_info_mutation import (CreateBatchInfo,
                                                                UpdateBatchInfo)
 from healthid.apps.products.schema.measurement_unit_mutation import (
     CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
+from healthid.apps.products.schema.price_survey_mutations import (
+    CreatePriceCheckSurvey, DeletePriceCheckSurvey, UpdatePriceCheckSurvey)
 from healthid.apps.products.schema.product_category_mutation import (
     CreateProductCategory, DeleteProductCategory, EditProductCategory)
 from healthid.utils.app_utils.database import get_model_object
@@ -302,3 +304,6 @@ class Mutation(graphene.ObjectType):
     delete_product_category = DeleteProductCategory.Field()
     edit_measurement_unit = EditMeasurementUnit.Field()
     delete_measurement_unit = DeleteMeasurementUnit.Field()
+    create_price_check_survey = CreatePriceCheckSurvey.Field()
+    delete_price_check_survey = DeletePriceCheckSurvey.Field()
+    update_price_check_survey = UpdatePriceCheckSurvey.Field()
