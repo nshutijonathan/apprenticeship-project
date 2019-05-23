@@ -12,23 +12,12 @@ class Notification(models.Model):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False
     )
+    recipient = models.ManyToManyField(User)
     message = models.TextField(null=False)
     event_name = models.CharField(
         max_length=100, default='general_notification')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class NotificationRecord(models.Model):
-    '''
-    Model class to handle notification read status
-    and deletion.
-    '''
-    recipient = models.ForeignKey(
-        User, related_name='user_notifications_records',
-        on_delete=models.CASCADE)
-    notification = models.ManyToManyField(
-        Notification, related_name='notification_records')
     read_status = models.BooleanField(default=False)
+    created_at = models.DateField(auto_now_add=True)
 
 
 def save_notify(sender, instance, **kwargs):

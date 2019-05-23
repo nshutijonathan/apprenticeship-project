@@ -13,28 +13,20 @@ class UpdateNotificationReadStatus(graphene.Mutation):
     """
     notification = graphene.Field(NotificationType)
     success = graphene.Field(graphene.String)
-    error = graphene.Field(graphene.String)
 
     class Arguments:
         id = graphene.String(required=True)
 
     @login_required
     def mutate(self, info, id):
-        recipient = info.context.user
         notification = get_model_object(Notification, 'id', id)
-        notification_record = notification.notification_records.filter(
-            recipient=recipient)
-        if notification_record:
-            record = notification_record[0]
-            record.read_status = not record.read_status
-            record.save()
-            success = "Notification was marked as {}.".format(
-                'unread' if not record.read_status else 'read')
+        notification.read_status = not notification.read_status
+        success = "Notification was marked as {}.".format(
+            'unread' if not notification.read_status else 'read')
 
-            return UpdateNotificationReadStatus(notification=notification,
-                                                success=success)
-        error = "You are not among the recipients for this notification!"
-        return UpdateNotificationReadStatus(error=error)
+        notification.save()
+        return UpdateNotificationReadStatus(notification=notification,
+                                            success=success)
 
 
 class DeleteNotification(graphene.Mutation):
@@ -51,19 +43,14 @@ class DeleteNotification(graphene.Mutation):
     def mutate(self, info, id):
         recipient = info.context.user
         notification = get_model_object(Notification, 'id', id)
-        notification_record = notification.notification_records.filter(
-            recipient=recipient)
-
-        if notification_record:
-            record = notification_record[0]
-            record.notification.clear()
+        if notification.recipient == recipient:
+            notification.delete()
             success = ("Notification with id {} was successfully deleted."
                        .format(id))
 
-            return DeleteNotification(success=success)
-        error = "You cannot delete this notification \
-since you are not a recipient!"
-        return DeleteNotification(error=error)
+            return DeleteNotification(success=success, error=None)
+        error = "You do not have permission to delete this notification!"
+        return DeleteNotification(error=error, success=None)
 
 
 class Mutation(graphene.ObjectType):

@@ -1,107 +1,15 @@
 from healthid.tests.base_config import BaseConfiguration
-from healthid.apps.notifications.models import Notification
-from healthid.tests.test_fixtures.batch_info import batch_info_query
-from healthid.tests.test_fixtures.notifications import (
-    delete_notification, update_notification_status, view_notifications)
+from healthid.tests.test_fixtures.notifications import (view_notifications)
 
 
 class NotificationTests(BaseConfiguration):
-    """
-    Class to test app notifications
-    """
-
-    def setUp(self):
-        super().setUp()
-        self.batch_data = {
-            'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
-            'expiry_date': '2020-02-10',
-        }
-        # create a batch with low quantity product to
-        # trigger notification.
-        self.query_with_token(
-            self.access_token_master, batch_info_query.format(
-                **self.batch_data))
-
-        self.response = self.query_with_token(
-            self.access_token_master, view_notifications)
-
-        self.id = self.response['data']['notifications'][0]['id']
-        self.non_existent_id = "ThanosSnapped123"
+    '''Class to test app notifications
+    '''
 
     def test_no_notification(self):
-        """
-        Test that an error message is returned
-        when there are no notifications.
-        """
-        # delete existing notification
-        Notification.objects.all().delete()
-
+        '''Test that an error message is returned
+        when there are no notifications
+        '''
         response = self.query_with_token(self.access_token, view_notifications)
-        self.assertIn('no notifications', response['errors'][0]['message'])
-
-    def test_get_all_notifications(self):
-        """
-        Method to check if all available notifications
-        can be fetched by user.
-        """
-        notifications_count = len(self.response['data']['notifications'])
-        self.assertGreaterEqual(notifications_count, 1)
-
-    def test_create_low_quantity_notification(self):
-        """
-        Method to test if a notification can be created for
-        low quantity products in a batch.
-        """
-        message = self.response['data']['notifications'][0]['message']
-
-        self.assertIn('Low quantity alert', message)
-        self.assertIn(self.product.product_name, message)
-
-    def test_mark_notification_as_read(self):
-        """
-        Method to test if a notification can be marked as
-        read.
-        """
-        status_response = self.query_with_token(
-            self.access_token, update_notification_status.format(
-                notification_id=self.id))
-
-        message = status_response['data']['updateReadStatus']['success']
-        self.assertIn('Notification was marked as read', message)
-
-    def test_delete_notification(self):
-        """
-        Method to test if a notification can be deleted
-        """
-        response = self.query_with_token(
-            self.access_token, delete_notification.format(
-                notification_id=self.id))
-
-        message = response['data']['deleteNotification']['success']
-        self.assertIn('was successfully deleted', message)
-
-    def test_delete_non_existent(self):
-        """
-        Method to test if a non-existent
-        notification can be deleted.
-        """
-        response = self.query_with_token(
-            self.access_token, delete_notification.format(
-                notification_id=self.non_existent_id))
-
-        message = response['errors'][0]['message']
-        self.assertIn('does not exist', message)
-
-    def test_mark_non_existent_as_read(self):
-        """
-        Method to check for error message returned
-        when a non-existent id is supplied when
-        marking as read.
-        """
-        status_response = self.query_with_token(
-            self.access_token, update_notification_status.format(
-                notification_id=self.non_existent_id))
-
-        message = status_response['errors'][0]['message']
-        self.assertIn('does not exist', message)
+        self.assertEqual(response['errors'][0]['message'],
+                         'Oops! There are no notifications yet!')

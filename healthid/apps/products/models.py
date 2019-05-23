@@ -134,8 +134,8 @@ class BatchInfo(models.Model):
 class Quantity(models.Model):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
-    product = models.ForeignKey(
-        Product, related_name='product_quantities', on_delete=models.CASCADE)
+    product = models.ManyToManyField(
+        Product, related_name='product_quantities')
     batch = models.ForeignKey(
         BatchInfo, on_delete=models.CASCADE, related_name='batch_quantities')
     quantity_received = models.PositiveIntegerField(null=True, blank=True)
