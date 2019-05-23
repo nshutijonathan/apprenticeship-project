@@ -64,9 +64,10 @@ class CreateBatchInfo(graphene.Mutation):
         for index, product_id in enumerate(products):
             product_instance = get_model_object(Product, 'id', product_id)
             batch_info.product.add(product_instance)
-            batch_quantities = Quantity.objects.create(
-                batch=batch_info, quantity_received=quantities[index])
-            batch_quantities.product.add(product_instance)
+            Quantity.objects.create(
+                batch=batch_info,
+                quantity_received=quantities[index],
+                product=product_instance)
             batch_info.save()
         message = ['Batch successfully created']
         return CreateBatchInfo(message=message, batch_info=batch_info)
@@ -149,7 +150,7 @@ class ProposeQuantity(graphene.Mutation):
         products = kwargs.get('product')
         proposed_quantities = kwargs.get('proposed_quantities', None)
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
-        query = reduce(lambda q, id: q | Q(product__id=id), products, Q())
+        query = reduce(lambda q, id: q | Q(product_id=id), products, Q())
         batch_quantities = batch_info.batch_quantities.filter(query)
         batch_products = batch_info.product.all().values_list('id', flat=True)
         batch_items = [product_id in batch_products for product_id in products]
@@ -177,9 +178,10 @@ class ProposeQuantity(graphene.Mutation):
                 'value': proposed_quantities[index]
             }
             quantity = Quantity.objects.get(
-                batch_id=batch_id, product__id=value)
+                batch_id=batch_id, product_id=value)
             edit_quantity.parent = quantity
             edit_quantity.batch = batch_info
+            edit_quantity.product_id = value
             edit_quantity.proposed_by = info.context.user
             edit_quantity.quantity_received = proposed_quantities[index]
 

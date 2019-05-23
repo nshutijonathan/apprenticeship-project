@@ -236,9 +236,8 @@ class BaseConfiguration(TestCase):
             user=self.user
         )
         batch_info.product.add(self.product)
-        batch_quantities = Quantity.objects.create(
-            batch=batch_info, quantity_received=8)
-        batch_quantities.product.add(self.product)
+        Quantity.objects.create(
+            batch=batch_info, quantity_received=8, product=self.product)
         batch_info.save()
         return batch_info
 

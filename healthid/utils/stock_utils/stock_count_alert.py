@@ -1,7 +1,7 @@
 import threading
 from datetime import datetime, timedelta
 
-from healthid.apps.notifications.models import Notification
+from healthid.apps.notifications.models import Notification, NotificationRecord
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.utils.app_utils.database import (SaveContextManager)
 from healthid.utils.app_utils.send_mail import SendMail
@@ -43,5 +43,7 @@ def notify_users(send_mail, assigned_users, message):
     notification = Notification.objects.create(message=message)
     with SaveContextManager(notification) as notification:
         for user in assigned_users:
-            notification.recipient.add(user)
+            NotificationRecord.objects.create(
+                recipient=user
+            )
     send_mail.send()

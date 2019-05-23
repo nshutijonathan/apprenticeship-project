@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMessage
-from healthid.apps.notifications.models import Notification
+from healthid.apps.notifications.models import Notification, NotificationRecord
 from healthid.utils.app_utils.database import SaveContextManager
 from django.template.loader import render_to_string
 
@@ -11,8 +11,11 @@ def notify(users, message, event_name, subject=None, html_body=None):
     notification = Notification(message=message, event_name=event_name)
     with SaveContextManager(notification) as notification:
         for user in users:
-            notification.recipient.add(user)
             notification.save()
+            notification_record = NotificationRecord.objects.create(
+                recipient=user
+            )
+            notification_record.notification.add(notification)
             if html_body and subject:
                 send_email_notifications(message, subject, user, html_body)
 
@@ -26,7 +29,7 @@ def send_email_to(subject, email, html_body=None):
         body=html_body,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[email]
-        )
+    )
     email.content_subtype = 'html'
     email.send()
 

@@ -56,7 +56,7 @@ def set_retail_price(sender, update_fields=['sales_price '], *args, **kwargs):
 
 
 @receiver(post_save, sender=Quantity)
-def notify_quantity_proposal(sender, instance, created, **kwargs):
+def notify_quantity(sender, instance, created, **kwargs):
     """
     Method to generate notifications for proposed change in batch quantity.
     """
@@ -74,3 +74,21 @@ def notify_quantity_proposal(sender, instance, created, **kwargs):
                        " proposed quantity edit.").format(
                 batch.batch_no)
             notify(all_users, message, event_name='batch_quantity')
+    # if quantity instance is not a proposal,
+    # we can check if the product quantity is low
+    if not instance.parent_id:
+        # set an arbitrary quantity threshold
+        # we'll check for instances where product quantity
+        # goes below this threshold
+        quantity_threshold = 50
+        batch = instance.batch
+        product = instance.product
+        outlet_users = batch.outlet.user.all()
+
+        # notify all outlet users.
+        if product.quantity < quantity_threshold:
+            message = "Low quantity alert!"
+            message += " Product name: {}, Unit(s) left: {}." \
+                .format(product.product_name,
+                        product.quantity)
+            notify(outlet_users, message, event_name='product_quantity')
