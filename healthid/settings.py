@@ -207,3 +207,5 @@ pusher = pusher.Pusher(
 STOCK_JOB_TIME_INTERVAL = os.environ.get('STOCK_JOB_TIME_INTERVAL', '1440')
 MOCK_AVERAGE_WEEKLY_SALES = int(
     os.environ.get('MOCK_AVERAGE_WEEKLY_SALES', '2'))
+
+django_heroku.settings(locals())
