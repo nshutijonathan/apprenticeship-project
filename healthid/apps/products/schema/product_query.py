@@ -43,6 +43,7 @@ class MeasurementUnitType(DjangoObjectType):
 
 class ProductType(DjangoObjectType):
     product_quantity = graphene.Int()
+    autofill_quantity = graphene.Int()
 
     class Meta:
         model = Product
@@ -56,6 +57,9 @@ class ProductType(DjangoObjectType):
 
     def resolve_product_quantity(self, info, **kwargs):
         return self.quantity
+
+    def resolve_autofill_quantity(self, info, **kwargs):
+        return self.autofill_quantity
 
     id = graphene.ID(required=True)
 
@@ -89,6 +93,7 @@ class Query(graphene.AbstractType):
     price_check_survey = graphene.Field(SurveyType,
                                         id=graphene.String(required=True))
 
+    product_autofill = graphene.List(ProductType)
     product = graphene.Field(
         ProductType,
         id=graphene.Int(),
@@ -162,6 +167,19 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_price_check_survey(self, info, **kwargs):
         return get_model_object(Survey, 'id', kwargs.get('id'))
+
+    @login_required
+    def resolve_user_product_requests(self, info):
+        user = info.context.user
+        return Product.objects.filter(user=user).exclude(parent=None)
+
+    @login_required
+    def resolve_product_autofill(self, info):
+        product_list = []
+        for each in Product.objects.all():
+            if each.quantity < each.reorder_point:
+                product_list.append(each)
+        return product_list
 
 
 class BatchQuery(graphene.AbstractType):

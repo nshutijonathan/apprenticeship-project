@@ -41,7 +41,8 @@ class AddSupplier(graphene.Mutation):
     def mutate(cls, root, info, input=None):
         supplier = Suppliers()
         user = info.context.user
-        add_supplier.create_supplier(user, supplier, input)
+        outlet = get_model_object(Outlet, 'user', user)
+        add_supplier.create_supplier(user, outlet, supplier, input)
         return cls(supplier=supplier)
 
 
@@ -195,7 +196,7 @@ class ApproveEditRequest(graphene.Mutation):
         dict_object = model_to_dict(request_instance)
         parent_id = dict_object.get('parent')
         pop_list = \
-            ['supplier_id', 'parent', 'is_approved', 'admin_comment']
+            ['supplier_id', 'parent', 'is_approved', 'admin_comment', 'outlet']
         [dict_object.pop(key) for key in pop_list]
         dict_object['user_id'] = dict_object.pop('user')
         dict_object['city_id'] = dict_object.pop('city')

@@ -3,10 +3,8 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.products.models import Product, ProductCategory
-from healthid.apps.products.schema.batch_info_mutation import (CreateBatchInfo,
-                                                               DeleteBatchInfo,
-                                                               ProposeQuantity,
-                                                               UpdateBatchInfo)
+from healthid.apps.products.schema.batch_info_mutation import (
+    CreateBatchInfo, DeleteBatchInfo, ProposeQuantity, UpdateBatchInfo)
 from healthid.apps.products.schema.measurement_unit_mutation import (
     CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
 from healthid.apps.products.schema.price_survey_mutations import (
@@ -20,8 +18,8 @@ from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
 from healthid.utils.product_utils.activate_deactivate_product import \
     activate_deactivate_products
-from healthid.apps.products.schema.product_query import (
-    ProductCategoryType, ProductType)
+from healthid.apps.products.schema.product_query import (ProductCategoryType,
+                                                         ProductType)
 from healthid.utils.app_utils.query_objects import GetObjectList
 
 
@@ -258,6 +256,7 @@ class ActivateProduct(ActivateDeactivateProducts):
     """
     Mutation class to activate a product
     """
+
     @login_required
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
@@ -273,6 +272,7 @@ class DeativateProduct(ActivateDeactivateProducts):
     """
     Mutation class to deactivate a product
     """
+
     @login_required
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):

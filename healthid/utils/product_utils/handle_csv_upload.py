@@ -2,7 +2,7 @@ import csv
 
 from rest_framework.exceptions import NotFound, ValidationError
 
-from healthid.apps.orders.models import Suppliers
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.products.models import (MeasurementUnit, Product,
                                            ProductCategory)
 from healthid.utils.app_utils.database import (SaveContextManager,

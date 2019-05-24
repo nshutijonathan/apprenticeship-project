@@ -22,7 +22,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
         super().setUp()
         call_command('loaddata', 'tests')
         self.supplier = self.query_with_token(
-            self.access_token_master,
+            self.access_token,
             supplier_mutation
         )
         self.supplier_id = \

@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.db import models
 from taggit.managers import TaggableManager
 
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.authentication.models import User
-from healthid.apps.orders.models import Suppliers
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import id_gen
 
@@ -56,14 +56,17 @@ class Product(models.Model):
     auto_price = models.BooleanField(default=False)
     loyalty_weight = models.IntegerField(default=0)
     parent = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="proposedEdit",
-        null=True, blank=True)
+        "self",
+        on_delete=models.CASCADE,
+        related_name="proposedEdit",
+        null=True,
+        blank=True)
     image = models.URLField(
         default='https://res.cloudinary.com/dojaopytm/image/upload/'
-        'v1558444184/productPlaceholder.png'
-    )
+        'v1558444184/productPlaceholder.png')
     is_active = models.BooleanField(default=True)
-
+    reorder_point = models.IntegerField(default=0)
+    reorder_max = models.IntegerField(default=0)
     '''all_products model manager returns both all products including
     deactivated products i.e Products.all_products.all() returns both
     active and deactivated products use it when you need deactive
@@ -94,6 +97,10 @@ class Product(models.Model):
         product_quantities = self.product_quantities.filter(
             parent_id__isnull=True).aggregate(models.Sum('quantity_received'))
         return product_quantities['quantity_received__sum']
+
+    @property
+    def autofill_quantity(self):
+        return self.reorder_max - self.quantity
 
 
 class BatchInfo(models.Model):

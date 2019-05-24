@@ -2,8 +2,8 @@ import csv
 
 from rest_framework.exceptions import NotFound, ValidationError
 
-from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
-from healthid.apps.outlets.models import City
+from healthid.apps.orders.models.suppliers import PaymentTerms, Suppliers, Tier
+from healthid.apps.outlets.models import City, Outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 
@@ -15,7 +15,8 @@ class AddSupplier:
             'payment_terms', 'supplier_id', 'id', 'objects', 'prefered',
             'backup', 'is_approved', 'user_id', 'user', 'admin_comment',
             'parent_id', 'parent', 'proposedEdit', 'batchinfo_set',
-            'suppliernote_set', 'supplier_prices'
+            'suppliernote_set', 'supplier_prices', 'orderdetails_set',
+            'outlet'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__
@@ -23,14 +24,14 @@ class AddSupplier:
         ]
 
     @staticmethod
-    def create_supplier(user, instance, input):
+    def create_supplier(user, outlet, instance, input):
         params = {'model_name': 'Suppliers',
                   'field': 'email', 'value': input.email}
         for (key, value) in input.items():
             setattr(instance, key, value)
         instance.user = user
-        with SaveContextManager(instance, **params):
-            pass
+        with SaveContextManager(instance, **params) as supplier:
+            supplier.outlet.add(outlet)
 
     def handle_csv_upload(self, user, io_string):
         for column in csv.reader(io_string, delimiter=','):
@@ -60,8 +61,9 @@ class AddSupplier:
                     value = pay_term.id
                 setattr(instance, key, value)
             instance.user = user
-            with SaveContextManager(instance, **params):
-                pass
+            outlet = get_model_object(Outlet, 'user', user)
+            with SaveContextManager(instance, **params) as supplier:
+                supplier.outlet.add(outlet)
 
 
 add_supplier = AddSupplier()

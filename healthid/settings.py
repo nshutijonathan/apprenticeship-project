@@ -75,9 +75,7 @@ ROOT_URLCONF = 'healthid.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            'healthid/templates'
-        ],
+        'DIRS': ['healthid/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -204,10 +202,8 @@ pusher = pusher.Pusher(
     key=os.environ.get('PUSHER_KEY'),
     secret=os.environ.get('PUSHER_SECRET'),
     cluster=os.environ.get('PUSHER_CLUSTER'),
-    ssl=True
-)
+    ssl=True)
 
 STOCK_JOB_TIME_INTERVAL = os.environ.get('STOCK_JOB_TIME_INTERVAL', '1440')
-
-
-django_heroku.settings(locals())
+MOCK_AVERAGE_WEEKLY_SALES = int(
+    os.environ.get('MOCK_AVERAGE_WEEKLY_SALES', '2'))

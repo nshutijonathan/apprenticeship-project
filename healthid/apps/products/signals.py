@@ -47,7 +47,7 @@ def set_retail_price(sender, update_fields=['sales_price '], *args, **kwargs):
     if not product._state.adding and product.auto_price:
         unit_cost = product.unit_cost
         markup = product.markup
-        retail_price = unit_cost*Decimal(1 + markup/100)
+        retail_price = unit_cost * Decimal(1 + markup / 100)
         product.sales_price = retail_price
         post_save.disconnect(set_retail_price, sender=Product)
         product.auto_price = False
@@ -71,6 +71,5 @@ def notify_quantity_proposal(sender, instance, created, **kwargs):
                         "Operations Admin":
                     all_users.append(user)
             message = ("Batch no: {} has a"
-                       " proposed quantity edit.").format(
-                batch.batch_no)
+                       " proposed quantity edit.").format(batch.batch_no)
             notify(all_users, message, event_name='batch_quantity')

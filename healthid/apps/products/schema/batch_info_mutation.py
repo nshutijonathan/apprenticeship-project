@@ -15,6 +15,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.batch_utils import batch_info_instance
+from healthid.utils.product_utils.product import \
+    generate_reorder_points_and_max
 
 
 class CreateBatchInfo(graphene.Mutation):
@@ -32,6 +34,8 @@ class CreateBatchInfo(graphene.Mutation):
         expiry_date = graphene.String()
         unit_cost = graphene.Float(required=True)
         commentary = graphene.String()
+        outlet_id = graphene.String()
+        user_id = graphene.String()
 
     errors = graphene.List(graphene.String)
     message = graphene.List(graphene.String)
@@ -45,8 +49,8 @@ class CreateBatchInfo(graphene.Mutation):
         products = kwargs.get('product')
         quantities = kwargs.get('quantities')
 
-        supplier_instance = get_model_object(
-            Suppliers, 'supplier_id', supplier_id)
+        supplier_instance = get_model_object(Suppliers, 'supplier_id',
+                                             supplier_id)
         if len(products) != len(quantities):
             raise GraphQLError("the number of products and quantities "
                                "provided do not match")
@@ -58,11 +62,10 @@ class CreateBatchInfo(graphene.Mutation):
             commentary=kwargs.get('commentary'),
             supplier=supplier_instance,
             outlet=outlet,
-            user=user
-        )
-
+            user=user)
         for index, product_id in enumerate(products):
             product_instance = get_model_object(Product, 'id', product_id)
+            generate_reorder_points_and_max(product_instance)
             batch_info.product.add(product_instance)
             batch_quantities = Quantity.objects.create(
                 batch=batch_info, quantity_received=quantities[index])
@@ -107,14 +110,14 @@ class UpdateBatchInfo(graphene.Mutation):
             batch_info.product.clear()
             for product_id in products:
                 product_instance = get_model_object(Product, 'id', product_id)
+                generate_reorder_points_and_max(product_instance)
                 batch_info.product.add(product_instance)
         if outlet_id:
-            outlet_instance = get_model_object(
-                Outlet, 'id', outlet_id)
+            outlet_instance = get_model_object(Outlet, 'id', outlet_id)
             batch_info.outlet = outlet_instance
         if supplier_id:
-            supplier_instance = get_model_object(
-                Suppliers, 'supplier_id', supplier_id)
+            supplier_instance = get_model_object(Suppliers, 'supplier_id',
+                                                 supplier_id)
             batch_info.supplier = supplier_instance
         for (key, value) in kwargs.items():
             if key is not None:
@@ -124,8 +127,10 @@ class UpdateBatchInfo(graphene.Mutation):
                     value = parse_date(value)
                 setattr(batch_info, key, value)
         batch_info.save()
-        message = [f'Batch with number {batch_info.batch_no} '
-                   f'successfully updated']
+        message = [
+            f'Batch with number {batch_info.batch_no} '
+            f'successfully updated'
+        ]
 
         return UpdateBatchInfo(message=message, batch_info=batch_info)
 

@@ -21,8 +21,7 @@ class PaymentTerms(models.Model):
 
 class Suppliers(models.Model):
     id = models.CharField(
-        max_length=9, primary_key=True, default=id_gen, editable=False
-    )
+        max_length=9, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, unique=True, null=True)
     mobile_number = models.CharField(max_length=100)
@@ -40,6 +39,7 @@ class Suppliers(models.Model):
     is_approved = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     admin_comment = models.TextField(null=True)
+    outlet = models.ManyToManyField(Outlet)
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedEdit",
                                null=True, blank=True)
@@ -54,18 +54,3 @@ class SupplierNote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     note = models.TextField(default="user note about this supplier")
     created_at = models.DateField(auto_now_add=True)
-
-
-class Order(models.Model):
-    '''Class to handle order data
-    '''
-    id = models.AutoField(primary_key=True)
-    order_number = models.CharField(
-        max_length=9, default=id_gen, editable=False
-    )
-    name = models.TextField(null=False)
-    product_autofill = models.BooleanField(default=True)
-    supplier_autofill = models.BooleanField(default=True)
-    destination_outlet = models.ManyToManyField(Outlet)
-    delivery_date = models.DateField()
-    sent_status = models.BooleanField(default=False)
