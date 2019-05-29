@@ -141,14 +141,19 @@ class BatchInfo(models.Model):
 class Quantity(models.Model):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
-    product = models.ManyToManyField(
-        Product, related_name='product_quantities')
+    product = models.ForeignKey(
+        Product, related_name='product_quantities', on_delete=models.CASCADE)
     batch = models.ForeignKey(
         BatchInfo, on_delete=models.CASCADE, related_name='batch_quantities')
     quantity_received = models.PositiveIntegerField(null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
     proposed_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='proposing_user',
         null=True, blank=True)
+    authorized_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='approving_user',
+        null=True, blank=True)
+    comment = models.TextField(null=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedQuantityChange",
                                null=True, blank=True)

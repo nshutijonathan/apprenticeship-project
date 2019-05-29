@@ -49,3 +49,32 @@ mutation proposeQuantity {{
   }}
 }}
 '''
+
+approve_quantity = '''
+mutation approveProposedQuantity {{
+   approveQuantity (
+    batchId: "{batch_id}" ,
+    product: {product_id},
+    isApproved: {value},
+    comment: "Reject"
+
+
+  ){{
+   message
+   quantityInstance{{
+    id
+    isApproved
+    quantityReceived
+    product{{
+      productName
+      id
+     productQuantity
+    }}
+    authorizedBy{{
+      id
+      email
+    }}
+  }}
+  }}
+}}
+'''

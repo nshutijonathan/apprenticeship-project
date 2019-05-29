@@ -1,5 +1,4 @@
 from functools import reduce
-from itertools import compress
 
 import graphene
 from django.db.models import Q
@@ -10,11 +9,13 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models import Suppliers
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import BatchInfo, Product, Quantity
-from healthid.apps.products.schema.product_query import BatchInfoType
+from healthid.apps.products.schema.product_query import (BatchInfoType,
+                                                         QuantityType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.product_utils.batch_utils import batch_info_instance
+from healthid.utils.product_utils.batch_utils import (batch_info_instance,
+                                                      check_validity_of_ids)
 from healthid.utils.product_utils.product import \
     generate_reorder_points_and_max
 
@@ -67,9 +68,9 @@ class CreateBatchInfo(graphene.Mutation):
             product_instance = get_model_object(Product, 'id', product_id)
             generate_reorder_points_and_max(product_instance)
             batch_info.product.add(product_instance)
-            batch_quantities = Quantity.objects.create(
-                batch=batch_info, quantity_received=quantities[index])
-            batch_quantities.product.add(product_instance)
+            Quantity.objects.create(
+                batch=batch_info, quantity_received=quantities[index],
+                product=product_instance)
             batch_info.save()
         message = ['Batch successfully created']
         return CreateBatchInfo(message=message, batch_info=batch_info)
@@ -136,6 +137,9 @@ class UpdateBatchInfo(graphene.Mutation):
 
 
 class ProposeQuantity(graphene.Mutation):
+    """
+        Mutation to propose a quantity edit to a batch
+    """
     batch_info = graphene.Field(BatchInfoType)
 
     class Arguments:
@@ -154,17 +158,10 @@ class ProposeQuantity(graphene.Mutation):
         products = kwargs.get('product')
         proposed_quantities = kwargs.get('proposed_quantities', None)
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
-        query = reduce(lambda q, id: q | Q(product__id=id), products, Q())
+        query = reduce(lambda q, id: q | Q(product_id=id), products, Q())
         batch_quantities = batch_info.batch_quantities.filter(query)
         batch_products = batch_info.product.all().values_list('id', flat=True)
-        batch_items = [product_id in batch_products for product_id in products]
-
-        if not all(batch_items):
-            invalid_products = list(
-                compress(products, [not item for item in batch_items]))
-            raise GraphQLError(
-                f"Products with ids {invalid_products} do not exist in this "
-                "batch")
+        check_validity_of_ids(products, batch_products)
 
         for batch_quantity in batch_quantities:
             if Quantity.objects.filter(parent_id=batch_quantity.id):
@@ -182,9 +179,10 @@ class ProposeQuantity(graphene.Mutation):
                 'value': proposed_quantities[index]
             }
             quantity = Quantity.objects.get(
-                batch_id=batch_id, product__id=value)
+                batch_id=batch_id, product_id=value)
             edit_quantity.parent = quantity
             edit_quantity.batch = batch_info
+            edit_quantity.product_id = value
             edit_quantity.proposed_by = info.context.user
             edit_quantity.quantity_received = proposed_quantities[index]
 
@@ -192,6 +190,61 @@ class ProposeQuantity(graphene.Mutation):
                 pass
         notification = ("Edit request for quantity has been sent!")
         return cls(batch_info=batch_info, notification=notification)
+
+
+class ApproveProposedQuantity(graphene.Mutation):
+    """
+        Mutation to approve or decline a quantity edit to a batch
+    """
+    quantity_instance = graphene.List(QuantityType)
+
+    class Arguments:
+        batch_id = graphene.String(required=True)
+        product = graphene.List(graphene.Int)
+        is_approved = graphene.Boolean()
+        comment = graphene.String()
+
+    message = graphene.String()
+
+    @classmethod
+    @login_required
+    @user_permission('Operations Admin')
+    def mutate(cls, root, info, **kwargs):
+        approval_status = kwargs.get('is_approved')
+        batch_id = kwargs.get('batch_id')
+        product_ids = kwargs.get('product')
+        comment = kwargs.get('comment')
+        batch = get_model_object(BatchInfo, 'id', batch_id)
+        query = reduce(lambda q, id: q | Q(product_id=id), product_ids, Q())
+        quantities = batch.batch_quantities.filter(
+            parent_id__isnull=False).filter(query)
+        quantity_ids = quantities.values_list('product_id', flat=True)
+        message = "Proposal for product with ids {} doesn't exist"
+        check_validity_of_ids(product_ids, quantity_ids, message=message)
+
+        if not approval_status and not comment:
+            raise GraphQLError("Comment please")
+
+        for quantity in quantities:
+            original_instance = get_model_object(
+                Quantity, 'id', quantity.parent_id)
+            original_instance.quantity_received = quantity.quantity_received \
+                if approval_status else original_instance.quantity_received
+            original_instance.is_approved = True if approval_status else False
+            original_instance.authorized_by = info.context.user
+            original_instance.comment = comment if not approval_status \
+                else None
+            original_instance.save()
+            quantity.delete()
+
+        message = (
+            "Products with ids '{}' have been successfully approved".format(
+                ",".join(map(str, product_ids)))
+        ) if approval_status else (
+            "Proposal for quantity with ids '{}' has been"
+            " declined".format(",".join(map(str, product_ids))))
+
+        return cls(message=message, quantity_instance=quantities)
 
 
 class DeleteBatchInfo(graphene.Mutation):

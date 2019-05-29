@@ -68,9 +68,12 @@ class ProductType(DjangoObjectType):
         return self.id
 
 
-class QuantityType(graphene.ObjectType):
+class QuantityType(DjangoObjectType):
     id = graphene.String()
     quantity_received = graphene.Int()
+
+    class Meta:
+        model = Quantity
 
 
 class SurveyType(DjangoObjectType):
@@ -92,6 +95,8 @@ class Query(graphene.AbstractType):
     price_check_surveys = graphene.List(SurveyType)
     price_check_survey = graphene.Field(SurveyType,
                                         id=graphene.String(required=True))
+    approved_quantities = graphene.List(QuantityType)
+    declined_quantities = graphene. List(QuantityType)
 
     product_autofill = graphene.List(ProductType)
     product = graphene.Field(
@@ -231,5 +236,17 @@ class BatchQuery(graphene.AbstractType):
         return Product.all_products.filter(is_active=False)
 
     @login_required
+    @user_permission('Manager', 'Operations Admin')
     def resolve_proposed_quantity_edits(self, info):
         return Quantity.objects.exclude(parent_id__isnull=True)
+
+    @login_required
+    @user_permission('Operations Admin')
+    def resolve_approved_quantities(self, info):
+        return Quantity.objects.filter(is_approved=True)
+
+    @login_required
+    @user_permission('Operations Admin')
+    def resolve_declined_quantities(self, info):
+        return Quantity.objects.filter(parent_id__isnull=True,
+                                       is_approved=False)
