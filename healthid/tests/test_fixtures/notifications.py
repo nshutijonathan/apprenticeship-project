@@ -16,3 +16,21 @@ toggle_permissions = '''
                         }
                         }
                 '''
+update_notification_status = '''
+                mutation {{
+                    updateReadStatus(id: "{notification_id}"){{
+                        success
+                        notification {{
+                            message
+                        }}
+                    }}
+                }}
+'''
+
+delete_notification = '''
+                mutation {{
+                    deleteNotification(id: "{notification_id}"){{
+                        success
+                    }}
+                }}
+'''

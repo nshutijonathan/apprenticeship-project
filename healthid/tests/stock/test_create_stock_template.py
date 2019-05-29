@@ -100,4 +100,4 @@ class StockTemplateTestCase(BaseConfiguration):
         self.create_stock_template()
         generate_stock_counts_notifications()
         notifications = Notification.objects.all()
-        self.assertEqual(1, len(notifications))
+        self.assertTrue(len(notifications) >= 1)

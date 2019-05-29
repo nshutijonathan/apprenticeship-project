@@ -17,7 +17,8 @@ class Query(graphene.ObjectType):
     def resolve_notifications(self, info, **kwargs):
         user = info.context.user
 
-        notifications = Notification.objects.filter(recipient=user)
+        notifications = Notification.objects.filter(
+            notification_records__recipient=user)
         if notifications:
             return notifications
         raise GraphQLError('Oops! There are no notifications yet!')
