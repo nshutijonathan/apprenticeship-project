@@ -5,7 +5,8 @@ from healthid.tests.test_fixtures.products import (
     approved_product_query, backup_supplier, create_product, create_product_2,
     delete_product, product_query, proposed_edits_query,
     proposed_product_query, supplier_mutation, update_a_product_loyalty_weight,
-    update_loyalty_weight, update_product)
+    update_loyalty_weight, update_product, decline_proposed_edits,
+    approve_proposed_edits)
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -20,7 +21,8 @@ class TestCreateProduct(BaseConfiguration):
             'id']
         self.backup_id = self.supplier2['data']['addSupplier']['supplier'][
             'id']
-        self.product = create_product_2(self.supplier_id, self.backup_id)
+        self.product = create_product_2(self.supplier_id, self.backup_id,
+                                        self.user)
 
     def test_create_product(self):
         """method for creating a product"""
@@ -43,13 +45,12 @@ class TestCreateProduct(BaseConfiguration):
         self.assertIn('errors', response)
 
     def test_product_query(self):
-        response = self.query_with_token(self.access_token,
-                                         product_query)
+        response = self.query_with_token(self.access_token, product_query)
         self.assertIn('products', response['data'])
 
     def test_proposed_edits_query(self):
-        response = self.query_with_token(
-            self.access_token, proposed_edits_query)
+        response = self.query_with_token(self.access_token,
+                                         proposed_edits_query)
         self.assertIn('proposedEdits', response['data'])
 
     def test_proposed_product_query(self):
@@ -75,9 +76,8 @@ class TestCreateProduct(BaseConfiguration):
             "product_category": self.product.product_category.id,
             "loyalty_value": 10
         }
-        response = self.query_with_token(
-            self.access_token_master,
-            update_loyalty_weight.format(**data))
+        response = self.query_with_token(self.access_token_master,
+                                         update_loyalty_weight.format(**data))
         self.assertIn("data", response)
         self.assertNotIn("errors", response)
 
@@ -87,17 +87,13 @@ class TestCreateProduct(BaseConfiguration):
             "product_category": self.product.product_category.id,
             "loyalty_value": -1
         }
-        response = self.query_with_token(
-            self.access_token_master,
-            update_loyalty_weight.format(**data))
+        response = self.query_with_token(self.access_token_master,
+                                         update_loyalty_weight.format(**data))
         self.assertIn("errors", response)
 
     def test_update_a_product_loyalty_weight(self):
         """Test method for updating a product loyalty weight"""
-        data = {
-            "product_id": self.product.id,
-            "loyalty_value": 10
-        }
+        data = {"product_id": self.product.id, "loyalty_value": 10}
         response = self.query_with_token(
             self.access_token_master,
             update_a_product_loyalty_weight.format(**data))
@@ -106,10 +102,7 @@ class TestCreateProduct(BaseConfiguration):
 
     def test_update_a_product_loyalty_weight_with_invalid_value(self):
         """Try to update loyalty weight with a less than one value"""
-        data = {
-            "product_id": self.product.id,
-            "loyalty_value": -1
-        }
+        data = {"product_id": self.product.id, "loyalty_value": -1}
         response = self.query_with_token(
             self.access_token_master,
             update_a_product_loyalty_weight.format(**data))
@@ -123,8 +116,7 @@ class TestCreateProduct(BaseConfiguration):
         product.save()
         response = self.query_with_token(
             self.access_token, update_product(self.product.id, update_name))
-        self.assertIn(message, response['data']
-                      ['updateProduct']['message'])
+        self.assertIn(message, response['data']['updateProduct']['message'])
         self.assertNotEqual(
             str(product.id),
             response['data']['updateProduct']['product']['id'])
@@ -133,3 +125,34 @@ class TestCreateProduct(BaseConfiguration):
         response = self.query_with_token(self.access_token,
                                          delete_product(self.product.id))
         self.assertIn("success", response["data"]["deleteProduct"])
+
+    def test_approve_edit_request(self):
+        update_name = 'Cold cap'
+        product = self.product
+        product.is_approved = True
+        product.save()
+        edit_request = self.query_with_token(
+            self.access_token, update_product(self.product.id, update_name))
+        edit_request_id = edit_request['data']['updateProduct']['product'][
+            'id']
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_proposed_edits.format(edit_request_id=edit_request_id))
+        self.assertIn("You have succesfully aapproved edit request",
+                      response['data']['approveProposedEdits']['message'])
+        self.assertIn('data', response)
+
+    def test_decline_edit_request(self):
+        update_name = 'Cold cap'
+        product = self.product
+        product.is_approved = True
+        product.save()
+        edit_request = self.query_with_token(
+            self.access_token, update_product(self.product.id, update_name))
+        edit_request_id = edit_request['data']['updateProduct']['product'][
+            'id']
+        response = self.query_with_token(
+            self.access_token_master,
+            decline_proposed_edits.format(edit_request_id=edit_request_id))
+        self.assertIn('Edit request for product Cold cap has been declined!',
+                      response['data']['declineProposedEdits']['message'])

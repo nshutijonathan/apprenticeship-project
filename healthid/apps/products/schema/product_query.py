@@ -93,8 +93,9 @@ class Query(graphene.AbstractType):
     filter_products = DjangoFilterConnectionField(ProductType)
     proposed_edits = graphene.List(ProductType)
     price_check_surveys = graphene.List(SurveyType)
-    price_check_survey = graphene.Field(SurveyType,
-                                        id=graphene.String(required=True))
+    price_check_survey = graphene.Field(
+        SurveyType, id=graphene.String(required=True))
+    user_product_requests = graphene.List(ProductType)
     approved_quantities = graphene.List(QuantityType)
     declined_quantities = graphene. List(QuantityType)
 
@@ -116,11 +117,8 @@ class Query(graphene.AbstractType):
     batch_expiries = graphene.Field(
         product_batch_info,
         start_date=graphene.String(),
-        end_date=graphene.String(required=True)
-    )
-    expired_batches = graphene.Field(
-        product_batch_info
-    )
+        end_date=graphene.String(required=True))
+    expired_batches = graphene.Field(product_batch_info)
     deactivated_products = graphene.List(ProductType)
     product_categories = graphene.List(ProductCategoryType)
     measurement_unit = graphene.List(MeasurementUnitType)
@@ -193,9 +191,8 @@ class BatchQuery(graphene.AbstractType):
         BatchInfoType, id=graphene.String(required=True))
     batch_quantity = graphene.Field(
         QuantityType, id=graphene.String(required=True))
-    product_batch_info = graphene.List(BatchInfoType,
-                                       id=graphene.Int(required=True)
-                                       )
+    product_batch_info = graphene.List(
+        BatchInfoType, id=graphene.Int(required=True))
     proposed_quantity_edits = graphene.List(QuantityType)
 
     @login_required

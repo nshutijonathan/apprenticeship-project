@@ -22,6 +22,7 @@ from healthid.utils.product_utils.activate_deactivate_product import \
 from healthid.apps.products.schema.product_query import (ProductCategoryType,
                                                          ProductType)
 from healthid.utils.app_utils.query_objects import GetObjectList
+from django.forms.models import model_to_dict
 
 
 class ProductInput(graphene.InputObjectType):
@@ -84,13 +85,14 @@ class UpdateProduct(graphene.Mutation):
         quality = graphene.String()
         sales_price = graphene.Int()
         nearest_expiry_date = graphene.String()
-        prefered_supplier_id = graphene.Int()
-        backup_supplier_id = graphene.Int()
+        prefered_supplier_id = graphene.String()
+        backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         image = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         id = kwargs.get('id')
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
@@ -98,6 +100,8 @@ class UpdateProduct(graphene.Mutation):
             proposed_edit.id = None
             output = set_attributes(proposed_edit, **kwargs)
             output.parent_id = kwargs.get('id')
+            output.is_approved = False
+            output.user = user
             output.save()
             message = 'Proposed update pending approval'
             return UpdateProduct(product=output, message=message)
@@ -128,7 +132,7 @@ class DeleteProduct(graphene.Mutation):
 
 class ApproveProduct(graphene.Mutation):
     """
-      Mutation to approve proposed products a product.
+      Mutation to approve proposed products.
     """
 
     class Arguments:
@@ -140,7 +144,6 @@ class ApproveProduct(graphene.Mutation):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('product_id')
-
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
             raise GraphQLError(
@@ -151,6 +154,67 @@ class ApproveProduct(graphene.Mutation):
             'message', 'Product {} has successfully been approved.'.format(id)
         ]
         return ApproveProduct(success=success, product=product)
+
+
+class ApproveProposedEdits(graphene.Mutation):
+    class Arguments:
+        edit_request_id = graphene.Int(required=True)
+
+    product = graphene.Field(ProductType)
+    message = graphene.List(graphene.String)
+
+    @user_permission('Operations Admin')
+    def mutate(self, info, **kwargs):
+        request_id = kwargs.get('edit_request_id')
+        message = "No proposed edit with id {request_id}"
+
+        proposed_edit = get_model_object(
+            Product, 'id', request_id, message=message)
+        message = f"No product with  proposed edit with id {request_id}"
+        parent = get_model_object(
+            Product, 'id', proposed_edit.parent_id, message=message)
+        product_dict = model_to_dict(proposed_edit)
+        exclude_list = [
+            'auto_price', 'parent', 'is_active', 'is_approved', 'sku_number',
+            'user', 'outlet'
+        ]
+        [product_dict.pop(item) for item in exclude_list]
+        product_dict['prefered_supplier_id'] = product_dict.pop(
+            'prefered_supplier')
+        product_dict['backup_supplier_id'] = product_dict.pop(
+            'backup_supplier')
+        product_dict['product_category_id'] = product_dict.pop(
+            'product_category')
+        product_dict['measurement_unit_id'] = product_dict.pop(
+            'measurement_unit')
+        product_dict.pop('id')
+        for key, value in product_dict.items():
+            if value is not None:
+                setattr(parent, key, value)
+        proposed_edit.delete()
+        parent.save()
+        message = ["You have succesfully aapproved edit request"]
+        return ApproveProposedEdits(product=parent, message=message)
+
+
+class DeclineProposedEdits(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int(required=True)
+        comment = graphene.String(required=True)
+
+    message = graphene.Field(graphene.String)
+    edit_request = graphene.Field(ProductType)
+
+    def mutate(self, info, **kwargs):
+        id = kwargs.get('id')
+        message = "No proposed edit with id {id}"
+        comment = kwargs.get('comment')
+        edit_request = get_model_object(Product, 'id', id, message=message)
+        edit_request.admin_comment = comment
+        edit_request.save()
+        product_name = edit_request.product_name
+        msg = f"Edit request for product {product_name} has been declined!"
+        return DeclineProposedEdits(message=msg, edit_request=edit_request)
 
 
 class UpdatePrice(graphene.Mutation):
@@ -309,3 +373,5 @@ class Mutation(graphene.ObjectType):
     create_price_check_survey = CreatePriceCheckSurvey.Field()
     delete_price_check_survey = DeletePriceCheckSurvey.Field()
     update_price_check_survey = UpdatePriceCheckSurvey.Field()
+    approve_proposed_edits = ApproveProposedEdits.Field()
+    decline_proposed_edits = DeclineProposedEdits.Field()

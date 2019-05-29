@@ -46,7 +46,8 @@ class Product(models.Model):
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
     outlet = models.ManyToManyField(Outlet)
-    user = models.ManyToManyField(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    admin_comment = models.TextField(null=True)
     tags = TaggableManager()
     markup = models.IntegerField(default=25)
     pre_tax_retail_price = models.DecimalField(
@@ -187,5 +188,4 @@ class PriceCheckSurvey(models.Model):
         Suppliers, on_delete=models.CASCADE, related_name='supplier_prices')
     price = models.DecimalField(
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
-    survey = models.ManyToManyField(
-        Survey, related_name='survey_price_checks')
+    survey = models.ManyToManyField(Survey, related_name='survey_price_checks')
