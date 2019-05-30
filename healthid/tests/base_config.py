@@ -239,7 +239,7 @@ class BaseConfiguration(TestCase):
             measurement_unit=self.measurement_unit,
             prefered_supplier=self.supplier,
             backup_supplier=self.supplier,
-            unit_cost=20.3)
+            unit_cost=20.3, pre_tax_retail_price=25.0)
 
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(

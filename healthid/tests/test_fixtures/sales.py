@@ -174,3 +174,32 @@ def retrieve_promotions_pending_approval(outlet_id):
                 }}
             }}
     ''')
+
+
+def add_to_cart(product_id, quantity):
+    return (f'''
+            mutation {{
+                addToCart(productId: {product_id}, quantity: {quantity}) {{
+                    success
+                    cartItem {{
+                        id
+                    }}
+                }}
+            }}
+    ''')
+
+
+def retrieve_cart():
+    return (f'''
+            query {{
+                cart {{
+                    id
+                    items {{
+                        product {{
+                            id
+                        }}
+                        quantity
+                    }}
+                }}
+            }}
+    ''')

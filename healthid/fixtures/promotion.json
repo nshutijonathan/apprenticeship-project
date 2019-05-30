@@ -249,5 +249,35 @@
             "user_id": "aul5xrp73",
             "outlet_id": 1
         }
+    },
+    {
+        "model": "products.Quantity",
+        "pk": "123456789",
+        "fields": {
+            "product": 1,
+            "batch": "123456789",
+            "proposed_by": "aul5xrp73",
+            "quantity_received": 10
+        }
+    },
+    {
+        "model": "products.Quantity",
+        "pk": "098765432",
+        "fields": {
+            "product": 2,
+            "batch": "098765432",
+            "proposed_by": "aul5xrp73",
+            "quantity_received": 15
+        }
+    },
+    {
+        "model": "products.Quantity",
+        "pk": "345678912",
+        "fields": {
+            "product": 3,
+            "batch": "345678912",
+            "proposed_by": "aul5xrp73",
+            "quantity_received": 20
+        }
     }
 ]
