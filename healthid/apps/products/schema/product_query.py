@@ -141,6 +141,10 @@ class Query(graphene.AbstractType):
         return response
 
     @login_required
+    def resolve_proposed_products(self, info):
+        return Product.objects.filter(is_approved=False)
+
+    @login_required
     def resolve_approved_products(self, info):
         return Product.objects.filter(is_approved=True)
 
