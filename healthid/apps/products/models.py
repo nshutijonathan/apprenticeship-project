@@ -3,26 +3,28 @@ from decimal import Decimal
 from django.db import models
 from taggit.managers import TaggableManager
 
-from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.authentication.models import User
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.outlets.models import Outlet
+from healthid.manager import BaseManager
+from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
 
 
-class ProductCategory(models.Model):
+class ProductCategory(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
-class MeasurementUnit(models.Model):
+class MeasurementUnit(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
-class ProductManager(models.Manager):
+class ProductManager(BaseManager):
     def get_queryset(self):
         return super().get_queryset().filter(is_active=True)
 
 
-class Product(models.Model):
+class Product(BaseModel):
     product_category = models.ForeignKey(
         ProductCategory, on_delete=models.CASCADE)
     product_name = models.CharField(max_length=244, unique=True)
@@ -38,7 +40,6 @@ class Product(models.Model):
     quality = models.CharField(max_length=50)
     sales_price = models.DecimalField(
         max_digits=12, decimal_places=2, null=True)
-    created_date = models.DateField(auto_now=True, auto_now_add=False)
     nearest_expiry_date = models.DateField(
         auto_now=False, auto_now_add=False, null=True)
     prefered_supplier = models.ForeignKey(
@@ -46,7 +47,9 @@ class Product(models.Model):
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
     outlet = models.ManyToManyField(Outlet)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True,
+        related_name='product_creator')
     admin_comment = models.TextField(null=True)
     tags = TaggableManager()
     markup = models.IntegerField(default=25)
@@ -104,7 +107,7 @@ class Product(models.Model):
         return self.reorder_max - self.quantity
 
 
-class BatchInfo(models.Model):
+class BatchInfo(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     batch_no = models.CharField(
@@ -139,7 +142,7 @@ class BatchInfo(models.Model):
         return batch_quantities['quantity_received__sum']
 
 
-class Quantity(models.Model):
+class Quantity(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     product = models.ForeignKey(
@@ -160,7 +163,7 @@ class Quantity(models.Model):
                                null=True, blank=True)
 
 
-class Survey(models.Model):
+class Survey(BaseModel):
     """
     Model class for survey used to conduct supplier
     price checks for products.
@@ -173,10 +176,9 @@ class Survey(models.Model):
     created_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_price_surveys')
     survey_closed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
-class PriceCheckSurvey(models.Model):
+class PriceCheckSurvey(BaseModel):
     """
     Model class for price check surveys.
     """

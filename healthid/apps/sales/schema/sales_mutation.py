@@ -2,13 +2,13 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.sales.models import SalesPrompt
-from healthid.apps.products.models import Product
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.products.models import Product
+from healthid.apps.sales.models import SalesPrompt
+from healthid.apps.sales.schema.sales_schema import SalesPromptType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
-from healthid.apps.sales.schema.sales_schema import SalesPromptType
 
 
 class CreateSalesPrompts(graphene.Mutation):
@@ -45,15 +45,14 @@ class CreateSalesPrompts(graphene.Mutation):
         created_prompts = []
         for index, title in enumerate(titles, 0):
 
-            params = {'model_name': 'SalesPrompt',
-                      'field': 'prompt_title', 'value': title.title()}
+            params = {'model': SalesPrompt}
             sales_prompt = SalesPrompt(
-                    prompt_title=title.title(),
-                    description=prompt_descriptions[index],
-                    product_id=get_model_object(Product, 'id',
-                                                product_ids[index]).id,
-                    outlet_id=get_model_object(Outlet, 'id',
-                                               outlet_ids[index]).id)
+                prompt_title=title.title(),
+                description=prompt_descriptions[index],
+                product_id=get_model_object(Product, 'id',
+                                            product_ids[index]).id,
+                outlet_id=get_model_object(Outlet, 'id',
+                                           outlet_ids[index]).id)
 
             with SaveContextManager(sales_prompt, **params) as sales_prompt:
                 created_prompts.append(sales_prompt)
@@ -88,9 +87,7 @@ class UpdateSalesPrompt(graphene.Mutation):
                     raise GraphQLError(
                         "Titles or discription must contain words")
             setattr(salesPrompt, key, value)
-
-        params = {'model_name': 'SalesPrompt',
-                  'field': 'prompt_title', 'value': salesPrompt.prompt_title}
+        params = {'model': SalesPrompt}
         with SaveContextManager(salesPrompt, **params) as salesPrompt:
             return UpdateSalesPrompt(
                 success='Sales prompt was updated successfully',
@@ -110,8 +107,9 @@ class DeleteSalesPrompt(graphene.Mutation):
     @login_required
     @user_permission('Manager')
     def mutate(self, info, id):
+        user = info.context.user
         prompt = get_model_object(SalesPrompt, 'id', id)
-        prompt.delete()
+        prompt.delete(user)
         return DeleteSalesPrompt(
             success="Sales Prompt was deleted successfully")
 

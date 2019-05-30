@@ -1,10 +1,12 @@
 from django.db import models
-from healthid.apps.products.models import Product
+
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.products.models import Product
 from healthid.utils.app_utils.id_generator import id_gen
 
 
-class PromotionType(models.Model):
+class PromotionType(BaseModel):
     id = models.CharField(max_length=9, primary_key=True,
                           default=id_gen, editable=False)
     name = models.CharField(max_length=140, unique=True)
@@ -13,7 +15,7 @@ class PromotionType(models.Model):
         return self.name
 
 
-class Promotion(models.Model):
+class Promotion(BaseModel):
     id = models.CharField(max_length=9, primary_key=True,
                           default=id_gen, editable=False)
     title = models.CharField(max_length=140, unique=True)
@@ -28,7 +30,7 @@ class Promotion(models.Model):
         return self.title
 
 
-class SalesPrompt(models.Model):
+class SalesPrompt(BaseModel):
     prompt_title = models.CharField(max_length=244, unique=True)
     description = models.CharField(
         max_length=244, default="Sales prompt descripttion:")

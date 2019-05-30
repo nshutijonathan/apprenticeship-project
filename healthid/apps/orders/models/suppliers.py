@@ -2,24 +2,25 @@ from django.db import models
 
 from healthid.apps.authentication.models import User
 from healthid.apps.outlets.models import City, Outlet
+from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
 
 
-class Tier(models.Model):
+class Tier(BaseModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class PaymentTerms(models.Model):
+class PaymentTerms(BaseModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class Suppliers(models.Model):
+class Suppliers(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=100)
@@ -37,7 +38,8 @@ class Suppliers(models.Model):
     credit_days = models.IntegerField(null=True)
     supplier_id = models.CharField(max_length=9, null=False)
     is_approved = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='supplier_creator')
     admin_comment = models.TextField(null=True)
     outlet = models.ManyToManyField(Outlet)
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
@@ -48,9 +50,9 @@ class Suppliers(models.Model):
         return self.name
 
 
-class SupplierNote(models.Model):
+class SupplierNote(BaseModel):
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
     outlet = models.ManyToManyField(Outlet, related_name='supplier_note')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='note_creator')
     note = models.TextField(default="user note about this supplier")
-    created_at = models.DateField(auto_now_add=True)

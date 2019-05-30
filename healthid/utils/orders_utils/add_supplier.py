@@ -16,24 +16,16 @@ class AddSupplier:
             'backup', 'is_approved', 'user_id', 'user', 'admin_comment',
             'parent_id', 'parent', 'proposedEdit', 'batchinfo_set',
             'suppliernote_set', 'supplier_prices', 'orderdetails_set',
-            'outlet'
+            'outlet', 'created_at', 'updated_at', 'deleted_at', 'deleted_by'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__
             if not each.startswith('__') and each not in self.exclude_list
         ]
 
-    @staticmethod
-    def create_supplier(user, outlet, instance, input):
-        params = {'model_name': 'Suppliers',
-                  'field': 'email', 'value': input.email}
-        for (key, value) in input.items():
-            setattr(instance, key, value)
-        instance.user = user
-        with SaveContextManager(instance, **params) as supplier:
-            supplier.outlet.add(outlet)
-
     def handle_csv_upload(self, user, io_string):
+        params = {'model': Suppliers, 'error_type': ValidationError}
+        error_type = {'error_type': NotFound}
         for column in csv.reader(io_string, delimiter=','):
             if len(self.safe_list) != len(column):
                 message = {"error": "Missing column(s)"}
@@ -41,10 +33,6 @@ class AddSupplier:
             dict_object = dict(zip(self.safe_list, column))
             instance = Suppliers()
             for (key, value) in dict_object.items():
-                error_type = {'error_type': NotFound}
-                if key == 'email':
-                    params = {'model_name': Suppliers, 'field': 'email',
-                              'value': value, 'error_type': ValidationError}
                 if key == 'rating':
                     value = int(value)
                 if key == 'city_id':

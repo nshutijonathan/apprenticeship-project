@@ -81,9 +81,7 @@ class UpdateReceiptTemplate(graphene.Mutation):
                 raise GraphQLError(f'{key} should be true or false')
         receipt_template.save()
 
-        return UpdateReceiptTemplate(
-            receipt_template=receipt_template
-        )
+        return UpdateReceiptTemplate(receipt_template=receipt_template)
 
 
 class DeleteReceiptTemplate(graphene.Mutation):
@@ -99,8 +97,9 @@ class DeleteReceiptTemplate(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, id):
+        user = info.context.user
         receipt_template = get_model_object(ReceiptTemplate, 'id', id)
-        receipt_template.delete()
+        receipt_template.delete(user)
 
         return DeleteReceiptTemplate(
             success="Receipt template has been deleted"

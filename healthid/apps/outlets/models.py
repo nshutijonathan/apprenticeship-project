@@ -2,17 +2,18 @@ from django.db import models
 
 from healthid.apps.authentication.models import User
 from healthid.apps.business.models import Business
+from healthid.models import BaseModel
 from healthid.apps.preference.models import Preference
 
 
-class Country(models.Model):
+class Country(BaseModel):
     name = models.CharField(max_length=244, unique=True)
 
     def __str__(self):
         return self.name
 
 
-class City(models.Model):
+class City(BaseModel):
     name = models.CharField(max_length=244)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
@@ -23,14 +24,14 @@ class City(models.Model):
         return self.name
 
 
-class OutletKind(models.Model):
+class OutletKind(BaseModel):
     name = models.CharField(max_length=244)
 
     def __str__(self):
         return self.name
 
 
-class Outlet(models.Model):
+class Outlet(BaseModel):
     id = models.AutoField(primary_key=True)
     kind = models.ForeignKey(OutletKind, on_delete=models.CASCADE)
     name = models.CharField(max_length=244)

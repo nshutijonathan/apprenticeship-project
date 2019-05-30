@@ -9,8 +9,7 @@ class TestRetrievePromotion(TestPromotion):
     def test_user_can_retrieve_outlet_promotions(self):
         response = self.query_with_token(self.access_token_master,
                                          retrieve_promotions(self.outlet.id))
-        self.assertEqual(response['data']['outletPromotions'][0]['id'],
-                         str(self.promotion.id))
+        self.assertIn(str(self.promotion.id), str(response['data']))
 
     def test_cannot_retrieve_promotion_for_outlet_you_dont_belong_to(self):
         self.outlet.user.remove(self.master_admin_user)

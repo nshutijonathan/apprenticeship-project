@@ -11,6 +11,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 
 class HandleCsvValidations(object):
     def handle_csv_upload(self, io_string):
+        params = {'model': Product, 'error_type': ValidationError}
         for row in csv.reader(io_string):
             if len(row) != 13:
                 message = {"error": "missing column(s)"}
@@ -40,7 +41,5 @@ class HandleCsvValidations(object):
                 backup_supplier_id=backup_supplier.id,
                 unit_cost=10.34,
                 tags=row[12])
-            params = {'model_name': 'Product', 'field': 'product_name',
-                      'value': row[1], 'error_type': ValidationError}
             with SaveContextManager(product_instance, **params):
                 pass

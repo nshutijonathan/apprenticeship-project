@@ -1,12 +1,8 @@
-from healthid.tests.test_fixtures.sales import update_promotion
-from healthid.apps.sales.models import Promotion
 from healthid.tests.sales.promotion_base import TestPromotion
+from healthid.tests.test_fixtures.sales import update_promotion
 
 
 class TestUpdatePromotion(TestPromotion):
-    def create_another_promotion(self):
-        self.promotion_data['title'] = 'another promo'
-        return Promotion.objects.create(**self.promotion_data)
 
     def test_admin_can_update_a_promotion(self):
         response = self.query_with_token(self.access_token_master,
@@ -48,11 +44,9 @@ class TestUpdatePromotion(TestPromotion):
                          'title is required.')
 
     def test_cannot_update_promotion_with_existing_title(self):
-        promotion = self.promotion
-        another_promotion = self.create_another_promotion()
-        response = self.query_with_token(self.access_token_master,
-                                         update_promotion(another_promotion.id,
-                                                          promotion.title))
+        response = self.query_with_token(
+            self.access_token_master, update_promotion(
+                self.second_promotion.id, self.promotion.title))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          'Promotion with title my promo already exists.')

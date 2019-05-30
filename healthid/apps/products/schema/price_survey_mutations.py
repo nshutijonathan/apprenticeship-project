@@ -49,15 +49,9 @@ class CreatePriceCheckSurvey(graphene.Mutation):
         outlet = get_model_object(Outlet, 'id', kwargs.get('outlet_id'))
         survey_instance = Survey(
             created_by=created_by, outlet=outlet, name=name)
-
-        params = {
-            'model_name': 'Survey',
-            'field': 'name',
-            'value': name
-        }
-
+        params = {'model': Survey}
         # Save the survey instance along with the products and suppliers
-        with SaveContextManager(survey_instance, **params):
+        with SaveContextManager(survey_instance, **params) as survey_instance:
             for supplier_id in suppliers:
                 supplier = get_model_object(
                     Suppliers, 'supplier_id', supplier_id)
@@ -87,14 +81,15 @@ class DeletePriceCheckSurvey(graphene.Mutation):
     @login_required
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
+        user = info.context.user
         survey_id = kwargs.get("survey_id")
         validate_empty_field('Survey Id', survey_id)
 
         # get survey instance and unlink all its
         # price_check_survey instances
         survey = get_model_object(Survey, 'id', survey_id)
-        survey.survey_price_checks.all().delete()
-        survey.delete()
+        survey.survey_price_checks.all().delete(user)
+        survey.delete(user)
 
         message = 'Survey id, {}, and all its associated price '.format(
             survey_id)
@@ -132,28 +127,22 @@ class UpdatePriceCheckSurvey(graphene.Mutation):
             raise GraphQLError('This survey has already been closed. '
                                ' It cannot be updated!')
 
+        if suppliers and not products:
+            raise GraphQLError("Please specify at least one product.")
+        if products and not suppliers:
+            raise GraphQLError("Please specify at least one supplier.")
+
         # update survey name if it has been provided.
         if name:
             survey_instance.name = name
 
-        params = {
-            'model_name': 'Survey',
-            'field': 'name',
-            'value': name
-        }
+        params = {'model': Survey}
 
-        with SaveContextManager(survey_instance, **params):
-            if suppliers and not products:
-                raise GraphQLError(
-                    "Please specify at least one product.")
-            if products and not suppliers:
-                raise GraphQLError(
-                    "Please specify at least one supplier.")
-                # delete all price checks for the current survey
-                # since no other survey will be using them
-                # after disassociating them with the current survey.
-
-            survey_instance.survey_price_checks.all().delete()
+        with SaveContextManager(survey_instance, **params) as survey_instance:
+            # delete all price checks for the current survey
+            # since no other survey will be using them
+            # after disassociating them with the current survey.
+            survey_instance.survey_price_checks.all().hard_delete()
 
             # create new price checks for the current survey.
             for supplier_id in suppliers:

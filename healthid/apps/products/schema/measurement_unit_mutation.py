@@ -26,13 +26,8 @@ class CreateMeasurementUnit(graphene.Mutation):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError("This name field can't be empty")
-        params = {
-            'model_name': 'MeasurementUnit',
-            'field': 'name',
-            'value': name
-        }
         measurement_unit = MeasurementUnit(name=name)
-        with SaveContextManager(measurement_unit, **params):
+        with SaveContextManager(measurement_unit, model=MeasurementUnit):
             message = [f'Measurement unit created succesfully']
             return CreateMeasurementUnit(
                 message=message, measurement_unit=measurement_unit)
@@ -58,8 +53,7 @@ class EditMeasurementUnit(graphene.Mutation):
             raise GraphQLError("The name field can't be empty")
         measuremnt_unit = get_model_object(MeasurementUnit, 'id', id)
         measuremnt_unit.name = name
-        params = {'model_name': 'MeasurementUnit', 'value': name}
-        with SaveContextManager(measuremnt_unit, **params):
+        with SaveContextManager(measuremnt_unit, model=MeasurementUnit):
             message = f'Measuremnt Unit of Id {id} is successfully updated'
             return EditMeasurementUnit(
                 measuremnt_unit=measuremnt_unit, message=message)
@@ -79,8 +73,9 @@ class DeleteMeasurementUnit(graphene.Mutation):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
+        user = info.context.user
         measurement_unit = get_model_object(MeasurementUnit, 'id', id)
-        measurement_unit.delete()
+        measurement_unit.delete(user)
         success = f'Measurement unit of Id {id} \
             has been successfully deleted'
 

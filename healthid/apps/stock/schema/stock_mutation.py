@@ -92,7 +92,7 @@ class EditStockCountTemplate(graphene.Mutation):
             'small_text_detail': 'Hello, stock counts shcedule has '
                                  'been modified'
         }
-        params = {'moel_name': StockCountTemplate}
+        params = {'model': StockCountTemplate}
         with SaveContextManager(stock_tempalate, **params) as stock_tempalate:
             send_mail = SendMail(email_stock_template,
                                  context, subject, to_email)
@@ -113,6 +113,7 @@ class DeleteStockCountTemplate(graphene.Mutation):
     @login_required
     @user_permission('Manager', 'Admin')
     def mutate(self, info, **kwargs):
+        user = info.context.user
         stock_tempalate = get_model_object(
             StockCountTemplate, 'id', kwargs.get('template_id'))
         to_email = stock_tempalate.assigned_users.values_list(
@@ -127,7 +128,7 @@ class DeleteStockCountTemplate(graphene.Mutation):
             'small_text_detail': 'Hello, stock counts has been canceled'
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
-        stock_tempalate.delete()
+        stock_tempalate.delete(user)
         send_mail.send()
         message = 'Stock template was successfully deleted'
         return DeleteStockCountTemplate(success=message)
@@ -324,12 +325,13 @@ class DeleteStockCount(graphene.Mutation):
     @staticmethod
     @login_required
     def mutate(root, info, **kwargs):
+        user = info.context.user
         stock_count_id = kwargs.get('stock_count_id')
         validate_stock.check_empty_id(stock_count_id, name='Stock Count')
         stock_count = get_model_object(StockCount, 'id', stock_count_id)
         validate_stock.check_approved_stock(info, stock_count)
         message = f'Stock Count with id {stock_count.id} has been deleted'
-        stock_count.delete()
+        stock_count.delete(user)
         return DeleteStockCount(message=message)
 
 

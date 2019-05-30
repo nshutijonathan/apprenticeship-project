@@ -30,15 +30,12 @@ class CreatePromotionType(graphene.Mutation):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError("Please provide promotion type name.")
-        params = {
-            'model_name': 'PromotionTypeModel',
-            'value': name
-        }
+        params = {'model': PromotionTypeModel}
         promotion_type = PromotionTypeModel(name=name)
         with SaveContextManager(promotion_type, **params) as promotion_type:
             success = 'Promotion Type has been created.'
-            return CreatePromotionType(success=success,
-                                       promotion_type=promotion_type)
+            return CreatePromotionType(
+                success=success, promotion_type=promotion_type)
 
 
 class CreatePromotion(graphene.Mutation):
@@ -60,16 +57,11 @@ class CreatePromotion(graphene.Mutation):
         outlet_id = kwargs.get('outlet_id')
         user = info.context.user
         check_user_belongs_to_outlet(user, outlet_id)
-        params = {
-            'model_name': 'Promotion',
-            'field': 'title',
-            'value': kwargs.get('title')
-        }
-        with SaveContextManager(promotion, **params) as promotion:
+        with SaveContextManager(promotion, model=Promotion) as promotion:
             product_ids = kwargs.get('product_ids', [])
             promotion = add_products_to_promotion(promotion, product_ids)
-            return CreatePromotion(success='Promotion created successfully.',
-                                   promotion=promotion)
+            return CreatePromotion(
+                success='Promotion created successfully.', promotion=promotion)
 
 
 class UpdatePromotion(graphene.Mutation):
@@ -99,12 +91,7 @@ class UpdatePromotion(graphene.Mutation):
         validate_fields(Promotion(), **kwargs)
         for(key, value) in kwargs.items():
             setattr(promotion, key, value)
-        params = {
-            'model_name': 'Promotion',
-            'field': 'title',
-            'value': kwargs.get('title')
-        }
-        with SaveContextManager(promotion, **params) as promotion:
+        with SaveContextManager(promotion, model=Promotion) as promotion:
             promotion = add_products_to_promotion(promotion, product_ids)
             return UpdatePromotion(success='Promotion updated successfully.',
                                    promotion=promotion)
@@ -126,7 +113,7 @@ class DeletePromotion(graphene.Mutation):
             raise GraphQLError(
                 'You don\'t belong to outlet with this promomtion.'
             )
-        promotion.delete()
+        promotion.delete(user)
         return DeletePromotion(success='Promotion has been deleted.')
 
 
@@ -149,8 +136,8 @@ class ApprovePromotion(graphene.Mutation):
             )
         promotion.is_approved = True
         promotion.save()
-        return ApprovePromotion(success='Promotion has been approved.',
-                                promotion=promotion)
+        return ApprovePromotion(
+            success='Promotion has been approved.', promotion=promotion)
 
 
 class Mutation(graphene.ObjectType):

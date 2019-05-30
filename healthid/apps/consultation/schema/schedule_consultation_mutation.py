@@ -56,7 +56,6 @@ class Schedule(graphene.Mutation):
             setattr(schedule_consultation, key, value)
         with SaveContextManager(schedule_consultation) as consultation:
             consultation.consultants.add(*valid_consultants)
-            consultation.save()
             event = Event(
                 start_date=start_date,
                 end_date=end_date,

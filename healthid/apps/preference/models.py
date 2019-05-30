@@ -1,9 +1,11 @@
 from django.db import models
-from healthid.utils.preference_utils.currency_fixture import MONEY_FORMATS
+
+from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
+from healthid.utils.preference_utils.currency_fixture import MONEY_FORMATS
 
 
-class Timezone(models.Model):
+class Timezone(BaseModel):
 
     name = models.CharField(max_length=244, unique=True)
     time_zone = models.CharField(
@@ -13,7 +15,7 @@ class Timezone(models.Model):
         return self.time_zone
 
 
-class Currency(models.Model):
+class Currency(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=244, unique=True)
@@ -37,14 +39,14 @@ class Currency(models.Model):
         return cls.money_formats
 
 
-class Vat(models.Model):
+class Vat(BaseModel):
     # Model that handle VAT
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     rate = models.FloatField(default=00.00)
 
 
-class Preference(models.Model):
+class Preference(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     outlet_timezone = models.ForeignKey(

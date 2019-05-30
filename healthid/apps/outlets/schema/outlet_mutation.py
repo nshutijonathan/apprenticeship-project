@@ -35,19 +35,14 @@ class CreateOutlet(graphene.Mutation):
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
-        try:
-            outlet = Outlet()
-            for(key, value) in kwargs.items():
-                setattr(outlet, key, value)
-            outlet.save()
+        outlet = Outlet()
+        for(key, value) in kwargs.items():
+            setattr(outlet, key, value)
+        with SaveContextManager(outlet, model=Outlet) as outlet:
             outlet.user.add(user)
-        except Exception as e:
-            raise GraphQLError(f'Something went wrong {e}')
-
-        return CreateOutlet(
-            outlet=outlet,
-            success="Outlet created successfully and default timezone set "
-        )
+            return CreateOutlet(
+                outlet=outlet, success="Outlet created successfully"
+            )
 
 
 class UpdateOutlet(graphene.Mutation):
@@ -83,12 +78,9 @@ class UpdateOutlet(graphene.Mutation):
         for(key, value) in kwargs.items():
             if value is not None:
                 setattr(outlet, key, value)
-        params = {'model_name': 'Outlet', 'value': outlet.name}
-        with SaveContextManager(outlet, **params) as outlet:
+        with SaveContextManager(outlet, model=Outlet) as outlet:
             success = f'Successfully updated outlet {outlet.name}'
-            return UpdateOutlet(
-                outlet=outlet, success=success
-            )
+            return UpdateOutlet(outlet=outlet, success=success)
 
 
 class DeleteOutlet(graphene.Mutation):
@@ -104,12 +96,10 @@ class DeleteOutlet(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, id):
+        user = info.context.user
         outlet = get_model_object(Outlet, 'id', id)
-        outlet.delete()
-
-        return DeleteOutlet(
-            success="Outlet has been deleted"
-        )
+        outlet.delete(user)
+        return DeleteOutlet(success="Outlet has been deleted")
 
 
 class CreateCountry(graphene.Mutation):
@@ -127,8 +117,7 @@ class CreateCountry(graphene.Mutation):
         name = kwargs.get('name').strip().title()
         name = validate_fields.validate_name(name, 'Country')
         country = Country(name=name)
-        params = {'model_name': 'Country', 'value': name}
-        with SaveContextManager(country, **params):
+        with SaveContextManager(country, model=Country) as country:
             return CreateCountry(country=country)
 
 
@@ -155,7 +144,7 @@ class CreateCity(graphene.Mutation):
         if city_name in cities:
             raise GraphQLError(f'City {city_name} already exists')
         city = City(name=city_name, country=country)
-        with SaveContextManager(city):
+        with SaveContextManager(city, model=City):
             return CreateCity(city=city)
 
 
@@ -175,11 +164,9 @@ class EditCountry(graphene.Mutation):
         id = kwargs.get('id')
         name = kwargs.get('name', '').strip().title()
         name = validate_fields.validate_name(name, 'country')
-        params = {'model_name': 'Country', 'value': name}
-
         country = get_model_object(Country, 'id', id)
         country.name = name
-        with SaveContextManager(country, **params):
+        with SaveContextManager(country, model=Country):
             success = "Country successfully updated"
             return EditCountry(country=country, success=success)
 
@@ -221,9 +208,10 @@ class DeleteCountry(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
+        user = info.context.user
         id = kwargs.get('id')
         country = get_model_object(Country, 'id', id)
-        country.delete()
+        country.delete(user)
         return DeleteCountry(success='Country was successfully deleted')
 
 

@@ -34,14 +34,10 @@ class CreateFieldSet(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
-        params = {
-            'model_name': 'ReceiptTemplate', 'field': 'receipt_template_id',
-            'value': kwargs.get('receipt_template_id')
-        }
         field_set = FieldSet()
         for(key, value) in kwargs.items():
             setattr(field_set, key, value)
-        with SaveContextManager(field_set, **params) as field_set:
+        with SaveContextManager(field_set, model=FieldSet) as field_set:
             return CreateFieldSet(field_set=field_set)
 
 
@@ -96,9 +92,7 @@ class DeleteFieldSet(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, id):
+        user = info.context.user
         field_set = get_model_object(FieldSet, 'id', id)
-        field_set.delete()
-
-        return DeleteFieldSet(
-            success="FieldSet has been deleted"
-        )
+        field_set.delete(user)
+        return DeleteFieldSet(success="FieldSet has been deleted")

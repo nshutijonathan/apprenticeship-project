@@ -35,11 +35,10 @@ class CreateRegister(graphene.Mutation):
         receipt_template = get_model_object(
             ReceiptTemplate, 'id', kwargs.get('receipt_id'))
         if register_name.strip() != "":
-            params = {'model_name': Register, 'value': register_name}
             register = Register(
                 name=register_name, outlet_id=outlet.id,
                 receipt_id=receipt_template.id)
-            with SaveContextManager(register, **params) as register:
+            with SaveContextManager(register, model=Register) as register:
                 return CreateRegister(register=register)
 
         raise GraphQLError(f'{register_name} is not a valid register name')
@@ -66,9 +65,7 @@ class UpdateRegister(graphene.Mutation):
             register.name = name
             register.save()
             success = 'Update was successful'
-            return UpdateRegister(
-                success=success, register=register,
-            )
+            return UpdateRegister(success=success, register=register)
         raise GraphQLError(f'{name} is not a valid register name')
 
 
@@ -85,8 +82,9 @@ class DeleteRegister(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, id):
+        user = info.context.user
         register = get_model_object(Register, 'id', id)
-        register.delete()
+        register.delete(user)
         return DeleteRegister(success="Register was deleted successfully")
 
 

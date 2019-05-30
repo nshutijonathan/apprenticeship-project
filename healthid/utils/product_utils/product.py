@@ -1,6 +1,7 @@
 from graphql import GraphQLError
 from healthid.utils.app_utils.database import SaveContextManager
 from django.conf import settings
+from healthid.apps.products.models import Product
 
 
 def set_attributes(product, **kwargs):
@@ -9,16 +10,10 @@ def set_attributes(product, **kwargs):
     for (key, value) in kwargs.items():
         if type(value) is str and value.strip() == "":
             raise GraphQLError("The {} field can't be empty".format(key))
-        if key == 'product_name':
-            params = {
-                'model_name': 'Product',
-                'field': 'product_name',
-                'value': value
-            }
         if key == 'id':
             continue
         setattr(product, key, value)
-    with SaveContextManager(product, **params):
+    with SaveContextManager(product, model=Product):
         product.tags.set(*tags)
         return product
 

@@ -35,21 +35,18 @@ class InitiateOrder(graphene.Mutation):
     def mutate(self, info, **kwargs):
         '''Mutation to initiate an order in the database
         '''
+        outlets = [get_model_object(Outlet, 'id', outlet_id)
+                   for outlet_id in kwargs['destination_outlets']]
         order = Order(
             name=kwargs['name'],
             delivery_date=kwargs['delivery_date'],
             product_autofill=kwargs['product_autofill'],
             supplier_autofill=kwargs['supplier_autofill']
         )
-
         with SaveContextManager(order) as order:
-            for outlet_id in kwargs['destination_outlets']:
-                outlet = get_model_object(Outlet, 'id', outlet_id)
-                order.destination_outlet.add(outlet)
-                order.save()
-
-        success = 'Order successfully initiated!'
-        return InitiateOrder(order=order, success=success)
+            order.destination_outlet.add(*outlets)
+            success = 'Order successfully initiated!'
+            return InitiateOrder(order=order, success=success)
 
 
 class AddOrderDetails(graphene.Mutation):

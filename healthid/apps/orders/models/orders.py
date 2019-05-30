@@ -1,12 +1,13 @@
 from django.db import models
 
-from healthid.utils.app_utils.id_generator import id_gen
-from healthid.apps.products.models import Product
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.orders.models.suppliers import Suppliers
+from healthid.apps.outlets.models import Outlet
+from healthid.apps.products.models import Product
+from healthid.models import BaseModel
+from healthid.utils.app_utils.id_generator import id_gen
 
 
-class Order(models.Model):
+class Order(BaseModel):
     '''Class to handle order data
     '''
     id = models.AutoField(primary_key=True)
@@ -21,7 +22,7 @@ class Order(models.Model):
     sent_status = models.BooleanField(default=False)
 
 
-class OrderDetails(models.Model):
+class OrderDetails(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False
     )

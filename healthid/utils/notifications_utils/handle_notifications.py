@@ -11,7 +11,6 @@ def notify(users, message, event_name, subject=None, html_body=None):
     notification = Notification(message=message, event_name=event_name)
     with SaveContextManager(notification) as notification:
         for user in users:
-            notification.save()
             notification_record = NotificationRecord.objects.create(
                 recipient=user
             )

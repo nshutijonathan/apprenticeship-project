@@ -26,9 +26,8 @@ class CreateProductCategory(graphene.Mutation):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError("This name field can't be empty")
-        params = {'model_name': 'ProductCategory', 'value': name}
         product_category = ProductCategory(name=name)
-        with SaveContextManager(product_category, **params):
+        with SaveContextManager(product_category, model=ProductCategory):
             message = [f'Product Category created succesfully']
             return CreateProductCategory(
                 message=message, product_category=product_category)
@@ -54,8 +53,7 @@ class EditProductCategory(graphene.Mutation):
             raise GraphQLError("This name field can't be empty")
         product_category = get_model_object(ProductCategory, 'id', id)
         product_category.name = name
-        params = {'model_name': 'ProductCategory', 'value': name}
-        with SaveContextManager(product_category, **params):
+        with SaveContextManager(product_category, model=ProductCategory):
             message = 'Product category successfully updated'
             return EditProductCategory(
                 message=message, product_category=product_category)
@@ -75,8 +73,9 @@ class DeleteProductCategory(graphene.Mutation):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
+        user = info.context.user
         product_category = get_model_object(ProductCategory, 'id', id)
-        product_category.delete()
+        product_category.delete(user)
         message = f'Prduct category of Id {id} has been successfully deleted'
 
         return DeleteProductCategory(message=message)

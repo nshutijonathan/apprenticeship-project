@@ -1,4 +1,5 @@
 from django.core.management import call_command
+
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures import consultation
 

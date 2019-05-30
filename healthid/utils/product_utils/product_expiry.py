@@ -56,12 +56,7 @@ def create_promotion(products, title, discount, outlet):
         promotion = Promotion(title=title, promotion_type=promotion_type,
                               description=description, discount=discount,
                               is_approved=False, outlet=outlet)
-        params = {
-            'model_name': 'Promotion',
-            'field': 'title',
-            'value': title
-        }
-        with SaveContextManager(promotion, **params) as promotion:
+        with SaveContextManager(promotion, model=Promotion) as promotion:
             promotion.products.add(*products)
     if products_added:
         users = outlet.user.all()

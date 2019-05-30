@@ -1,11 +1,11 @@
 from django.db import models
-from healthid.apps.receipts.models import ReceiptTemplate
+
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.receipts.models import ReceiptTemplate
 
-# Create your models here.
 
-
-class Register(models.Model):
+class Register(BaseModel):
     name = models.CharField(max_length=244)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
     receipt = models.ForeignKey(ReceiptTemplate, on_delete=models.CASCADE,

@@ -1,4 +1,5 @@
 import graphene
+from django.forms.models import model_to_dict
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
@@ -12,17 +13,16 @@ from healthid.apps.products.schema.price_survey_mutations import (
     CreatePriceCheckSurvey, DeletePriceCheckSurvey, UpdatePriceCheckSurvey)
 from healthid.apps.products.schema.product_category_mutation import (
     CreateProductCategory, DeleteProductCategory, EditProductCategory)
+from healthid.apps.products.schema.product_query import (ProductCategoryType,
+                                                         ProductType)
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.app_utils.query_objects import GetObjectList
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.product_utils.activate_deactivate_product import \
+    activate_deactivate_products
 from healthid.utils.product_utils.product import set_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
-from healthid.utils.product_utils.activate_deactivate_product import \
-    activate_deactivate_products
-from healthid.apps.products.schema.product_query import (ProductCategoryType,
-                                                         ProductType)
-from healthid.utils.app_utils.query_objects import GetObjectList
-from django.forms.models import model_to_dict
 
 
 class ProductInput(graphene.InputObjectType):
@@ -122,10 +122,11 @@ class DeleteProduct(graphene.Mutation):
 
     @login_required
     def mutate(self, info, id):
+        user = info.context.user
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
             raise GraphQLError("Approved product can't be deleted.")
-        product.delete()
+        product.delete(user)
 
         return DeleteProduct(success="Product has been deleted")
 
@@ -191,7 +192,7 @@ class ApproveProposedEdits(graphene.Mutation):
         for key, value in product_dict.items():
             if value is not None:
                 setattr(parent, key, value)
-        proposed_edit.delete()
+        proposed_edit.hard_delete()
         parent.save()
         message = ["You have succesfully aapproved edit request"]
         return ApproveProposedEdits(product=parent, message=message)

@@ -1,10 +1,11 @@
 from django.db import models
 
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 
 
-class ReceiptTemplate(models.Model):
+class ReceiptTemplate(BaseModel):
     id = models.CharField(
         max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
     )
@@ -27,7 +28,7 @@ class ReceiptTemplate(models.Model):
         return self.id
 
 
-class FieldSet(models.Model):
+class FieldSet(BaseModel):
     id = models.CharField(
         max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
     )

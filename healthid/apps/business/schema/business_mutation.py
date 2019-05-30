@@ -1,15 +1,15 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import User
+from healthid.apps.authentication.schema.auth_queries import UserType
 from healthid.apps.business.models import Business
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.apps.authentication.schema.auth_queries \
-    import UserType
 from healthid.utils.auth_utils.decorator import user_permission
-from graphql import GraphQLError
+from healthid.utils.business_utils.validators import ValidateBusiness
 
 
 class BusinesType(DjangoObjectType):
@@ -48,26 +48,15 @@ class CreateBusiness(graphene.Mutation):
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
-        business = Business.objects.create_business(
-            trading_name=kwargs.get('trading_name'),
-            legal_name=kwargs.get('legal_name'),
-            address_line_1=kwargs.get('address_line_1'),
-            address_line_2=kwargs.get('address_line_2'),
-            phone_number=kwargs.get('phone_number'),
-            business_email=kwargs.get('business_email'),
-            city=kwargs.get('city'),
-            country=kwargs.get('country'),
-            local_government_area=kwargs.get('local_government_area'),
-            website=kwargs.get('website'),
-            facebook=kwargs.get('facebook'),
-            twitter=kwargs.get('twitter'),
-            instagram=kwargs.get('instagram'),
-            logo=kwargs.get('logo')
-        )
-        business.user.add(user)
-        business.save()
-        success = ["Business successfully created!"]
-        return CreateBusiness(business=business, success=success)
+        ValidateBusiness().validate_business(**kwargs)
+        business = Business()
+        for key, value in kwargs.items():
+            setattr(business, key, value)
+
+        with SaveContextManager(business, model=Business) as business:
+            business.user.add(user)
+            success = ["Business successfully created!"]
+            return CreateBusiness(business=business, success=success)
 
 
 class UpdateBusiness(graphene.Mutation):
@@ -114,10 +103,7 @@ not assigned to!")
         msg = 'Business with legal name or email provided already exists.'
         with SaveContextManager(business, message=msg):
             success = ["Business has been updated successfully"]
-            return UpdateBusiness(
-                business=business,
-                success=success
-            )
+            return UpdateBusiness(business=business, success=success)
 
 
 class AddUserBusiness(graphene.Mutation):
@@ -143,9 +129,7 @@ class AddUserBusiness(graphene.Mutation):
             f"Successfully added User with {user_instance.email}"
             f" to {business_instance.legal_name} business"
         ]
-        return AddUserBusiness(
-            user=user_instance,
-            message=message)
+        return AddUserBusiness(user=user_instance, message=message)
 
 
 class DeleteBusiness(graphene.Mutation):
@@ -162,13 +146,12 @@ class DeleteBusiness(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, id):
+        user = info.context.user
         business = get_model_object(Business, 'id', id)
-        business.delete()
+        business.delete(user)
         success = ["Business has been deleted successfully"]
 
-        return DeleteBusiness(
-            success=success
-        )
+        return DeleteBusiness(success=success)
 
 
 class Mutation(graphene.ObjectType):

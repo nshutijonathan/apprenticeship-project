@@ -173,11 +173,6 @@ class ProposeQuantity(graphene.Mutation):
 
         for index, value in enumerate(products):
             edit_quantity = Quantity()
-            params = {
-                'model_name': 'Quantity',
-                'field': 'quantity_received',
-                'value': proposed_quantities[index]
-            }
             quantity = Quantity.objects.get(
                 batch_id=batch_id, product_id=value)
             edit_quantity.parent = quantity
@@ -185,8 +180,7 @@ class ProposeQuantity(graphene.Mutation):
             edit_quantity.product_id = value
             edit_quantity.proposed_by = info.context.user
             edit_quantity.quantity_received = proposed_quantities[index]
-
-            with SaveContextManager(edit_quantity, **params):
+            with SaveContextManager(edit_quantity, model=Quantity):
                 pass
         notification = ("Edit request for quantity has been sent!")
         return cls(batch_info=batch_info, notification=notification)
@@ -234,8 +228,8 @@ class ApproveProposedQuantity(graphene.Mutation):
             original_instance.authorized_by = info.context.user
             original_instance.comment = comment if not approval_status \
                 else None
+            quantity.hard_delete()
             original_instance.save()
-            quantity.delete()
 
         message = (
             "Products with ids '{}' have been successfully approved".format(
@@ -264,8 +258,9 @@ class DeleteBatchInfo(graphene.Mutation):
     @login_required
     @user_permission('Manager')
     def mutate(root, info, **kwargs):
+        user = info.context.user
         batch_id = kwargs.get('batch_id')
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
-        batch_info.delete()
+        batch_info.delete(user)
         message = [f"Batch with number {batch_info.batch_no} has been deleted"]
         return DeleteBatchInfo(message=message)

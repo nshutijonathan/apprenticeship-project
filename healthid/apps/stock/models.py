@@ -2,13 +2,13 @@ from django.db import models
 
 from healthid.apps.authentication.models import User
 from healthid.apps.events.models import Event
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product, BatchInfo
-from django.utils import timezone
 from healthid.utils.app_utils.id_generator import id_gen
 
 
-class StockCountTemplate(models.Model):
+class StockCountTemplate(BaseModel):
     products = models.ManyToManyField(
         Product, related_name='products_to_count')
     schedule_time = models.ForeignKey(
@@ -18,17 +18,14 @@ class StockCountTemplate(models.Model):
     designated_users = models.ManyToManyField(
         User, related_name='designated_to')
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
-    created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return str(self.id)
 
 
-class StockCount(models.Model):
+class StockCount(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
-    created_at = models.DateField(default=timezone.now, editable=False)
-    updated_at = models.DateField(auto_now=True)
     variance_reason = models.CharField(max_length=100)
     remarks = models.TextField(null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -40,7 +37,7 @@ class StockCount(models.Model):
         "StockCountRecord", related_name='stock_count_record')
 
 
-class StockCountRecord(models.Model):
+class StockCountRecord(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     quantity_counted = models.PositiveIntegerField(blank=True, null=True)

@@ -312,8 +312,7 @@ class CreateRole(graphene.Mutation):
         errors = ["name", "Role Field is empty"]
         if input.name != "":
             role = Role(name=input.name)
-            params = {'model_name': 'Role', 'value': input.name}
-            with SaveContextManager(role, **params):
+            with SaveContextManager(role, model=Role):
                 message = [f"Successfully created a role: {input.name}"]
                 return CreateRole(success=success, role=role, message=message)
         return CreateRole(errors=errors)
@@ -385,8 +384,7 @@ class EditRole(graphene.Mutation):
         success = False
         role_instance = get_model_object(Role, 'id', id)
         role_instance.name = input.name
-        params = {'model_name': 'Role', 'value': input.name}
-        with SaveContextManager(role_instance, **params):
+        with SaveContextManager(role_instance, model=Role):
             success = True
             message = [f"Successfully Edited the role"]
             return EditRole(

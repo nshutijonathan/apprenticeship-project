@@ -1,22 +1,13 @@
-import uuid
-
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
-from django.utils.http import int_to_base36
+from django.utils import timezone
 
-ID_LENGTH = 9
-
-
-def id_gen() -> str:
-    """Generates random string whose length is `ID_LENGTH`"""
-    return int_to_base36(uuid.uuid4().int)[:ID_LENGTH]
+from healthid.manager import BaseManager
+from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager, BaseManager):
     def create_user(self, **kwargs):
         """
         Creates and saves a User with the given credentials.
@@ -87,10 +78,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_staff = models.BooleanField(default=False)
     email_notification_permissions = models.BooleanField(default=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+    all_objects = UserManager(alive_only=False)
 
     def __str__(self):
         return self.email
@@ -104,6 +97,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_super_admin_permission(self, perm, obj=None):
         return self.is_superuser
 
+    def delete(self):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def hard_delete(self):
+        super().delete()
+
 
 class Role(models.Model):
     """
@@ -116,6 +116,11 @@ class Role(models.Model):
     name = models.CharField(
         max_length=50, help_text="Enter Available Roles", unique=True
     )
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
+    objects = BaseManager()
+    all_objects = BaseManager(alive_only=False)
 
     class Meta:
         verbose_name_plural = "Roles"
@@ -123,3 +128,10 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
+
+    def delete(self):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def hard_delete(self):
+        super().delete()

@@ -2,23 +2,24 @@ from django.db import models
 
 from healthid.apps.authentication.models import User
 from healthid.apps.events.models import Event
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 
 
-class ExpectedTimeDuration(models.Model):
+class ExpectedTimeDuration(BaseModel):
     time = models.CharField(max_length=50, unique=True)
 
 
-class ConsultantRole(models.Model):
+class ConsultantRole(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
-class ApprovedDeliveryFormat(models.Model):
+class ApprovedDeliveryFormat(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
-class Consultation(models.Model):
+class Consultation(BaseModel):
     consultation_name = models.CharField(max_length=80)
     description = models.CharField(max_length=100)
     approved_delivery_formats = models.ForeignKey(

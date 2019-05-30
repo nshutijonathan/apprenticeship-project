@@ -1,54 +1,11 @@
-from django.contrib.auth.models import BaseUserManager
 from django.db import models
-from django.db.models import Q
-from graphql import GraphQLError
 
 from healthid.apps.authentication.models import User
+from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
-from healthid.utils.app_utils.validators import validate_email
-from healthid.utils.business_utils.validators import ValidateBusiness
 
 
-class BusinessManager(BaseUserManager):
-    """
-    Creates a business.
-    Validate whethere the busines with same email already exits
-    Validate whether business with same legal name exits before
-    creating a business
-
-    """
-
-    def create_business(self, **kwargs):
-        '''Method to save a business in the database
-        '''
-        business = Business.objects.filter(
-            Q(business_email=kwargs['business_email']) |
-            Q(legal_name=kwargs['legal_name']))
-        if business:
-            raise GraphQLError('Business already exists!')
-        business_email = validate_email(kwargs['business_email'])
-        ValidateBusiness().validate_business(**kwargs)
-        business = self.model(
-            business_email=business_email,
-            trading_name=kwargs.get('trading_name'),
-            legal_name=kwargs.get('legal_name'),
-            address_line_1=kwargs.get('address_line_1'),
-            address_line_2=kwargs.get('address_line_2'),
-            city=kwargs.get('city'),
-            country=kwargs.get('country'),
-            local_government_area=kwargs.get('local_government_area'),
-            phone_number=kwargs.get('phone_number'),
-            website=kwargs.get('website'),
-            facebook=kwargs.get('facebook'),
-            twitter=kwargs.get('twitter'),
-            instagram=kwargs.get('instagram'),
-            logo=kwargs.get('logo')
-        )
-        business.save()
-        return business
-
-
-class Business(models.Model):
+class Business(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
     trading_name = models.CharField(max_length=244)
@@ -65,8 +22,7 @@ class Business(models.Model):
     twitter = models.CharField(max_length=344)
     instagram = models.CharField(max_length=244)
     logo = models.URLField()
-    user = models.ManyToManyField(User)
-    objects = BusinessManager()
+    user = models.ManyToManyField(User, related_name='employees')
 
     def __str__(self):
         return self.legal_name

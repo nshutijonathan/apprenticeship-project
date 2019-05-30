@@ -11,7 +11,6 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.validators import special_cahracter_validation
-from healthid.utils.orders_utils.add_supplier import add_supplier
 
 
 class SuppliersInput(graphene.InputObjectType):
@@ -39,11 +38,13 @@ class AddSupplier(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, input=None):
-        supplier = Suppliers()
         user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
-        add_supplier.create_supplier(user, outlet, supplier, input)
-        return cls(supplier=supplier)
+        supplier = Suppliers()
+        for (key, value) in input.items():
+            setattr(supplier, key, value)
+        supplier.user = user
+        with SaveContextManager(supplier, model=Suppliers) as supplier:
+            return cls(supplier=supplier)
 
 
 class ApproveSupplier(graphene.Mutation):
@@ -106,10 +107,6 @@ class EditSupplier(graphene.Mutation):
         if not supplier.is_approved:
             msg = "You can only propose an edit to an approved supplier!"
             raise GraphQLError(msg)
-        if kwargs.get('email') is not None:
-            email = kwargs.get('email')
-        else:
-            email = None
 
         kwargs.pop('id')
         for (key, value) in kwargs.items():
@@ -125,12 +122,7 @@ class EditSupplier(graphene.Mutation):
         edit_request.user = info.context.user
         edit_request.parent = supplier
         edit_request.is_approved = True
-        params = {
-            'model_name': 'Suppliers',
-            'field': 'email',
-            'value': email
-        }
-        with SaveContextManager(edit_request, **params) as edit_request:
+        with SaveContextManager(edit_request, model=Suppliers) as edit_request:
             name = supplier.name
             msg = f"Edit request for Supplier {name} has been sent!"
             return cls(edit_request, msg)
@@ -164,18 +156,10 @@ class EditProposal(graphene.Mutation):
             msg = "You can't edit an edit request you didnot propose!"
             raise GraphQLError(msg)
         kwargs.pop('id')
-        if kwargs.get('email') is not None:
-            email = kwargs.get('email')
-        else:
-            email = proposed_edit.email
         for (key, value) in kwargs.items():
             if key is not None:
                 setattr(proposed_edit, key, value)
-        params = {
-            'model_name': 'Suppliers',
-            'field': 'email',
-            'value': email
-        }
+        params = {'model': Suppliers}
         with SaveContextManager(proposed_edit, **params) as edit_request:
             name = proposed_edit.parent.name
             msg = f"Edit request for Supplier {name} has been updated!"
@@ -207,7 +191,7 @@ class ApproveEditRequest(graphene.Mutation):
         for (key, value) in dict_object.items():
             if value is not None:
                 setattr(supplier, key, value)
-        request_instance.delete()
+        request_instance.hard_delete()
         supplier.save()
         message = f"Supplier {name} has been successfully updated!"
         return cls(message, supplier)
@@ -259,19 +243,14 @@ class CreateSupplierNote(graphene.Mutation):
         supplier = get_model_object(Suppliers, "id", supplier_id)
         outlets = [get_model_object(Outlet, 'id', outlet_id)
                    for outlet_id in outlet_ids]
-        supplier_note = SupplierNote(
-                                      supplier=supplier,
-                                      note=note,
-                                      user=user
-        )
-
+        supplier_note = SupplierNote(supplier=supplier, note=note, user=user)
         with SaveContextManager(supplier_note) as supplier_note:
             supplier_note.outlet.add(*outlets)
             supplier_note.save()
             return cls(
-                       supplier_note=supplier_note,
-                       supplier=supplier,
-                       message="Successfully created Note")
+                supplier_note=supplier_note,
+                supplier=supplier,
+                message="Successfully created Note")
 
 
 class UpdateSupplierNote(graphene.Mutation):
@@ -293,7 +272,7 @@ class UpdateSupplierNote(graphene.Mutation):
         supplier_note = get_model_object(SupplierNote, "id", id)
         if info.context.user != supplier_note.user:
             raise GraphQLError(
-                        "You can't update a note you didn't create")
+                "You can't update a note you didn't create")
         for key, value in kwargs.items():
             if key in ["note"]:
                 special_cahracter_validation(value)
@@ -309,8 +288,8 @@ class UpdateSupplierNote(graphene.Mutation):
             supplier_note.outlet.add(*outlets)
         with SaveContextManager(supplier_note) as supplier_note:
             return cls(
-                       success="Suppliers Note was updated successfully",
-                       supplier_note=supplier_note)
+                success="Suppliers Note was updated successfully",
+                supplier_note=supplier_note)
 
 
 class DeleteSupplierNote(graphene.Mutation):
@@ -325,11 +304,12 @@ class DeleteSupplierNote(graphene.Mutation):
 
     @login_required
     def mutate(self, info, id):
+        user = info.context.user
         supplier_note = get_model_object(SupplierNote, "id", id)
         if info.context.user != supplier_note.user:
             raise GraphQLError(
-                        "You can't delete a note you didn't create")
-        supplier_note.delete()
+                "You can't delete a note you didn't create")
+        supplier_note.delete(user)
         return DeleteSupplierNote(
             success="Supplier note was deleted successfully")
 

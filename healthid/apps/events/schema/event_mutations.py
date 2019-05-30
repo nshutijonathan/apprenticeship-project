@@ -121,7 +121,7 @@ class DeleteEvent(graphene.Mutation):
             raise GraphQLError(
                 "You can't delete events that don't belong to you!"
             )
-        event.delete()
+        event.delete(request_user)
         success = ["Event deleted successfully!"]
         return DeleteEvent(success=success)
 
@@ -139,7 +139,7 @@ class CreateEventType(graphene.Mutation):
     @login_required
     @user_permission()
     def mutate(self, info, name):
-        params = {'model_name': 'EventType', 'value': name}
+        params = {'model': 'EventType'}
         event_type = EventTypeModel(name=name)
         with SaveContextManager(event_type, **params) as event_type:
             success = ['Event Type created successfully!']

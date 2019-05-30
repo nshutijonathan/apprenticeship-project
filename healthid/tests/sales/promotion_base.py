@@ -14,3 +14,5 @@ class TestPromotion(BaseConfiguration):
             'outlet_id': self.outlet.id
         }
         self.promotion = Promotion.objects.create(**self.promotion_data)
+        self.promotion_data['title'] = 'another promo'
+        self.second_promotion = Promotion.objects.create(**self.promotion_data)

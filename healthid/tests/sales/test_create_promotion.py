@@ -6,9 +6,9 @@ from healthid.tests.test_fixtures.sales import (create_promotion,
 class TestCreatePromotion(TestPromotion):
     def setUp(self):
         super().setUp()
-        self.promotion_data['title'] = 'new promo'
 
     def test_manager_can_create_a_promotion(self):
+        self.promotion_data['title'] = 'new promo'
         response = self.query_with_token(self.access_token_master,
                                          create_promotion(self.promotion_data))
         self.assertIn('success', response['data']['createPromotion'])
@@ -23,13 +23,11 @@ class TestCreatePromotion(TestPromotion):
                          'title is required.')
 
     def test_cannot_create_promotion_with_same_title(self):
-        self.query_with_token(self.access_token_master,
-                              create_promotion(self.promotion_data))
         response = self.query_with_token(self.access_token_master,
                                          create_promotion(self.promotion_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'Promotion with title new promo already exists.')
+                         'Promotion with title another promo already exists.')
 
     def test_only_manager_admin_can_create_promotion(self):
         self.business.user.add(self.user)
@@ -71,5 +69,5 @@ class TestCreatePromotion(TestPromotion):
                                          create_promotion_type('Monthly'))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'PromotionTypeModel with name Monthly already exists.'
+                         'PromotionType with name Monthly already exists.'
                          )
