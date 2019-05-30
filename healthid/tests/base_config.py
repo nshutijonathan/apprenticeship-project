@@ -101,7 +101,6 @@ class BaseConfiguration(TestCase):
             'email': 'healthid@gmail.com',
             'phone': +256788088831
         }
-
         self.user = self.register_user(self.new_user)
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
@@ -126,6 +125,18 @@ class BaseConfiguration(TestCase):
         self.access_token_master = self.admin_login()
         self.preference = Preference.objects.get()
         self.outlet.user.add(self.master_admin_user)
+
+        self.create_customer_data = {
+            "first_name": "Habib",
+            "last_name": "Audu",
+            "email": "talktohabib@gmail.com",
+            "city_id": self.outlet_kind['city_id'],
+            "country_id": self.outlet_kind['country_id'],
+            "primary_mobile_number": "+256 788088831",
+            "secondary_mobile_number": "+256 788088831",
+            "loyalty_member": "true",
+            "emergency_contact_email": "talktohabi2@gmail.com"
+        }
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")
@@ -179,7 +190,8 @@ class BaseConfiguration(TestCase):
         country = Country.objects.create(name='Peru')
         city = City.objects.create(name="Chiclayo", country_id=country.id)
         outlet_kind = OutletKind.objects.create(name="Warehouse")
-        info = {"city_id": city.id, "outlet_kindid": outlet_kind.id}
+        info = {"city_id": city.id, "outlet_kindid": outlet_kind.id,
+                "country_id": country.id}
         return info
 
     def create_outlet(self):

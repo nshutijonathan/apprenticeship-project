@@ -280,7 +280,7 @@ class UpdateSupplierNote(graphene.Mutation):
     """
     class Arguments:
         id = graphene.Int(required=True)
-        supplier_id = graphene.Int()
+        supplier_id = graphene.String()
         outlet_ids = graphene.List(graphene.Int)
         note = graphene.String()
     success = graphene.Field(graphene.String)
