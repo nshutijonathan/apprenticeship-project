@@ -1,20 +1,23 @@
 from datetime import datetime
+
 import graphene
-from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.app_utils.send_mail import SendMail
-from healthid.utils.stock_utils.stock_count_utils import validate_stock
-from healthid.utils.stock_utils.stock_counts import stock_counts
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.stock.models import (
-    StockCount, StockCountTemplate, StockCountRecord)
-from healthid.apps.stock.schema.stock_query import (
-    StockCountType)
+
+from healthid.apps.products.models import BatchInfo, Product, Quantity
+from healthid.apps.stock.models import (StockCount, StockCountRecord,
+                                        StockCountTemplate)
+from healthid.apps.stock.schema.stock_query import (StockCountTemplateType,
+                                                    StockCountType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.notifications_utils.handle_notifications import notify
-from healthid.apps.stock.schema.stock_query import StockCountTemplateType
 from healthid.utils.app_utils.error_handler import errors
-from healthid.apps.products.models import Product, BatchInfo
+from healthid.utils.app_utils.send_mail import SendMail
+from healthid.utils.app_utils.validators import check_validity_of_ids
+from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.notifications_utils.handle_notifications import notify
+from healthid.utils.stock_utils.stock_count_utils import validate_stock
+from healthid.utils.stock_utils.stock_counts import stock_counts
 
 
 class CreateStockCountTemplate(graphene.Mutation):
@@ -335,6 +338,46 @@ class DeleteStockCount(graphene.Mutation):
         return DeleteStockCount(message=message)
 
 
+class ReconcileStock(graphene.Mutation):
+    """
+      Mutation for reconciling stock count.
+    """
+    stock_counts = graphene.List(StockCountType)
+    stock_count = graphene.Field(StockCountType)
+    message = graphene.String()
+
+    class Arguments:
+        stock_count_id = graphene.String(required=True)
+        batch_info = graphene.List(graphene.String, required=True)
+    errors = graphene.List(graphene.String)
+    @login_required
+    @user_permission('Operations Admin')
+    def mutate(self, info, **kwargs):
+        batch_info_ids = kwargs.get('batch_info')
+        stock_count_id = kwargs.get('stock_count_id')
+        if stock_count_id.strip() == "":
+            raise GraphQLError("Stock Count id field can't be empty")
+        stock_count = get_model_object(StockCount, 'id', stock_count_id)
+        stock_count_batch_ids = stock_count.stock_count_record.values_list(
+            'batch_info_id', flat=True)
+        message = "Batch with ids '{}' do not exist in this stock count."
+        check_validity_of_ids(batch_info_ids, stock_count_batch_ids, message)
+        if stock_count.is_approved:
+            raise GraphQLError("Stockcount is already aproved.")
+        for batch_id in batch_info_ids:
+            stock_record = stock_count.stock_count_record.get(
+                batch_info_id=batch_id)
+            stock_record_quantity = stock_record.quantity_counted
+            quantity = Quantity.objects.get(
+                batch_id=batch_id, product__id=stock_count.product_id)
+            quantity.quantity_received = stock_record_quantity
+            quantity.save()
+        stock_count.is_approved = True
+        stock_count.save()
+        message = 'Stock Count has been approved'
+        return ReconcileStock(message=message, stock_count=stock_count)
+
+
 class Mutation(graphene.ObjectType):
     initiate_stock = InitiateStockCount.Field()
     update_stock = UpdateStockCount.Field()
@@ -343,3 +386,4 @@ class Mutation(graphene.ObjectType):
     create_stock_count_template = CreateStockCountTemplate.Field()
     edit_stock_count_template = EditStockCountTemplate.Field()
     delete_stock_count_template = DeleteStockCountTemplate.Field()
+    reconcile_stock = ReconcileStock.Field()

@@ -1,9 +1,9 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.stock import (
-    initate_stock_count_query, no_variance_reason_query,
-    update_stock_count_query, all_stock_counts, single_stock_count,
-    delete_stock_batch, all_approved_stock_count, all_unresolved_stock_count
-)
+    all_approved_stock_count, all_stock_counts, all_unresolved_stock_count,
+    approve_stock_count, approve_stock_count_without_batch_ids,
+    delete_stock_batch, initate_stock_count_query, no_variance_reason_query,
+    single_stock_count, update_stock_count_query)
 
 
 class TestStockCount(BaseConfiguration):
@@ -26,6 +26,10 @@ class TestStockCount(BaseConfiguration):
             initate_stock_count_query.format(**self.stock_data))
         self.stock_count_id = \
             self.stock_count['data']['initiateStock']['stockCount']['id']
+        self.approve_data = {
+            'batchInfo': self.batch_info.id,
+            'stockCountId': self.stock_count_id
+        }
 
     def test_initiate_count(self):
         """
@@ -152,14 +156,35 @@ class TestStockCount(BaseConfiguration):
         self.assertNotIn("errors", response)
 
     def test_remove_stock_batch(self):
-        data = {
-            'batchInfo': self.batch_info.id,
-            'stockCountId': self.stock_count_id
-        }
-        resp = self.query_with_token(
+        response = self.query_with_token(
             self.access_token,
-            delete_stock_batch.format(**data))
-        self.assertIn('data', resp)
+            delete_stock_batch.format(**self.approve_data))
+        self.assertIn('data', response)
         self.assertIn(
             "Stock must contain at least (one) 1 batch",
-            resp['errors'][0]['message'])
+            response['errors'][0]['message'])
+
+    def test_approve_stock_count(self):
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        self.assertIn('data', response)
+        self.assertNotIn('errors', response)
+
+    def test_approve_stock_count_with_wrong_batch(self):
+        self.approve_data['batchInfo'] = "nanId"
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        self.assertEqual(
+            "Batch with ids 'nanId' do not exist in this stock count.",
+            response['errors'][0]['message'])
+
+    def test_approve_stock_count_without_batchid(self):
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_stock_count_without_batch_ids.format(
+                stockCountId=self.stock_count_id))
+        self.assertEqual(
+            "Please provide atleast one batch id.",
+            response['errors'][0]['message'])

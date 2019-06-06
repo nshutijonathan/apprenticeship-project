@@ -1,4 +1,5 @@
 import re
+from itertools import compress
 
 from graphql import GraphQLError
 
@@ -33,4 +34,30 @@ def validate_empty_field(field, value):
     """
     if value.strip() == "":
         message = "{} field cannot be blank!".format(field)
+        raise GraphQLError(message)
+
+
+def check_validity_of_ids(user_inputs, db_ids, message=None):
+    """
+    Checks validatity of ids provided by user
+
+    Args:
+        user_inputs: Holds a list of ids provided by user
+        db_ids: Holds a list of ids that exist in the db
+        message: Holds a custom error message(it's optional).
+
+    Raises:
+        GraphQLError incase one or more ids provided by user is not in the db
+    """
+    if not user_inputs:
+        raise GraphQLError('Please provide atleast one batch id.')
+
+    is_valid = [user_input in db_ids for user_input in user_inputs]
+
+    if not all(is_valid):
+        invalid_items = list(
+            compress(user_inputs, [not item for item in is_valid]))
+        if message is None:
+            message = "Products with ids '{}' do not exist in this batch"
+        message = message.format(",".join(map(str, invalid_items)))
         raise GraphQLError(message)

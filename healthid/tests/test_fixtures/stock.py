@@ -331,5 +331,42 @@ query{
        }
   }
 }
+'''
+approve_stock_count = '''
+mutation reconcileStock{{
+    reconcileStock(
+        batchInfo: ["{batchInfo}"],
+        stockCountId: "{stockCountId}",
+    ){{
+        message
+        stockCount{{
+            isApproved
+            varianceReason
+            product{{
+                productQuantity
+                id
+                batchInfo{{
+                    id
+                    quantity
+                    packSize
+                    commentary
+                    dateReceived
+                    batchNo
+                }}
+            }}
+        }}
 
+    }}
+}}
+'''
+
+approve_stock_count_without_batch_ids = '''
+mutation reconcileStock{{
+    reconcileStock(
+        batchInfo: [],
+        stockCountId: "{stockCountId}"
+    ){{
+        message
+    }}
+}}
 '''

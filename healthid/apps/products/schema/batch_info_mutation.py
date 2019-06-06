@@ -13,9 +13,9 @@ from healthid.apps.products.schema.product_query import (BatchInfoType,
                                                          QuantityType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
+from healthid.utils.app_utils.validators import check_validity_of_ids
 from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.product_utils.batch_utils import (batch_info_instance,
-                                                      check_validity_of_ids)
+from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product import \
     generate_reorder_points_and_max
 

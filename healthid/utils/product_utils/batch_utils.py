@@ -1,6 +1,5 @@
 import datetime
 from functools import wraps
-from itertools import compress
 
 from graphql import GraphQLError
 
@@ -51,20 +50,6 @@ class ProductBatchInfo:
                     self.validate_positive_integers(field_value, field)
             return func(*args, **kwargs)
         return wrapper
-
-
-def check_validity_of_ids(user_inputs, db_ids, message=None):
-
-    is_valid = [user_input in db_ids for user_input in user_inputs]
-
-    if not all(is_valid):
-        invalid_items = list(
-            compress(user_inputs, [not item for item in is_valid]))
-        if message is None:
-            message = "Products with ids '{}' do not exist in this batch"
-
-        message = message.format(",".join(map(str, invalid_items)))
-        raise GraphQLError(message)
 
 
 batch_info_instance = ProductBatchInfo()
