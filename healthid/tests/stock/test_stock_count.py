@@ -2,7 +2,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.stock import (
     initate_stock_count_query, no_variance_reason_query,
     update_stock_count_query, all_stock_counts, single_stock_count,
-    delete_stock_batch
+    delete_stock_batch, all_approved_stock_count, all_unresolved_stock_count
 )
 
 
@@ -134,6 +134,22 @@ class TestStockCount(BaseConfiguration):
         self.assertIn('data', resp)
         self.assertEqual(resp['data']['stockCount']
                          ['id'], self.stock_count_id)
+
+    def test_all_approved_stock_count(self):
+        response = self.query_with_token(
+            self.access_token_master,
+            all_approved_stock_count)
+        self.assertIn('data', response)
+        self.assertIn("approvedStockCounts", response["data"])
+        self.assertNotIn("errors", response)
+
+    def test_all_unresolved_stock_count(self):
+        response = self.query_with_token(
+            self.access_token_master,
+            all_unresolved_stock_count)
+        self.assertIn('data', response)
+        self.assertIn("unresolvedStockCounts", response["data"])
+        self.assertNotIn("errors", response)
 
     def test_remove_stock_batch(self):
         data = {

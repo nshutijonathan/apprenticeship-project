@@ -291,3 +291,45 @@ mutation {{
   }}
 }}
 '''
+
+all_approved_stock_count = '''
+query{
+  approvedStockCounts{
+    id
+    varianceReason
+    isApproved
+    remarks
+    createdAt
+    product{
+      id
+      productName
+      }
+    stockTemplate{ id
+     }
+  }
+}
+'''
+
+all_unresolved_stock_count = '''
+query{
+  unresolvedStockCounts{
+    id
+    varianceReason
+    isApproved
+    remarks
+    createdAt
+    product{
+      id
+      productName
+      }
+    stockTemplate{id products{edges{node{
+      id
+       productName
+       }
+       }
+       }
+       }
+  }
+}
+
+'''
