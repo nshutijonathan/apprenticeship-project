@@ -370,3 +370,82 @@ mutation reconcileStock{{
     }}
 }}
 '''
+
+open_stock_transfer = """
+            mutation{{
+        openStockTransfer(
+            batchNumber: "{batch_number}",
+            destinationOutletId: {outlet_id},
+            products: [{product_id}],
+            quantities: [{quantity}]
+        ){{
+            stockTransfer{{
+            id,
+            batch{{
+                batchNo
+            }},
+            sendingOutlet{{
+                name
+            }},
+            destinationOutlet{{
+                name
+            }},
+            createdAt,
+            completeStatus
+            }}
+            success
+        }}
+        }}
+"""
+
+view_stock_transfers = """
+            query{
+        stockTransfers{
+            id,
+            batch{
+            batchNo
+            },
+            sendingOutlet{
+            name,
+            id
+            },
+            destinationOutlet{
+            name,
+            id
+            },
+            createdAt,
+            completeStatus
+        }
+        }
+"""
+
+close_stock_transfer = """
+        mutation{{
+        closeStockTransfer(
+            transferNumber: "{transfer_number}"
+        ){{
+            success
+        }}
+        }}
+"""
+
+view_stock_transfer = """
+            query{{
+            stockTransfer(transferNumber: "{transfer_number}"){{
+                id,
+                batch{{
+                batchNo
+                }},
+                sendingOutlet{{
+                name,
+                id
+                }},
+                destinationOutlet{{
+                name,
+                id
+                }},
+                createdAt,
+                completeStatus
+            }}
+            }}
+"""

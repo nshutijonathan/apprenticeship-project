@@ -43,3 +43,30 @@ class StockCountRecord(BaseModel):
     quantity_counted = models.PositiveIntegerField(blank=True, null=True)
     batch_info = models.ForeignKey(
         BatchInfo, on_delete=models.CASCADE, null=True, blank=True)
+
+
+class StockTransferRecord(BaseModel):
+    """Model to handle stock transfer records
+    """
+    product = models.ForeignKey(
+        Product, related_name='stock_transfer_product',
+        on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+
+
+class StockTransfer(BaseModel):
+    """Model to handle stock transfer data
+    """
+    id = models.CharField(
+        max_length=9, primary_key=True, default=id_gen, editable=False)
+    batch = models.ForeignKey(
+        BatchInfo, on_delete=models.CASCADE,
+        related_name='stock_transfer_batch')
+    stock_transfer_record = models.ManyToManyField(
+        StockTransferRecord, related_name='stock_transfer_record')
+    sending_outlet = models.ForeignKey(
+        Outlet, on_delete=models.CASCADE, related_name='sending_outlet')
+    destination_outlet = models.ForeignKey(
+        Outlet, on_delete=models.CASCADE, related_name='destination_outlet')
+    created_at = models.DateField(auto_now_add=True)
+    complete_status = models.BooleanField(default=False)

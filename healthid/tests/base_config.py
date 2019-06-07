@@ -86,6 +86,18 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256 770777797",
             "password": "Password123"
         }
+
+        self.second_master_admin = {
+            "email": "you.second@example.com",
+            "mobile_number": "+256 770777798",
+            "password": "Password1234"
+        }
+
+        self.login_second_master_admin = {
+            "email": "you.second@example.com",
+            "password": "Password1234"
+        }
+
         self.login_user = {
             "email": "john.doe@gmail.com",
             "password": "Password123"
@@ -101,6 +113,23 @@ class BaseConfiguration(TestCase):
             'email': 'healthid@gmail.com',
             'phone': +256788088831
         }
+        self.outlet = {
+            'name': 'bingo',
+            'address_line1': "wandegya",
+            'phone_number': "254745345342",
+            'address_line2': "Central, Kla",
+            'lga': "KCCA",
+            'date_launched': "1995-10-20"
+        }
+        self.second_outlet = {
+            'name': 'bingow',
+            'address_line1': "wandegya ku bitaala",
+            'phone_number': "254745345341",
+            'address_line2': "Central, Kla",
+            'lga': "KCCA",
+            'date_launched': "1995-10-20"
+        }
+
         self.user = self.register_user(self.new_user)
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
@@ -108,8 +137,9 @@ class BaseConfiguration(TestCase):
         self.timezone = Timezone(
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
-        self.outlet = self.create_outlet()
+        self.outlet = self.create_outlet(self.outlet)
         self.role = self.create_role(role_name="Cashier")
+        self.master_admin_role = self.create_role('Master Admin')
         self.measurement_unit = self.create_measurement_unit()
         self.product_category = self.create_product_category()
         self.product = self.create_product()
@@ -121,9 +151,15 @@ class BaseConfiguration(TestCase):
         # register and log in user
         self.outlet.user.add(self.user)
         self.access_token = self.user_login()
-        self.master_admin_user = self.register_master_admin()
-        self.access_token_master = self.admin_login()
-        self.preference = Preference.objects.get()
+        self.master_admin_user = self.register_master_admin(self.master_admin)
+        self.second_master_admin_user = self.register_master_admin(
+            self.second_master_admin)
+        self.second_master_admin_token = self.admin_login(
+            self.login_second_master_admin)
+        self.access_token_master = self.admin_login(self.login_master_admin)
+        self.preference = Preference.objects.filter().first()
+        self.second_outlet = self.create_outlet(self.second_outlet)
+        self.second_outlet.user.add(self.second_master_admin_user)
         self.outlet.user.add(self.master_admin_user)
 
         self.create_customer_data = {
@@ -155,20 +191,19 @@ class BaseConfiguration(TestCase):
         user.save()
         return user
 
-    def register_master_admin(self):
+    def register_master_admin(self, master_admin):
         """
         register a master admin
         """
-        email = self.master_admin["email"]
-        mobile_number = self.master_admin["mobile_number"]
-        password = self.master_admin["password"]
+        email = master_admin["email"]
+        mobile_number = master_admin["mobile_number"]
+        password = master_admin["password"]
         user = User.objects.create_user(
             email=email, mobile_number=mobile_number, password=password)
         user.is_active = True
-        user.role = Role.objects.create(name='Master Admin')
-        self.business.user.add(user)
-        self.outlet.user.add(user)
+        user.role = self.master_admin_role
         user.save()
+        self.business.user.add(user)
         return user
 
     def user_login(self):
@@ -178,12 +213,12 @@ class BaseConfiguration(TestCase):
         response = self.query(login_user_query.format(**self.login_user))
         return response['data']['tokenAuth']['token']
 
-    def admin_login(self):
+    def admin_login(self, admin):
         """
         Log in registered user and return a token
         """
         response = self.query(
-            login_user_query.format(**self.login_master_admin))
+            login_user_query.format(**admin))
         return response['data']['tokenAuth']['token']
 
     def create_outlet_kind(self):
@@ -194,17 +229,17 @@ class BaseConfiguration(TestCase):
                 "country_id": country.id}
         return info
 
-    def create_outlet(self):
+    def create_outlet(self, outlet):
         info = self.outlet_kind
         return Outlet.objects.create(
-            name="bingo",
+            name=outlet["name"],
             kind_id=info["outlet_kindid"],
-            address_line1="wandegya",
-            phone_number="254745345342",
-            address_line2="Central, Kla",
-            lga="KCCA",
+            address_line1=outlet["address_line1"],
+            phone_number=outlet["phone_number"],
+            address_line2=outlet["address_line2"],
+            lga=outlet['lga'],
             city_id=info["city_id"],
-            date_launched="1995-10-20",
+            date_launched=outlet['date_launched'],
             business_id=self.business.id)
 
     def create_role(self, role_name):

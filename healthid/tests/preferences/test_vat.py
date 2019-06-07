@@ -1,4 +1,4 @@
-from healthid.apps.preference.models import Preference, Vat
+from healthid.apps.preference.models import Vat
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.vat import (set_vat,
                                               query_vat_by_id,
@@ -12,7 +12,6 @@ class VatTestCase(BaseConfiguration):
         self.new_vat = Vat(
             id="t1234qwe", rate=22.5)
         self.new_vat.save()
-        self.preference = Preference.objects.get()
 
     def test_vat_model(self):
         self.rate = self.new_vat.rate

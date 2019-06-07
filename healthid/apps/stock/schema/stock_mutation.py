@@ -9,6 +9,8 @@ from healthid.apps.stock.models import (StockCount, StockCountRecord,
                                         StockCountTemplate)
 from healthid.apps.stock.schema.stock_query import (StockCountTemplateType,
                                                     StockCountType)
+from healthid.apps.stock.schema.stock_transfer_mutations import (
+    CloseStockTransfer, OpenStockTransfer)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.error_handler import errors
@@ -387,3 +389,5 @@ class Mutation(graphene.ObjectType):
     edit_stock_count_template = EditStockCountTemplate.Field()
     delete_stock_count_template = DeleteStockCountTemplate.Field()
     reconcile_stock = ReconcileStock.Field()
+    open_stock_transfer = OpenStockTransfer.Field()
+    close_stock_transfer = CloseStockTransfer.Field()

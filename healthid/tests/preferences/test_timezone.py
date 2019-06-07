@@ -1,4 +1,4 @@
-from healthid.apps.preference.models import Preference, Timezone
+from healthid.apps.preference.models import Timezone
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.preferences import (timezone_query,
                                                       timezones_query,
@@ -15,7 +15,6 @@ class TimezoneTestCase(BaseConfiguration):
             id="285461788", name="America/Vancouver",
             time_zone="(GMT-08:00) Pacific Time - Vancouver")
         self.new_timezone.save()
-        self.preference = Preference.objects.get()
 
     def test_query(self):
         response = self.query_with_token(

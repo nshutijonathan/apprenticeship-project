@@ -1,5 +1,6 @@
 import datetime
 from functools import wraps
+from itertools import compress
 
 from graphql import GraphQLError
 
@@ -50,6 +51,36 @@ class ProductBatchInfo:
                     self.validate_positive_integers(field_value, field)
             return func(*args, **kwargs)
         return wrapper
+
+
+def check_validity_of_ids(user_inputs, db_ids, message=None):
+
+    is_valid = [user_input in db_ids for user_input in user_inputs]
+
+    if not all(is_valid):
+        invalid_items = list(
+            compress(user_inputs, [not item for item in is_valid]))
+        if message is None:
+            message = "Products with ids '{}' do not exist in this batch"
+
+        message = message.format(",".join(map(str, invalid_items)))
+        raise GraphQLError(message)
+
+
+def check_validity_of_quantity(user_inputs, db_quantities, product_ids):
+
+    is_valid = [user_input < db_quantity for user_input,
+                db_quantity in zip(user_inputs, db_quantities)]
+
+    if not all(is_valid):
+        invalid_quantities = list(
+            compress(user_inputs, [not item for item in is_valid]))
+        invalid_product_ids = list(
+            compress(product_ids, [not item for item in is_valid]))
+        message = f"Can't transfer products with ids {invalid_product_ids} \
+since quantities {invalid_quantities} are above the available quantity!"
+
+        raise GraphQLError(message)
 
 
 batch_info_instance = ProductBatchInfo()
