@@ -22,7 +22,7 @@ from healthid.apps.sales.schema import (sales_mutation, sales_schema,
 from healthid.apps.events.schema import event_querys, event_mutations
 from healthid.apps.stock.schema import stock_mutation
 from healthid.apps.stock.schema import stock_query
-from healthid.apps.customers.schema import customer_mutation
+from healthid.apps.customers.schema import customer_mutation, customer_query
 
 
 class Query(
@@ -42,6 +42,7 @@ class Query(
         stock_query.Query,
         notification_queries.Query,
         cart_query.Query,
+        customer_query.Query,
         graphene.ObjectType):
     pass
 

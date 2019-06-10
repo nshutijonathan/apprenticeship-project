@@ -37,3 +37,58 @@ create_customer = '''
         }}
 
 '''
+
+customer_query_all = '''
+    query{
+        customers{
+            id
+            firstName
+            lastName
+        }
+    }
+'''
+
+customer_name_query = '''
+    query{{customer(name: "{name}"){{
+        id
+        firstName
+        lastName
+        email
+    }}
+    }}
+'''
+
+customer_number_query = '''
+    query{{customer(mobileNumber: "{mobile_number}"){{
+        id
+        firstName
+        lastName
+        email
+    }}
+    }}
+'''
+
+customer_id_query = '''
+    query{{customer(customerId: "{customer_id}"){{
+        id
+        firstName
+        lastName
+        email
+    }}
+    }}
+'''
+
+customer_search_query = '''
+    query{{
+        filterCustomers({search_key}: "{search_term}"){{
+            edges {{
+                node {{
+                id
+                firstName
+                lastName
+                email
+                }}
+            }}
+        }}
+    }}
+'''
