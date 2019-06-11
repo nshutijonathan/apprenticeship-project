@@ -12,7 +12,7 @@ def create_outlet(business_id, city_id, type_id):
                     phoneNumber: "2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
-                    outlet{{name}}
+                    outlet{{name, id}}
                 }}
             }}
             ''')

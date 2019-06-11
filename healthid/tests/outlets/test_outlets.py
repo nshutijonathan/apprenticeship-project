@@ -26,9 +26,13 @@ class OutletTestCase(BaseConfiguration):
                 info['city_id'],
                 info["outlet_kindid"]),
         )
+
         self.assertResponseNoErrors(
             response, {"createOutlet": {
-                'outlet': {'name': 'green ville'}
+                'outlet': {
+                    'id': response['data']['createOutlet']['outlet']['id'],
+                    'name': 'green ville'
+                    }
             }})
 
     def test_update_outlet(self):

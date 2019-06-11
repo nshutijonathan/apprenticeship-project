@@ -17,7 +17,11 @@ class Order(BaseModel):
     name = models.TextField(null=False)
     product_autofill = models.BooleanField(default=True)
     supplier_autofill = models.BooleanField(default=True)
-    destination_outlet = models.ManyToManyField(Outlet)
+    destination_outlet = models.ForeignKey(
+        Outlet,
+        on_delete=models.CASCADE,
+        default=1
+    )
     delivery_date = models.DateField()
     sent_status = models.BooleanField(default=False)
 

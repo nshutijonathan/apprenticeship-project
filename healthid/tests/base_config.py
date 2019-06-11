@@ -16,6 +16,7 @@ from healthid.apps.events.models import EventType
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.events.models import Event
 from healthid.apps.profiles.models import Profile
+from healthid.apps.orders.models import Order
 
 
 class BaseConfiguration(TestCase):
@@ -148,6 +149,7 @@ class BaseConfiguration(TestCase):
         self.sales_prompt = self.create_sales_prompt()
         self.suppliers_note = self.create_suppliers_note()
         self.event = self.create_event()
+        self.order = self.create_order()
 
         # register and log in user
         self.outlet.user.add(self.user)
@@ -175,6 +177,7 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "talktohabi2@gmail.com"
         }
 
+<<<<<<< HEAD
         self.customer_1 = self.create_customer({
             "first_name": "Dany",
             "last_name": "Stomborn",
@@ -191,6 +194,15 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "saruman@lotr.world",
             "emergency_contact_number": "+234 897090878 "
         })
+=======
+        self.invoice_data = {
+            "outlet_id": self.outlet.id,
+            "order_id": self.order.id,
+            "image_url": "http://onlineblueprintprinting.com/wp-content/"
+            "uploads/free-editable-invoice-template-invoice-template-"
+            "free-and-fully-customizable-online-templates.png",
+        }
+>>>>>>> feat(upload invoice): Users can upload an invoice
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")
@@ -259,6 +271,17 @@ class BaseConfiguration(TestCase):
             city_id=info["city_id"],
             date_launched=outlet['date_launched'],
             business_id=self.business.id)
+
+    def create_order(self):
+        return Order.objects.create(
+            order_number="5757575",
+            name="ututu",
+            product_autofill=True,
+            supplier_autofill=True,
+            delivery_date="2012-12-12",
+            sent_status=True,
+            destination_outlet_id=self.outlet.id
+        )
 
     def create_role(self, role_name):
         return Role.objects.create(name=role_name)
