@@ -92,3 +92,46 @@ customer_search_query = '''
         }}
     }}
 '''
+
+def edit_customer_basic_profile(update_data):
+    return f'''
+      mutation{{
+        editCustomerBasicProfile(
+            id: {update_data["id"]},
+            firstName:\"{update_data["first_name"]}\",
+            lastName:\"{update_data["last_name"]}\",
+            email: \"{update_data["email"]}\",
+            cityId:{update_data["city_id"]},
+            countryId:{update_data["country_id"]},
+            primaryMobileNumber:\"{update_data["primary_mobile_number"]}\",
+            secondaryMobileNumber:\"{update_data["secondary_mobile_number"]}\",
+            loyaltyMember:{update_data["loyalty_member"]},
+            localGovernmentArea:\"{update_data["local_government_area"]}\",
+            addressLine1:\"{update_data["address_line_1"]}\",
+            addressLine2:\"{update_data["address_line_2"]}\",
+            emergencyContactName:\"{update_data["emergency_contact_name"]}\",
+            emergencyContactEmail:\"{update_data["emergency_contact_email"]}\",
+            emergencyContactNumber:\"{update_data["emergency_contact_number"]}\"
+        ){{
+            message
+            customer {{
+              firstName
+              lastName
+              primaryMobileNumber
+              secondaryMobileNumber
+              email
+              addressLine1
+              addressLine2
+              localGovernmentArea
+              city {{
+                id
+                name
+              }}
+              country {{
+                id
+                name
+              }}
+        }}
+        }}
+        }}
+'''

@@ -1,20 +1,22 @@
 from django.db import models
+from healthid.models import BaseModel
 from healthid.apps.outlets.models import City, Country
 
 
-class BaseProfile(models.Model):
+class BaseProfile(BaseModel):
 
     """A base profile model to hold common profile type fields."""
 
     CUSTOMER = 0
     USER_TYPES = (
      (CUSTOMER, "Customer"),)
-    email = models.EmailField(max_length=100, unique=True)
+    email = models.EmailField(
+        max_length=100, null=True, unique=True, default=None, blank=True)
     user_type = models.IntegerField(choices=USER_TYPES, default=CUSTOMER)
     first_name = models.CharField(max_length=100, null=True)
     last_name = models.CharField(max_length=100, null=True)
-    primary_mobile_number = models.CharField(max_length=100,
-                                             unique=True, null=True)
+    primary_mobile_number = models.CharField(
+        max_length=100, null=True, unique=True, default=None, blank=True)
     secondary_mobile_number = models.CharField(max_length=100, null=True)
     address_line_1 = models.CharField(max_length=244, blank=True, null=True)
     address_line_2 = models.CharField(max_length=244, blank=True, null=True)
@@ -34,7 +36,6 @@ class CustomerProfile(models.Model):
     emergency_contact_number = models.CharField(max_length=100, null=True)
     emergency_contact_email = models.EmailField(max_length=100, null=True)
     loyalty_member = models.BooleanField(default=False, null=True)
-    created_at = models.DateField(auto_now_add=True)
 
     class Meta:
         abstract = True

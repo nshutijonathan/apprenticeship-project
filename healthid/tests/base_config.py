@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from django.test import Client, TestCase
-
+from django.forms import model_to_dict
 from healthid.apps.authentication.models import Role, User
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
@@ -15,6 +15,7 @@ from healthid.utils.business_utils.create_business import create_business
 from healthid.apps.events.models import EventType
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.events.models import Event
+from healthid.apps.profiles.models import Profile
 
 
 class BaseConfiguration(TestCase):
@@ -174,6 +175,23 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "talktohabi2@gmail.com"
         }
 
+        self.customer_1 = self.create_customer({
+            "first_name": "Dany",
+            "last_name": "Stomborn",
+            "email": "dany.stomborn@got.com",
+            "city_id": self.outlet_kind['city_id'],
+            "country_id": self.outlet_kind['country_id'],
+            "primary_mobile_number": "+234 788088831",
+            "secondary_mobile_number": "+234 788088832",
+            "loyalty_member": True,
+            "local_government_area": "Heming way",
+            "address_line_1": "20, king's Landing",
+            "address_line_2": "Esos lane",
+            "emergency_contact_name": "Frodo",
+            "emergency_contact_email": "saruman@lotr.world",
+            "emergency_contact_number": "+234 897090878 "
+        })
+
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")
         self.assertEqual(resp["data"], expected, "Response has correct data")
@@ -331,3 +349,16 @@ class BaseConfiguration(TestCase):
         )
         supplier.outlet.add(self.outlet)
         return supplier
+
+    @staticmethod
+    def create_customer(data):
+        return Profile.objects.create(**data)
+
+    @staticmethod
+    def customer_fields_to_dict(data):
+        customer_data = model_to_dict(data)
+        customer_data["city_id"] = customer_data.pop("city")
+        customer_data["country_id"] = customer_data.pop("country")
+        customer_data["loyalty_member"] = str(
+            customer_data["loyalty_member"]).lower()
+        return customer_data

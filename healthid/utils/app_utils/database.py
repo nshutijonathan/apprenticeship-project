@@ -74,7 +74,7 @@ class SaveContextManager():
         return False
 
     def get_model_value(self, error):
-        field_value = re.findall(r'[0-9a-zA-Z_\s.@]+[)=]', error)
+        field_value = re.findall(r'[0-9a-zA-Z_+\s.@]+[)=]', error)
         field = field_value[0].replace(")", "").strip()
         value = field_value[-1].replace(")", "").strip()
         return field, value

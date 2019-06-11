@@ -2,7 +2,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import (create_customer)
 
 
-class TestCustomer(BaseConfiguration):
+class TestCustomerCreation(BaseConfiguration):
     def test_create_customer(self):
         """Test method for creating a customer"""
         response = self.query_with_token(
@@ -13,28 +13,6 @@ class TestCustomer(BaseConfiguration):
             expected_message,
             response["data"]["createCustomer"]["message"])
         self.assertNotIn("errors", response)
-
-    def test_create_customer_with_invalid_city_id(self):
-        """Test method for creating a customer with invalid city_id"""
-        self.create_customer_data['city_id'] = 0
-        response = self.query_with_token(
-            self.access_token,
-            create_customer.format(**self.create_customer_data))
-        expected_message = "City with id 0 does not exist."
-        self.assertEqual(
-            expected_message,
-            response['errors'][0]['message'])
-
-    def test_create_customer_with_invalid_country_id(self):
-        """Test method for creating a customer with invalid country_id"""
-        self.create_customer_data['country_id'] = 0
-        response = self.query_with_token(
-            self.access_token,
-            create_customer.format(**self.create_customer_data))
-        expected_message = "Country with id 0 does not exist."
-        self.assertEqual(
-            expected_message,
-            response['errors'][0]['message'])
 
     def test_create_customer_invalid_firstname(self):
         """Test method for creating a customer with invalid firstname"""
