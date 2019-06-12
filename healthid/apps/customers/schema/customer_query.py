@@ -4,6 +4,7 @@ from django.db.models import Q
 import graphene
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django import DjangoObjectType
+from graphene.utils.resolve_only_args import resolve_only_args
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
@@ -27,6 +28,12 @@ class CustomerCustomerType(DjangoObjectType):
         }
 
         interfaces = (graphene.relay.Node, )
+
+    id = graphene.ID(required=True)
+
+    @resolve_only_args
+    def resolve_id(self):
+        return self.id
 
 
 class Query(graphene.AbstractType):
@@ -64,7 +71,7 @@ class Query(graphene.AbstractType):
         resolved_value = Profile.objects.all()
         return resolved_value
 
-    # @login_required
+    @login_required
     def resolve_customer(self, info, **kwargs):
         name = kwargs.get('name')
         mobile_number = kwargs.get('mobile_number')

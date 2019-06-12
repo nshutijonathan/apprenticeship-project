@@ -20,7 +20,7 @@ class TestQueryCustomer(BaseConfiguration):
         """
         response = self.query_with_token(
             self.access_token, customer_query_all)
-        expected_name = 'Habib'
+        expected_name = 'Dany'
         self.assertNotIn('errors', response)
         self.assertIn('data', response)
         self.assertEqual(

@@ -177,7 +177,6 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "talktohabi2@gmail.com"
         }
 
-<<<<<<< HEAD
         self.customer_1 = self.create_customer({
             "first_name": "Dany",
             "last_name": "Stomborn",
@@ -194,7 +193,7 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "saruman@lotr.world",
             "emergency_contact_number": "+234 897090878 "
         })
-=======
+
         self.invoice_data = {
             "outlet_id": self.outlet.id,
             "order_id": self.order.id,
@@ -202,7 +201,6 @@ class BaseConfiguration(TestCase):
             "uploads/free-editable-invoice-template-invoice-template-"
             "free-and-fully-customizable-online-templates.png",
         }
->>>>>>> feat(upload invoice): Users can upload an invoice
 
     def assertResponseNoErrors(self, resp: dict, expected: dict):
         self.assertNotIn("errors", resp, "Response had errors")

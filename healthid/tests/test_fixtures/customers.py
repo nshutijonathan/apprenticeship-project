@@ -93,6 +93,7 @@ customer_search_query = '''
     }}
 '''
 
+
 def edit_customer_basic_profile(update_data):
     return f'''
       mutation{{
