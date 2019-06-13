@@ -2,21 +2,20 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models.orders import Order, OrderDetails
+from healthid.apps.orders.models.orders import Order
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.orders_utils.add_order_details import add_order_details
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
+from healthid.utils.orders_utils.supplier_order_details import \
+    create_suppliers_order_details
+from healthid.apps.orders.schema.order_query import \
+    SupplierOrderDetailsType, OrderDetailsType
 
 
 class OrderType(DjangoObjectType):
     class Meta:
         model = Order
-
-
-class OrderDetailsType(DjangoObjectType):
-    class Meta:
-        model = OrderDetails
 
 
 class InitiateOrder(graphene.Mutation):
@@ -57,6 +56,7 @@ class AddOrderDetails(graphene.Mutation):
 
     order_details = graphene.Field(OrderDetailsType)
     message = graphene.Field(graphene.String)
+    suppliers_order_details = graphene.List(SupplierOrderDetailsType)
 
     @classmethod
     @login_required
@@ -73,11 +73,15 @@ class AddOrderDetails(graphene.Mutation):
             }
             add_order_details.check_list_length(products, quantities, **params)
             quantity = iter(quantities)
+            object_list = \
+                add_order_details.get_order_details(kwargs, order, quantity)
             order_details = \
-                add_order_details.add_product_quantity(kwargs, order, quantity)
+                add_order_details.add_product_quantity(object_list)
         else:
+            object_list = \
+                add_order_details.get_order_details(kwargs, order)
             order_details = \
-                add_order_details.product_quantity_autofill(kwargs, order)
+                add_order_details.add_product_quantity(object_list)
         if suppliers:
             params = {
                 'name1': 'Suppliers',
@@ -88,9 +92,12 @@ class AddOrderDetails(graphene.Mutation):
             order_details = add_order_details.add_supplier(kwargs, supplier)
         else:
             order_details = add_order_details.supplier_autofill(kwargs)
+        suppliers_order_details = create_suppliers_order_details(order)
 
         message = 'Successfully added order details!'
-        return cls(order_details=order_details, message=message)
+        return cls(order_details=order_details,
+                   message=message,
+                   suppliers_order_details=suppliers_order_details)
 
 
 class Mutation(graphene.ObjectType):

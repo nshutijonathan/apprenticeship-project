@@ -9,7 +9,7 @@ from healthid.apps.consultation.schema import (consultation_mutation,
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
 from healthid.apps.orders.schema import (SuppliersMutation, SuppliersQuery,
-                                         order_mutations)
+                                         order_mutations, order_query)
 from healthid.apps.outlets.schema import outlet_mutation, outlet_schema
 from healthid.apps.preference.schema import (preference_mutation,
                                              preference_schema)
@@ -44,6 +44,7 @@ class Query(
         notification_queries.Query,
         cart_query.Query,
         customer_query.Query,
+        order_query.Query,
         graphene.ObjectType):
     pass
 

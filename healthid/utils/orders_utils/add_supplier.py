@@ -16,7 +16,8 @@ class AddSupplier:
             'backup', 'is_approved', 'user_id', 'user', 'admin_comment',
             'parent_id', 'parent', 'proposedEdit', 'batchinfo_set',
             'suppliernote_set', 'supplier_prices', 'orderdetails_set',
-            'outlet', 'created_at', 'updated_at', 'deleted_at', 'deleted_by'
+            'outlet', 'created_at', 'updated_at', 'deleted_at', 'deleted_by',
+            'supplierorderdetails_set'
         ]
         self.safe_list = [
             each for each in Suppliers.__dict__

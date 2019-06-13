@@ -93,3 +93,51 @@ products_query = '''
       }
     }
 '''
+
+suppliers_order_details = '''
+query {{
+  suppliersOrderDetails(orderId: {order_id}){{
+    id
+    orderDetails {{
+      product {{
+        productName
+      }}
+      quantity
+      supplier {{
+        name
+      }}
+    }}
+    supplierOrderName
+    supplierOrderNumber
+    deliverTo {{
+      id
+    }}
+    deliveryDue
+    additionalNotes
+  }}
+}}
+'''
+
+supplier_order_details = '''
+query {{
+  supplierOrderDetails(orderId: {order_id}, supplierId: "{supplier_id}"){{
+    id
+    orderDetails {{
+      product {{
+        productName
+      }}
+      quantity
+      supplier {{
+        name
+      }}
+    }}
+    supplierOrderName
+    supplierOrderNumber
+    deliverTo {{
+      id
+    }}
+    deliveryDue
+    additionalNotes
+  }}
+}}
+'''
