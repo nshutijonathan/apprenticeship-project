@@ -25,6 +25,7 @@ class Order(BaseModel):
     )
     delivery_date = models.DateField()
     sent_status = models.BooleanField(default=False)
+    closed = models.BooleanField(default=False)
 
 
 class OrderDetails(BaseModel):

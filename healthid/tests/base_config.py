@@ -7,7 +7,7 @@ from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity)
 from healthid.apps.orders.models import (
-    PaymentTerms, Tier, Suppliers, SupplierNote)
+    Order, PaymentTerms, Tier, Suppliers, SupplierNote)
 from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.preference.models import Timezone, Preference
 from healthid.tests.test_fixtures.authentication import login_user_query
@@ -16,7 +16,6 @@ from healthid.apps.events.models import EventType
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.events.models import Event
 from healthid.apps.profiles.models import Profile
-from healthid.apps.orders.models import Order
 
 
 class BaseConfiguration(TestCase):
@@ -270,7 +269,17 @@ class BaseConfiguration(TestCase):
             date_launched=outlet['date_launched'],
             business_id=self.business.id)
 
-    def create_order(self):
+    def create_order(self, closed=True):
+        """Return an instance of Order.
+
+        If closed is True return a closed order
+
+        Args:
+            closed (Bool): order closed flag
+
+        Returns:
+            order (:obj) `model`
+        """
         return Order.objects.create(
             order_number="5757575",
             name="ututu",
@@ -278,7 +287,8 @@ class BaseConfiguration(TestCase):
             supplier_autofill=True,
             delivery_date="2012-12-12",
             sent_status=True,
-            destination_outlet_id=self.outlet.id
+            destination_outlet_id=self.outlet.id,
+            closed=closed
         )
 
     def create_role(self, role_name):
