@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('nearest_expiry_date', models.DateField(null=True)),
                 ('backup_supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='backup', to='orders.Suppliers')),
                 ('measurement_unit', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='products.MeasurementUnit')),
-                ('preferred_supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='prefered', to='orders.Suppliers')),
+                ('prefered_supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='prefered', to='orders.Suppliers')),
             ],
         ),
         migrations.CreateModel(
