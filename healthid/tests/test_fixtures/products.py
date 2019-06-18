@@ -291,17 +291,18 @@ product_query = '''
         }
         '''
 create_product_category = '''
-    mutation {
+    mutation {{
     createProductCategory(
-        name:"panadol"
-        ){
-        productCategory{
+        name:"panadol",
+        outletId: {outlet_id}
+        ){{
+        productCategory{{
             id
             name
-        }
+        }}
         message
-        }
-}
+        }}
+}}
     '''
 
 edit_product_category = '''

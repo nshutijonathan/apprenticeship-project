@@ -192,7 +192,6 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "saruman@lotr.world",
             "emergency_contact_number": "+234 897090878 "
         })
-
         self.invoice_data = {
             "outlet_id": self.outlet.id,
             "order_id": self.order.id,
@@ -313,7 +312,8 @@ class BaseConfiguration(TestCase):
         return MeasurementUnit.objects.create(name='kilogram')
 
     def create_product_category(self):
-        return ProductCategory.objects.create(name='Drinks')
+        return ProductCategory.objects.create(name='Drinks',
+                                              outlet=self.outlet)
 
     def create_product(self, product_name='Pizza'):
         return Product.objects.create(

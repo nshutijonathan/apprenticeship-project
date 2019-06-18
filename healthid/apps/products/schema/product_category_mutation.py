@@ -5,6 +5,8 @@ from healthid.apps.products.models import ProductCategory
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_belongs_to_outlet
 
 from .product_query import ProductCategoryType
 
@@ -17,6 +19,9 @@ class CreateProductCategory(graphene.Mutation):
 
     class Arguments:
         name = graphene.String(required=True)
+        outlet_id = graphene.Int(required=True)
+        loyalty_weight = graphene.Int()
+        amount_paid = graphene.Int()
 
     message = graphene.List(graphene.String)
 
@@ -26,7 +31,10 @@ class CreateProductCategory(graphene.Mutation):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError("This name field can't be empty")
-        product_category = ProductCategory(name=name)
+        check_user_belongs_to_outlet(info.context.user,
+                                     kwargs.get('outlet_id'))
+
+        product_category = ProductCategory(**kwargs)
         with SaveContextManager(product_category, model=ProductCategory):
             message = [f'Product Category created succesfully']
             return CreateProductCategory(
@@ -43,6 +51,8 @@ class EditProductCategory(graphene.Mutation):
     class Arguments:
         name = graphene.String()
         id = graphene.Int()
+        loyalty_weight = graphene.Int()
+        amount_paid = graphene.Int()
 
     @login_required
     @user_permission('Operations Admin')
@@ -52,7 +62,10 @@ class EditProductCategory(graphene.Mutation):
         if name.strip() == "":
             raise GraphQLError("This name field can't be empty")
         product_category = get_model_object(ProductCategory, 'id', id)
-        product_category.name = name
+        check_user_belongs_to_outlet(info.context.user,
+                                     product_category.outlet.id)
+        for(key, value) in kwargs.items():
+            setattr(product_category, key, value)
         with SaveContextManager(product_category, model=ProductCategory):
             message = 'Product category successfully updated'
             return EditProductCategory(
@@ -75,6 +88,8 @@ class DeleteProductCategory(graphene.Mutation):
         id = kwargs.get('id')
         user = info.context.user
         product_category = get_model_object(ProductCategory, 'id', id)
+        check_user_belongs_to_outlet(info.context.user,
+                                     product_category.outlet.id)
         product_category.delete(user)
         message = f'Prduct category of Id {id} has been successfully deleted'
 

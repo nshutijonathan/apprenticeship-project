@@ -12,7 +12,20 @@ from healthid.utils.app_utils.id_generator import id_gen
 
 
 class ProductCategory(BaseModel):
+    """
+    model for product category
+
+    Attributes:
+        name: name to product category
+        amount_paid: how much money to pay in order to earn a loyalty
+                     point
+        loyalty_weight: points attached to the purchase of products in
+                        category
+    """
     name = models.CharField(max_length=50, unique=True)
+    amount_paid = models.PositiveIntegerField(default=100)
+    loyalty_weight = models.PositiveIntegerField(default=0)
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
 
 
 class MeasurementUnit(BaseModel):

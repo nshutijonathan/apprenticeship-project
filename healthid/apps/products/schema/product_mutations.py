@@ -54,6 +54,7 @@ class CreateProduct(graphene.Mutation):
         tags = graphene.List(graphene.String)
         unit_cost = graphene.Float()
         image = graphene.String()
+        loyalty_weight = graphene.Int()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -85,6 +86,7 @@ class UpdateProduct(graphene.Mutation):
         backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         image = graphene.String()
+        loyalty_weight = graphene.Int()
 
     @login_required
     def mutate(self, info, **kwargs):

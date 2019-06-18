@@ -11,8 +11,10 @@ class TestProductCategory(BaseConfiguration):
         """
         test product category creation
         """
-        response = self.query_with_token(self.access_token_master,
-                                         create_product_category)
+        response = self.query_with_token(
+            self.access_token_master,
+            create_product_category.format(outlet_id=self.outlet.id)
+        )
         self.assertIn('Product Category created succesfully',
                       response['data']['createProductCategory']['message'])
         self.assertIn('data', response)
@@ -22,10 +24,14 @@ class TestProductCategory(BaseConfiguration):
         """
         test product category creation
         """
-        self.query_with_token(self.access_token_master,
-                              create_product_category)
-        duplicate_category = self.query_with_token(self.access_token_master,
-                                                   create_product_category)
+        self.query_with_token(
+            self.access_token_master,
+            create_product_category.format(outlet_id=self.outlet.id)
+        )
+        duplicate_category = self.query_with_token(
+            self.access_token_master,
+            create_product_category.format(outlet_id=self.outlet.id)
+        )
         self.assertIn('ProductCategory with name panadol already exists.',
                       duplicate_category['errors'][0]['message'])
         self.assertIn('errors', duplicate_category)

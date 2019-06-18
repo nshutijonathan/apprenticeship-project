@@ -109,7 +109,8 @@
         "model": "products.productcategory",
         "pk": 1,
         "fields": {
-          "name":"prescription"
+          "name":"prescription",
+          "outlet": 1
         }
     },
     {
