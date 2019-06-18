@@ -6,15 +6,13 @@ create_product = '''
                 productCategoryId:1,
                 productName :"panadol",
                 measurementUnitId :1,
-                packSize :"2kgs",
                 description :"first treatment people try for mild to moderate pain",  # noqa E501
                 brand :"ventolinllke",
                 manufacturer:"Harmon Northrop",
                 vatStatus:"VAT",
-                quality : "meet the pharmacopoeia specification",
                 salesPrice :1000,
                 unitCost:10.65,
-                preferedSupplierId :"{supplier_id}",
+                preferredSupplierId :"{supplier_id}",
                 backupSupplierId:"{backup_id}",
                 tags :"painkillers"
                     ){{
@@ -22,8 +20,6 @@ create_product = '''
                     id
                     tags
                     salesPrice
-                    quality
-                    packSize
                     productName
                     vatStatus
                     nearestExpiryDate
@@ -70,15 +66,13 @@ mutation {{
         productCategoryId:1,
         productName :"gfcds",
         measurementUnitId :1,
-        packSize :"2kgs",
         description :"first treatment people try for mild to moderate pain",
         brand :"ventolinllke mklllll",
         manufacturer:"vbn",
         vatStatus:"VAT",
-        quality : "meet the pharmacopoeia specification",
         salesPrice :1000,
         unitCost:10.2,
-        preferedSupplierId : "{0}",
+        preferredSupplierId : "{0}",
         backupSupplierId:"{0}",
         tags:["painkillers","panadol"]
 
@@ -86,8 +80,6 @@ mutation {{
       product{{
         id
         salesPrice
-        quality
-        packSize
         productName
         vatStatus
         skuNumber
@@ -150,14 +142,12 @@ def create_product_2(supplier_id, backup_id, user):
         product_category_id=1,
         product_name='Panadol',
         measurement_unit_id=1,
-        pack_size="2kgs",
         description='first treatment people try',
         brand='ventolinllke',
         manufacturer="Harmon Northrop",
         vat_status="VAT",
-        quality="meet the pharmacopoeia specification",
         sales_price=1000,
-        prefered_supplier_id=supplier_id,
+        preferred_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
         tags="painkillers",
         unit_cost=10.65,
@@ -170,12 +160,10 @@ def update_product(product_id, product_name):
                 updateProduct(
                     id: {product_id},
                     productName: "{product_name}",
-                    packSize :"3kgs",
                     description :"forever younger",
                     brand :"ventolinllke",
                     manufacturer:"Harmon",
                     vatStatus:"VAT",
-                    quality : "meet the pharmacopoeia specification",
                     salesPrice :1400,
                     tags :["painkillers","headache"]
                 ){{
@@ -240,7 +228,6 @@ product_search_query = '''
             edges {{
                 node {{
                 id
-                quality
                 productName
                 tags
                 }}

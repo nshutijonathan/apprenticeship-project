@@ -321,7 +321,7 @@ class BaseConfiguration(TestCase):
             sales_price=100,
             product_category=self.product_category,
             measurement_unit=self.measurement_unit,
-            prefered_supplier=self.supplier,
+            preferred_supplier=self.supplier,
             backup_supplier=self.supplier,
             unit_cost=20.3, pre_tax_retail_price=25.0)
 

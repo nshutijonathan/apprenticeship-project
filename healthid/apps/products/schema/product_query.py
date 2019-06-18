@@ -104,12 +104,10 @@ class Query(graphene.AbstractType):
         ProductType,
         id=graphene.Int(),
         product_name=graphene.String(),
-        pack_size=graphene.String(),
         sku_number=graphene.Int(),
         description=graphene.String(),
         brand=graphene.String(),
         manufacturer=graphene.String(),
-        quality=graphene.String(),
         sales_price=graphene.Int(),
         nearest_expiry_date=graphene.String(),
         tags=graphene.List(graphene.String))

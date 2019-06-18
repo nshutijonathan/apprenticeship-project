@@ -13,6 +13,9 @@ from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.orders_utils.add_supplier import add_supplier
 from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
+from healthid.utils.constants.product_constants import \
+                                                    PRODUCT_INCLUDE_CSV_FIELDS
+from healthid.utils.csv_export.generate_csv import generate_csv_response
 
 
 class HandleCSV(APIView):
@@ -27,8 +30,10 @@ class HandleCSV(APIView):
             message = {"error": "Please upload a csv file"}
             return Response(message, status.HTTP_400_BAD_REQUEST)
         data_set = csv_file.read().decode('UTF-8')
+
         io_string = io.StringIO(data_set)
         next(io_string)
+
         if param == 'suppliers':
             user = request.user
             add_supplier.handle_csv_upload(user, io_string)
@@ -37,8 +42,11 @@ class HandleCSV(APIView):
             }
             return Response(message, status.HTTP_201_CREATED)
         if param == 'products':
-            handle_csv(io_string=io_string)
-            message = {"success": "Successfully added products"}
+            quantity_added = handle_csv(io_string=io_string)
+            message = {
+                "success": "Successfully added products",
+                "noOfProductsAdded": quantity_added,
+            }
             return Response(message, status.HTTP_201_CREATED)
 
 
@@ -72,3 +80,23 @@ class HandleCsvExport(APIView):
                 product = handle_csv_export.write_csv(product, request)
                 writer.writerow(product)
             return response
+
+
+class EmptyProductCsvExport(APIView):
+    """Handle the download of empty CSV file"""
+
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        """Responds to a get request for csv download.
+
+        Args:
+            request(obj): The http request from client.
+
+        Returns:
+            The response in a csv format with a status of 200.
+
+        """
+        response = generate_csv_response(HttpResponse, 'sample_product.csv',
+                                         Product, PRODUCT_INCLUDE_CSV_FIELDS)
+        return response

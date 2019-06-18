@@ -88,7 +88,7 @@ class AddOrderDetails:
             order_detail = OrderDetails.objects.filter(
                 order__id=order_id, product__id=product_id).first()
             product = get_model_object(Product, 'id', product_id)
-            order_detail.supplier = product.prefered_supplier
+            order_detail.supplier = product.preferred_supplier
             order_detail.save()
         return order_detail
 

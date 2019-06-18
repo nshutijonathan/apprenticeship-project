@@ -30,19 +30,17 @@ class Product(BaseModel):
     product_name = models.CharField(max_length=244, unique=True)
     measurement_unit = models.ForeignKey(
         MeasurementUnit, on_delete=models.CASCADE)
-    pack_size = models.CharField(max_length=50)
     sku_number = models.CharField(max_length=100, null=False)
     is_approved = models.BooleanField(default=False)
     description = models.CharField(max_length=150)
     brand = models.CharField(max_length=50)
     manufacturer = models.CharField(max_length=50)
     vat_status = models.CharField(max_length=50)
-    quality = models.CharField(max_length=50)
     sales_price = models.DecimalField(
         max_digits=12, decimal_places=2, null=True)
     nearest_expiry_date = models.DateField(
         auto_now=False, auto_now_add=False, null=True)
-    prefered_supplier = models.ForeignKey(
+    preferred_supplier = models.ForeignKey(
         Suppliers, related_name='prefered', on_delete=models.CASCADE)
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
@@ -71,11 +69,13 @@ class Product(BaseModel):
     is_active = models.BooleanField(default=True)
     reorder_point = models.IntegerField(default=0)
     reorder_max = models.IntegerField(default=0)
+
     '''all_products model manager returns both all products including
     deactivated products i.e Products.all_products.all() returns both
-    active and deactivated products use it when you need deactive
+    active and deactivated products use it when you need deactivate
     products as well.'''
     all_products = models.Manager()
+
     '''objects model manager returns only activated products i.e
     Products.objects.all() returns only active products use it when
     you don't need deactivated products.'''

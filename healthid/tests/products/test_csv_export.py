@@ -43,3 +43,12 @@ class CsvExportTestCase(BaseConfiguration):
                                     format='json', **self.auth_headers)
         self.assertIn('error', response.data)
         self.assertEqual(response.status_code, 404)
+
+    def test_empty_product_csv_export_succeeds(self):
+        self.url = reverse('export_product_csv')
+        response = self.client.get(self.url,
+                                   format='json', **self.auth_headers)
+        content_type = response._headers['content-type'][1]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content_type, 'text/csv')

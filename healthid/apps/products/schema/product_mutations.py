@@ -42,16 +42,14 @@ class CreateProduct(graphene.Mutation):
         product_category_id = graphene.Int()
         product_name = graphene.String(required=True)
         measurement_unit_id = graphene.Int(required=True)
-        pack_size = graphene.String()
         sku_number = graphene.Int()
         description = graphene.String(required=True)
         brand = graphene.String(required=True)
         manufacturer = graphene.String(required=True)
         vat_status = graphene.String(required=True)
-        quality = graphene.String(required=True)
         sales_price = graphene.Float()
         nearest_expiry_date = graphene.String()
-        prefered_supplier_id = graphene.String()
+        preferred_supplier_id = graphene.String()
         backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         unit_cost = graphene.Float()
@@ -76,16 +74,14 @@ class UpdateProduct(graphene.Mutation):
         product_category_id = graphene.Int()
         product_name = graphene.String()
         measurement_unit_id = graphene.Int()
-        pack_size = graphene.String()
         sku_number = graphene.Int()
         description = graphene.String()
         brand = graphene.String()
         manufacturer = graphene.String()
         vat_status = graphene.String()
-        quality = graphene.String()
         sales_price = graphene.Int()
         nearest_expiry_date = graphene.String()
-        prefered_supplier_id = graphene.String()
+        preferred_supplier_id = graphene.String()
         backup_supplier_id = graphene.String()
         tags = graphene.List(graphene.String)
         image = graphene.String()
@@ -180,8 +176,8 @@ class ApproveProposedEdits(graphene.Mutation):
             'user', 'outlet'
         ]
         [product_dict.pop(item) for item in exclude_list]
-        product_dict['prefered_supplier_id'] = product_dict.pop(
-            'prefered_supplier')
+        product_dict['preferred_supplier_id'] = product_dict.pop(
+            'preferred_supplier')
         product_dict['backup_supplier_id'] = product_dict.pop(
             'backup_supplier')
         product_dict['product_category_id'] = product_dict.pop(

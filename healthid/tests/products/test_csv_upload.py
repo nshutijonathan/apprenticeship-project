@@ -30,5 +30,7 @@ class TestCsvUpload(BaseConfiguration):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
+
         self.assertEqual(response.status_code, 201)
         self.assertIn('success', response.data)
+        self.assertIn('noOfProductsAdded', response.data)
