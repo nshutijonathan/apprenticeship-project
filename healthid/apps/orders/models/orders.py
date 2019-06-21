@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.db import models
+from django.conf import settings
 
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.outlets.models import Outlet
@@ -26,6 +27,23 @@ class Order(BaseModel):
     delivery_date = models.DateField()
     sent_status = models.BooleanField(default=False)
     closed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
+                                    related_name="approved_orders",
+                                    on_delete=models.CASCADE)
+
+    def approve_order(self, user):
+        """Approve an Order
+
+        Args:
+            user (:obj) : user instance
+
+        Returns:
+            self (:obj) : order instance
+        """
+        self.approved_by = user
+        self.approved = True
+        return self
 
 
 class OrderDetails(BaseModel):

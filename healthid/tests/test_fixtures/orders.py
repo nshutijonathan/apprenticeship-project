@@ -141,3 +141,15 @@ query {{
   }}
 }}
 '''
+
+approve_order = '''
+mutation{{
+  approveOrder(orderId:{order_id}){{
+    message
+    order {{
+      id
+      orderNumber
+    }}
+  }}
+  }}
+'''

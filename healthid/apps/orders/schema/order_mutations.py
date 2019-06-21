@@ -11,6 +11,7 @@ from healthid.utils.orders_utils.supplier_order_details import \
     create_suppliers_order_details
 from healthid.apps.orders.schema.order_query import \
     SupplierOrderDetailsType, OrderDetailsType
+from healthid.utils.auth_utils.decorator import user_permission
 
 
 class OrderType(DjangoObjectType):
@@ -100,6 +101,26 @@ class AddOrderDetails(graphene.Mutation):
                    suppliers_order_details=suppliers_order_details)
 
 
+class ApproveOrder(graphene.Mutation):
+    message = graphene.Field(graphene.String)
+    order = graphene.Field(OrderType)
+
+    class Arguments:
+        order_id = graphene.Int(required=True)
+
+    @login_required
+    @user_permission('Manager', 'Admin')
+    def mutate(self, info, **kwargs):
+        order_id = kwargs.get('order_id')
+        order = get_model_object(Order, 'id', order_id)
+        user = info.context.user
+        order.approve_order(user)
+        with SaveContextManager(order, model=Order) as order:
+            message = "Successfully approved order"
+            return ApproveOrder(message=message, order=order)
+
+
 class Mutation(graphene.ObjectType):
     initiate_order = InitiateOrder.Field()
     add_order_details = AddOrderDetails.Field()
+    approve_order = ApproveOrder.Field()
