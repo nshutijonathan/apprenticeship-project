@@ -36,6 +36,17 @@ login_mutation = '''
             }
             '''
 
+loginUser_mutation = '''
+            mutation {{
+                loginUser(
+                    email: "{email}",
+                    password: "{password}",
+                ){{
+                restToken
+                }}
+            }}
+            '''
+
 
 test_users_query = '''
             {

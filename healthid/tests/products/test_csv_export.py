@@ -1,17 +1,25 @@
-import base64
 from django.urls import reverse
-from rest_framework.test import APIClient
+from graphql_jwt.testcases import JSONWebTokenTestCase
+from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
+from rest_framework.test import APIClient
 
 
-class CsvExportTestCase(BaseConfiguration):
+class CsvExportTestCase(BaseConfiguration, JSONWebTokenTestCase):
 
     def setUp(self):
         super().setUp()
+        # Log in user and use fetched token for endpoint authorization
+        email = self.new_user["email"]
+        password = self.new_user["password"]
+        response = self.client.execute(loginUser_mutation.format(
+            email=email,
+            password=password)
+        )
+        token = response.data['loginUser']['restToken']
         self.auth_headers = {
             'HTTP_AUTHORIZATION':
-            'Basic ' +
-            base64.b64encode(b'john.doe@gmail.com:Password123').decode('ascii')
+            ' Token ' + str(token)
         }
         self.client = APIClient()
         self.url = reverse('export_csv', kwargs={'param': 'products'})

@@ -1,26 +1,33 @@
-import base64
 import os
-
 from django.core.management import call_command
 from django.test import RequestFactory
 from django.urls import reverse
-
+from graphql_jwt.testcases import JSONWebTokenTestCase
 from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
+from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
                                                     suppliers_query)
 from healthid.views import HandleCSV
 
 
-class SuppliersTestCase(BaseConfiguration):
+class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
     def setUp(self):
         super(SuppliersTestCase, self).setUp()
         self.factory = RequestFactory()
         self.base_path = os.path.dirname(os.path.realpath(__file__))
+        # Log in user and use fetched token for endpoint authorization
+        email = self.new_user["email"]
+        password = self.new_user["password"]
+        login_response = self.client.execute(loginUser_mutation.format(
+            email=email,
+            password=password)
+        )
+        token = login_response.data['loginUser']['restToken']
+
         self.auth_headers = {
             'HTTP_AUTHORIZATION':
-            'Basic ' +
-            base64.b64encode(b'john.doe@gmail.com:Password123').decode('ascii')
+            ' Token ' + str(token)
         }
         call_command('loaddata', 'healthid/fixtures/tests')
         self.view = HandleCSV.as_view()

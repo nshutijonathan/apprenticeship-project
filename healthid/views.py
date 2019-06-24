@@ -3,6 +3,8 @@ import io
 
 from django.http import HttpResponse
 from rest_framework import status
+from rest_framework.authentication import (SessionAuthentication,
+                                           TokenAuthentication)
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -19,6 +21,7 @@ from healthid.utils.csv_export.generate_csv import generate_csv_response
 
 
 class HandleCSV(APIView):
+    authentication_classes = (SessionAuthentication, TokenAuthentication)
     parser_classes = (MultiPartParser, )
     permission_classes = (IsAuthenticated, )
 
@@ -51,6 +54,7 @@ class HandleCSV(APIView):
 
 
 class HandleCsvExport(APIView):
+    authentication_classes = (SessionAuthentication, TokenAuthentication)
     permission_classes = (IsAuthenticated, )
     serializer_class = ProductsSerializer
 
@@ -84,7 +88,7 @@ class HandleCsvExport(APIView):
 
 class EmptyProductCsvExport(APIView):
     """Handle the download of empty CSV file"""
-
+    authentication_classes = (SessionAuthentication, TokenAuthentication)
     permission_classes = (IsAuthenticated, )
 
     def get(self, request):
