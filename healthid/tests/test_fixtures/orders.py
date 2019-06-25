@@ -4,7 +4,8 @@ mutation{{
     name:"Important order",
     deliveryDate:"2019-05-30",
     productAutofill: true,
-    supplierAutofill: true
+    supplierAutofill: true,
+    destinationOutlet: {outlet_id}
   ){{
   order{{
       id
@@ -152,4 +153,36 @@ mutation{{
     }}
   }}
   }}
+'''
+
+retrieve_orders = '''
+query {
+  orders {
+    id
+  }
+}
+'''
+
+retrieve_order = '''
+query {{
+  order(orderId: {order_id}) {{
+    id
+  }}
+}}
+'''
+
+retrieve_open_orders = '''
+query {
+  openOrders {
+    id
+  }
+}
+'''
+
+retrieve_closed_orders = '''
+query {
+  closedOrders {
+    id
+  }
+}
 '''

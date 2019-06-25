@@ -6,7 +6,7 @@ def create_register_query(outlet_id, receipt_id):
                  outletId:{outlet_id},
                  receiptId:\"{receipt_id}\",)
                    {{
-                    register{{id name}}
+                    register{{name}}
                 }}
             }}
             ''')

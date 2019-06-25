@@ -1,5 +1,4 @@
 import graphene
-from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.models.orders import Order
@@ -10,13 +9,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.orders_utils.supplier_order_details import \
     create_suppliers_order_details
 from healthid.apps.orders.schema.order_query import \
-    SupplierOrderDetailsType, OrderDetailsType
+    SupplierOrderDetailsType, OrderDetailsType, OrderType
 from healthid.utils.auth_utils.decorator import user_permission
-
-
-class OrderType(DjangoObjectType):
-    class Meta:
-        model = Order
 
 
 class InitiateOrder(graphene.Mutation):
@@ -29,13 +23,14 @@ class InitiateOrder(graphene.Mutation):
         delivery_date = graphene.Date(required=True)
         product_autofill = graphene.Boolean(required=True)
         supplier_autofill = graphene.Boolean(required=True)
+        destination_outlet = graphene.Int(required=True)
 
     @login_required
     def mutate(self, info, **kwargs):
         '''Mutation to initiate an order in the database
         '''
-        user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
+        outlet = get_model_object(
+            Outlet, 'id', kwargs.get('destination_outlet'))
         order = Order(
             name=kwargs['name'],
             delivery_date=kwargs['delivery_date'],

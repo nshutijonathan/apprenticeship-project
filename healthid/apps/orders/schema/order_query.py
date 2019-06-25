@@ -8,6 +8,11 @@ from healthid.apps.outlets.schema.outlet_schema import OutletType
 from healthid.apps.orders.models.suppliers import Suppliers
 
 
+class OrderType(DjangoObjectType):
+    class Meta:
+        model = Order
+
+
 class OrderDetailsType(DjangoObjectType):
     class Meta:
         model = OrderDetails
@@ -89,6 +94,10 @@ class Query(graphene.AbstractType):
         SupplierOrderDetailsType, order_id=graphene.Int(required=True),
         supplier_id=graphene.String(required=True)
     )
+    orders = graphene.List(OrderType)
+    order = graphene.Field(OrderType, order_id=graphene.Int(required=True))
+    open_orders = graphene.List(OrderType)
+    closed_orders = graphene.List(OrderType)
 
     @login_required
     def resolve_suppliers_order_details(self, info, **kwargs):
@@ -107,3 +116,43 @@ class Query(graphene.AbstractType):
         supplier = get_model_object(Suppliers, 'id', kwargs.get('supplier_id'))
         return SupplierOrderDetails.objects.filter(order=order,
                                                    supplier=supplier).first()
+
+    @login_required
+    def resolve_orders(self, info, **kwargs):
+        """
+        gets all orders
+
+        Returns:
+            list: orders
+        """
+        return Order.objects.all()
+
+    @login_required
+    def resolve_order(self, info, **kwargs):
+        """
+        gets a single order
+
+        Returns:
+            obj: an order
+        """
+        return get_model_object(Order, 'id', kwargs.get('order_id'))
+
+    @login_required
+    def resolve_open_orders(self, info, **kwargs):
+        """
+        gets orders that are open
+
+        Returns:
+            list: open orders
+        """
+        return Order.objects.filter(closed=False)
+
+    @login_required
+    def resolve_closed_orders(self, info, **kwargs):
+        """
+        gets orders that have been closed
+
+        Returns:
+            list: closed orders
+        """
+        return Order.objects.filter(closed=True)

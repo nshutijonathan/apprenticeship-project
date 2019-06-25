@@ -30,7 +30,7 @@ class RegisterTestCase(RegisterBaseCase):
             create_register_query(outlet.id, receipt.id),)
         self.assertResponseNoErrors(
             response, {"createRegister": {
-                'register': {'id': '1', 'name': 'liver moore'}
+                'register': {'name': 'liver moore'}
             }})
 
     def test_update_register(self):
