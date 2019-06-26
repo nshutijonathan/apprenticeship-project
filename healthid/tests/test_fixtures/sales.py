@@ -203,3 +203,25 @@ def retrieve_cart():
                 }}
             }}
     ''')
+
+
+create_sale = '''
+mutation {{
+  createSale(
+      discountTotal: {discount_total},
+      amountToPay: {amount_to_pay},
+      paymentMethod:"{payment_method}",
+      customerId:"{customer_id}"
+      outletId: {outlet_id}
+      subTotal: {sub_total},
+      changeDue: {change_due},
+      paidAmount: {paid_amount},
+      products: {products}
+      )
+      {{
+    sale {{
+      id
+    }}
+    message
+  }}
+}}'''

@@ -69,7 +69,9 @@ class CreateBatchInfo(graphene.Mutation):
             generate_reorder_points_and_max(product_instance)
             batch_info.product.add(product_instance)
             Quantity.objects.create(
-                batch=batch_info, quantity_received=quantities[index],
+                batch=batch_info,
+                is_approved=True,
+                quantity_received=quantities[index],
                 product=product_instance)
             batch_info.save()
         message = ['Batch successfully created']

@@ -2,7 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.sales.models import SalesPrompt
+from healthid.apps.sales.models import (SalesPrompt, Sale)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 
@@ -10,6 +10,11 @@ from healthid.utils.auth_utils.decorator import user_permission
 class SalesPromptType(DjangoObjectType):
     class Meta:
         model = SalesPrompt
+
+
+class SaleType(DjangoObjectType):
+    class Meta:
+        model = Sale
 
 
 class Query(graphene.ObjectType):

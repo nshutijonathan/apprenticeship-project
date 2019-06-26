@@ -1,3 +1,4 @@
+import json
 from graphql import GraphQLError
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.products.models import Product
@@ -32,3 +33,10 @@ def add_products_to_promotion(promotion, product_ids):
     for product in products:
         promotion.products.add(product)
     return promotion
+
+
+def remove_quotes(dictionary):
+    """
+    Remove quotes from dictionary
+    """
+    return json.dumps(dictionary).replace('"', "")

@@ -4,8 +4,8 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
-from healthid.apps.sales.models import SalesPrompt
-from healthid.apps.sales.schema.sales_schema import SalesPromptType
+from healthid.apps.sales.models import Sale, SalesPrompt
+from healthid.apps.sales.schema.sales_schema import SalesPromptType, SaleType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -35,6 +35,7 @@ class CreateSalesPrompts(graphene.Mutation):
         valid_list = all(len(product_ids) == len(list_inputs)
                          for list_inputs in
                          [titles, prompt_descriptions, outlet_ids])
+
         if not valid_list or len(product_ids) < 1:
 
             raise GraphQLError('List inputs are incomplete or empty')
@@ -114,7 +115,47 @@ class DeleteSalesPrompt(graphene.Mutation):
             success="Sales Prompt was deleted successfully")
 
 
+class Products(graphene.InputObjectType):
+    """
+    This class defines necessary fields of a product to be sold
+    """
+    product_id = graphene.Int()
+    quantity = graphene.Int()
+    discount = graphene.Float()
+    price = graphene.Float()
+    note = graphene.String()
+
+
+class CreateSale(graphene.Mutation):
+    """
+    Create a sale
+    """
+    sale = graphene.Field(SaleType)
+    message = graphene.String()
+    error = graphene.String()
+
+    class Arguments:
+        customer_id = graphene.String()
+        outlet_id = graphene.Int(required=True)
+        products = graphene.List(Products, required=True)
+        discount_total = graphene.Float(graphene.Float, required=True)
+        sub_total = graphene.Float(graphene.Float, required=True)
+        amount_to_pay = graphene.Float(graphene.Float, required=True)
+        paid_amount = graphene.Float(graphene.Float, required=True)
+        change_due = graphene.Float(graphene.Float, required=True)
+        payment_method = graphene.String(graphene.String, required=True)
+        notes = graphene.String()
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        new_sale = Sale()
+        sale = new_sale.create_sale(info=info, **kwargs)
+        return CreateSale(sale=sale,
+                          message='Sales was created successfully')
+
+
 class Mutation(graphene.ObjectType):
     create_salesprompts = CreateSalesPrompts.Field()
     delete_salesprompt = DeleteSalesPrompt.Field()
     update_salesprompt = UpdateSalesPrompt.Field()
+    create_sale = CreateSale.Field()

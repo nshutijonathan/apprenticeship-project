@@ -1,21 +1,22 @@
 import json
 from datetime import datetime
-from django.test import Client, TestCase
+
 from django.forms import model_to_dict
+from django.test import Client, TestCase
+
 from healthid.apps.authentication.models import Role, User
+from healthid.apps.events.models import Event, EventType
+from healthid.apps.orders.models import (Order, PaymentTerms, SupplierNote,
+                                         Suppliers, Tier)
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
+from healthid.apps.preference.models import Preference, Timezone
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity)
-from healthid.apps.orders.models import (
-    Order, PaymentTerms, Tier, Suppliers, SupplierNote)
+from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import SalesPrompt
-from healthid.apps.preference.models import Timezone, Preference
+from healthid.apps.stock.models import StockCountTemplate
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
-from healthid.apps.events.models import EventType
-from healthid.apps.stock.models import StockCountTemplate
-from healthid.apps.events.models import Event
-from healthid.apps.profiles.models import Profile
 
 
 class BaseConfiguration(TestCase):
@@ -333,7 +334,7 @@ class BaseConfiguration(TestCase):
         )
         batch_info.product.add(self.product)
         Quantity.objects.create(
-            batch=batch_info, quantity_received=8,
+            batch=batch_info, quantity_received=8, is_approved=True,
             product=self.product)
         batch_info.save()
         return batch_info
