@@ -8,13 +8,15 @@ class ProductsSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.CharField(source='measurement_unit.name')
     preferred_supplier = serializers.CharField(source='preferred_supplier.name')  # noqa
     backup_supplier = serializers.CharField(source='backup_supplier.name')
+    quantity = serializers.ReadOnlyField()
 
     class Meta:
         model = Product
         fields = [
             'id', 'product_name', 'product_category', 'measurement_unit',
             'sku_number', 'description', 'brand', 'manufacturer', 'vat_status',
-            'sales_price', 'created_date', 'nearest_expiry_date',
+            'sales_price', 'created_at', 'nearest_expiry_date',
             'preferred_supplier', 'backup_supplier', 'pre_tax_retail_price',
-            'unit_cost'
+            'unit_cost', 'tags', 'reorder_point', 'reorder_max',
+            'loyalty_weight', 'quantity'
         ]

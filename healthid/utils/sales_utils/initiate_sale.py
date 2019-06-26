@@ -1,6 +1,3 @@
-from graphql import GraphQLError
-
-
 def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
     """
     This function create a sale detail by looping through all sold
