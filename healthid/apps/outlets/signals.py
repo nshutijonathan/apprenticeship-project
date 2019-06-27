@@ -1,7 +1,9 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from healthid.apps.outlets.models import Outlet
-from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
+from healthid.apps.preference.models import (Currency,
+                                             OutletPreference,
+                                             Timezone, Vat)
 from healthid.utils.app_utils.id_generator import id_gen
 
 
@@ -28,15 +30,18 @@ def set_prefix(sender, update_fields=['prefix_id'], *args, **kwargs):
         rate=00.00
     )
 
-    preference = Preference()
-    preference.outlet = outlet
+    outlet_preference = OutletPreference()
+    outlet_preference.outlet = outlet
     # vat
-    preference.vat_rate = default_vat[0]
-    # get the set defualt currency
-    preference.outlet_currency = default_currency[0]
-    preference.outlet_timezone = default_timezone
-    preference.save()
-    outlet.preference_id = preference.id
+    outlet_preference.vat_rate = default_vat[0]
+    # get the set default currency
+    outlet_preference.outlet_currency = default_currency[0]
+    outlet_preference.outlet_timezone = default_timezone
+    outlet_preference_exist = OutletPreference.objects.filter(
+        outlet_id=outlet.id).exists()
+    if not outlet_preference_exist:
+        outlet_preference.save()
+
     outlet_name = outlet.name[slice(3)].upper()
     business_name = outlet.business.trading_name[slice(2)].upper()
     outlet_id = (str(outlet.id)).zfill(3)

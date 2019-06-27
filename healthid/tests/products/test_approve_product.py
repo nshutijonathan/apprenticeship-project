@@ -18,7 +18,7 @@ class ApproveProducts(BaseConfiguration):
                                              .format(self.supplier_id))
 
     def test_approve_product(self):
-        """method for approving a product succesflully """
+        """method for approving a product successfully """
         product_id = self.product['data']['createProduct']['product']['id']
         response = self.query_with_token(
             self.access_token_master,

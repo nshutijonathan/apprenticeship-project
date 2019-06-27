@@ -28,12 +28,13 @@
         }
     },
     {
-        "model": "preference.preference",
+        "model": "preference.outletpreference",
         "pk": "123456789",
         "fields":{
            "outlet_timezone": "285461788",
            "outlet_currency": "123456789",
-           "vat_rate": "123456789"
+           "vat_rate": "123456789",
+           "outlet_id": 1
         }
     },
     {
@@ -87,8 +88,7 @@
            "phone_number": "1234567890",
            "date_launched": "2019-05-05",
            "business": "123456789",
-           "user": ["aul5xrp73"],
-           "preference": "123456789"
+           "user": ["aul5xrp73"]
         }
     },
     {

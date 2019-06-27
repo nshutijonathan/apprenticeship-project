@@ -5,7 +5,8 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.preference.models import Currency, Preference, Timezone, Vat
+from healthid.apps.preference.models import (Currency, Timezone, Vat,
+                                             OutletPreference)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 
@@ -17,7 +18,7 @@ class TimezoneType(DjangoObjectType):
 
 class PreferenceType(DjangoObjectType):
     class Meta:
-        model = Preference
+        model = OutletPreference
 
 
 class VatType(DjangoObjectType):
@@ -58,7 +59,7 @@ class Query(graphene.ObjectType):
     """
     timezones = graphene.List(TimezoneType)
     outlet_preference = graphene.Field(PreferenceType,
-                                       id=graphene.String())
+                                       outlet_id=graphene.Int())
 
     currencies = graphene.List(RawCurrency)
     currency = graphene.Field(
@@ -87,8 +88,8 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_outlet_preference(self, info, **kwargs):
-        id = kwargs.get('id')
-        return get_model_object(Preference, 'id', id)
+        id = kwargs.get('outlet_id')
+        return get_model_object(OutletPreference, 'outlet_id', id)
 
     @login_required
     def resolve_currencies(self, args):

@@ -9,12 +9,12 @@ from healthid.apps.events.models import Event, EventType
 from healthid.apps.orders.models import (Order, PaymentTerms, SupplierNote,
                                          Suppliers, Tier)
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
-from healthid.apps.preference.models import Preference, Timezone
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity)
 from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.stock.models import StockCountTemplate
+from healthid.apps.preference.models import Timezone, OutletPreference
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 
@@ -160,7 +160,7 @@ class BaseConfiguration(TestCase):
         self.second_master_admin_token = self.admin_login(
             self.login_second_master_admin)
         self.access_token_master = self.admin_login(self.login_master_admin)
-        self.preference = Preference.objects.filter().first()
+        self.preference = OutletPreference.objects.filter().first()
         self.second_outlet = self.create_outlet(self.second_outlet)
         self.second_outlet.user.add(self.second_master_admin_user)
         self.outlet.user.add(self.master_admin_user)

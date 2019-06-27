@@ -4,7 +4,8 @@ from healthid.tests.test_fixtures.preferences import (timezone_query,
                                                       timezones_query,
                                                       update_timezone_query,
                                                       wrong_timezone,
-                                                      wrong_query)
+                                                      wrong_query
+                                                      )
 
 
 class TimezoneTestCase(BaseConfiguration):
@@ -18,7 +19,7 @@ class TimezoneTestCase(BaseConfiguration):
 
     def test_query(self):
         response = self.query_with_token(
-            self.access_token_master, timezone_query % (self.preference.id))
+            self.access_token_master, timezone_query % (self.outlet.id))
         self.assertIn('data', response)
 
     def test_get_all_timezones(self):
@@ -37,7 +38,7 @@ class TimezoneTestCase(BaseConfiguration):
 
     def test_wrong_timezone(self):
         response = self.query_with_token(
-            self.access_token_master, wrong_timezone % (self.preference.id))
+            self.access_token_master, wrong_timezone % (self.outlet.id))
         self.assertIn('errors', response)
 
     def test_wrong_query(self):

@@ -1,6 +1,6 @@
 timezone_query = '''
  query{
-  outletPreference(id:"%s"){
+  outletPreference(outletId:%s){
     outletTimezone{
       id
       timeZone
@@ -26,7 +26,9 @@ mutation{
     outletTimezone: "285461788",
     preferenceId: "%s"
   ){
-    outletTimezone{id}
+    preference{
+      outletTimezone{id}
+    }
   }
 }
 '''
@@ -37,7 +39,9 @@ mutation{
     outletTimezone: "28546178845757",
     preferenceId: "%s"
   ){
-    outletTimezone{id}
+    preference{
+      outletTimezone{id}
+    }
   }
 }
 '''

@@ -5,6 +5,7 @@ from graphql.error import GraphQLError
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.orders.models import Order
 from healthid.apps.products.models import BatchInfo, Product
+from healthid.apps.preference.models import OutletPreference
 
 from healthid.utils.app_utils.database import get_model_object
 
@@ -79,6 +80,10 @@ class BarcodeScanForm(forms.Form):
         batch_info = get_model_object(BatchInfo, 'id',
                                       cleaned_data['batch_id'])
         outlet = get_model_object(Outlet, 'id', cleaned_data['outlet_id'])
+        preference = get_model_object(OutletPreference, 'outlet_id', outlet.id)
+
+        if not preference.barcode_preference:
+            raise GraphQLError("Barcode scanning is disabled")
 
         if not order.closed:
             raise GraphQLError("Scan rejected: this order"

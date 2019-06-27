@@ -29,12 +29,21 @@ class CreateOutlet(graphene.Mutation):
         date_launched = graphene.types.datetime.Date()
         prefix_id = graphene.String()
         business_id = graphene.String()
-        preference_id = graphene.String()
 
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
+        outlet_name = kwargs.get('name')
+        business_id = kwargs.get('business_id')
+        find_outlets = \
+            Outlet.objects.filter(name=outlet_name)
+
+        for outlet in find_outlets:
+            if business_id == outlet.business_id:
+                raise GraphQLError('This business already has'
+                                   ' an outlet with that name')
+
         outlet = Outlet()
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
@@ -76,8 +85,7 @@ class UpdateOutlet(graphene.Mutation):
             raise GraphQLError(
                 "You can't update an outlet that you are not assigned to!")
         for(key, value) in kwargs.items():
-            if value is not None:
-                setattr(outlet, key, value)
+            setattr(outlet, key, value)
         with SaveContextManager(outlet, model=Outlet) as outlet:
             success = f'Successfully updated outlet {outlet.name}'
             return UpdateOutlet(outlet=outlet, success=success)

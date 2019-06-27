@@ -1,6 +1,8 @@
 from healthid.apps.orders.models import BarcodeScan
+from healthid.apps.preference.models import OutletPreference
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.barcode_scans import barcode_scan
+from healthid.utils.app_utils.database import get_model_object
 
 
 class TestBarcodeScans(BaseConfiguration):
@@ -17,11 +19,15 @@ class TestBarcodeScans(BaseConfiguration):
             'count': 1,
             'order': self.order
         }
+        outlet = self.outlet
+        preference = get_model_object(OutletPreference, 'outlet_id', outlet.id)
+        setattr(preference, 'barcode_preference', True)
+        preference.save()
 
         self.barcode_query_data = {
             'scanned_number': '123456789012',
             'batch_id': self.batch_info.id,
-            'outlet_id': self.outlet.id,
+            'outlet_id': outlet.id,
             'product_id': self.product.id,
             'count': 1,
         }

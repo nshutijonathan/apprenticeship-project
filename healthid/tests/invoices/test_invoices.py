@@ -1,6 +1,7 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.invoices import upload_invoice
 from healthid.tests.test_fixtures.orders import order as initiate_order
+from mock import patch
 
 
 class InvoiceTestCase(BaseConfiguration):
@@ -27,9 +28,11 @@ class InvoiceTestCase(BaseConfiguration):
             expected_message,
             response["errors"][0]["message"])
 
-    def test_upload_invoice(self):
+    @patch('cloudinary.uploader.upload')
+    def test_upload_invoice(self, mock):
         """Test that an invoice can be uploaded
         """
+        mock.return_value = {'url': 'sgs'}
         self.invoice_data["order_id"] = self.details_dict['order_id']
         response = self.query_with_token(
             self.access_token,
