@@ -1,6 +1,5 @@
 import csv
 import io
-
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.authentication import (SessionAuthentication,
@@ -16,8 +15,10 @@ from healthid.utils.orders_utils.add_supplier import add_supplier
 from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
 from healthid.utils.constants.product_constants import \
-                                                    PRODUCT_INCLUDE_CSV_FIELDS
+    PRODUCT_INCLUDE_CSV_FIELDS
 from healthid.utils.csv_export.generate_csv import generate_csv_response
+from rest_framework.exceptions import APIException
+from graphql import GraphQLError
 
 
 class HandleCSV(APIView):
@@ -36,21 +37,26 @@ class HandleCSV(APIView):
 
         io_string = io.StringIO(data_set)
         next(io_string)
-
-        if param == 'suppliers':
-            user = request.user
-            add_supplier.handle_csv_upload(user, io_string)
-            message = {
-                "success": "Successfully added supplier(s)"
-            }
-            return Response(message, status.HTTP_201_CREATED)
-        if param == 'products':
-            quantity_added = handle_csv(io_string=io_string)
-            message = {
-                "success": "Successfully added products",
-                "noOfProductsAdded": quantity_added,
-            }
-            return Response(message, status.HTTP_201_CREATED)
+        try:
+            if param == 'suppliers':
+                user = request.user
+                add_supplier.handle_csv_upload(user, io_string)
+                message = {
+                    "success": "Successfully added supplier(s)"
+                }
+                return Response(message, status.HTTP_201_CREATED)
+            if param == 'products':
+                quantity_added = handle_csv(io_string=io_string)
+                message = {
+                    "success": "Successfully added products",
+                    "noOfProductsAdded": quantity_added,
+                }
+                return Response(message, status.HTTP_201_CREATED)
+        except (ValueError, GraphQLError) as e:
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({
+                "errors": str(e)
+            })
 
 
 class HandleCsvExport(APIView):
