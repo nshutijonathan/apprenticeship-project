@@ -32,8 +32,8 @@ class TestCreateProduct(BaseConfiguration):
                 supplier_id=self.supplier_id, backup_id=self.backup_id))
         self.assertIn('data', response)
 
-    def test_already_existing_productname(self):
-        """method tests for an already existing productname """
+    def test_already_existing_product_name(self):
+        """method tests for an already existing product name """
         self.query_with_token(
             self.access_token,
             create_product.format(

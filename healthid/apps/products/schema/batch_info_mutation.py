@@ -65,14 +65,14 @@ class CreateBatchInfo(graphene.Mutation):
             outlet=outlet,
             user=user)
         for index, product_id in enumerate(products):
-            product_instance = get_model_object(Product, 'id', product_id)
-            generate_reorder_points_and_max(product_instance)
-            batch_info.product.add(product_instance)
+            product = get_model_object(Product, 'id', product_id)
+            generate_reorder_points_and_max(product)
+            batch_info.product.add(product)
             Quantity.objects.create(
                 batch=batch_info,
                 is_approved=True,
                 quantity_received=quantities[index],
-                product=product_instance)
+                product=product)
             batch_info.save()
         message = ['Batch successfully created']
         return CreateBatchInfo(message=message, batch_info=batch_info)
@@ -98,26 +98,25 @@ class UpdateBatchInfo(graphene.Mutation):
     errors = graphene.List(graphene.String)
     message = graphene.List(graphene.String)
 
-    @classmethod
     @login_required
     @batch_info_instance
     @user_permission('Manager')
-    def mutate(cls, root, info, **kwargs):
+    def mutate(self, info, **kwargs):
         batch_id = kwargs.get('batch_id')
         products = kwargs.get('product')
         supplier_id = kwargs.get('supplier_id')
         outlet_id = kwargs.get('outlet_id')
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
 
+        if outlet_id:
+            outlet = get_model_object(Outlet, 'id', outlet_id)
+            batch_info.outlet = outlet
         if products:
             batch_info.product.clear()
             for product_id in products:
-                product_instance = get_model_object(Product, 'id', product_id)
-                generate_reorder_points_and_max(product_instance)
-                batch_info.product.add(product_instance)
-        if outlet_id:
-            outlet_instance = get_model_object(Outlet, 'id', outlet_id)
-            batch_info.outlet = outlet_instance
+                product = get_model_object(Product, 'id', product_id)
+                generate_reorder_points_and_max(product)
+                batch_info.product.add(product)
         if supplier_id:
             supplier_instance = get_model_object(Suppliers, 'supplier_id',
                                                  supplier_id)
@@ -134,7 +133,6 @@ class UpdateBatchInfo(graphene.Mutation):
             f'Batch with number {batch_info.batch_no} '
             f'successfully updated'
         ]
-
         return UpdateBatchInfo(message=message, batch_info=batch_info)
 
 

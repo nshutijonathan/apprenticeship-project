@@ -20,7 +20,7 @@ from healthid.utils.app_utils.query_objects import GetObjectList
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.activate_deactivate_product import \
     activate_deactivate_products
-from healthid.utils.product_utils.product import set_attributes
+from healthid.utils.product_utils.product import set_product_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
 
@@ -39,28 +39,26 @@ class CreateProduct(graphene.Mutation):
     product = graphene.Field(ProductType)
 
     class Arguments:
-        product_category_id = graphene.Int()
         product_name = graphene.String(required=True)
-        measurement_unit_id = graphene.Int(required=True)
-        sku_number = graphene.Int()
         description = graphene.String(required=True)
+        product_category_id = graphene.Int(required=True)
         brand = graphene.String(required=True)
         manufacturer = graphene.String(required=True)
-        vat_status = graphene.String(required=True)
-        sales_price = graphene.Float()
-        nearest_expiry_date = graphene.String()
+        measurement_unit_id = graphene.Int(required=True)
         preferred_supplier_id = graphene.String()
         backup_supplier_id = graphene.String()
-        tags = graphene.List(graphene.String)
-        unit_cost = graphene.Float()
+        vat_status = graphene.Boolean(required=True)
+        loyalty_weight = graphene.Int(required=True)
         image = graphene.String()
-        loyalty_weight = graphene.Int()
+        tags = graphene.List(graphene.String)
 
     @login_required
     def mutate(self, info, **kwargs):
         product = Product()
-        output = set_attributes(product, **kwargs)
-        return CreateProduct(product=output)
+        product.markup = get_model_object(
+            ProductCategory, 'id', kwargs.get('product_category_id')).markup
+        product = set_product_attributes(product, **kwargs)
+        return CreateProduct(product=product)
 
 
 class UpdateProduct(graphene.Mutation):
@@ -72,21 +70,23 @@ class UpdateProduct(graphene.Mutation):
 
     class Arguments:
         id = graphene.Int(required=True)
-        product_category_id = graphene.Int()
         product_name = graphene.String()
-        measurement_unit_id = graphene.Int()
-        sku_number = graphene.Int()
         description = graphene.String()
+        product_category_id = graphene.Int()
         brand = graphene.String()
         manufacturer = graphene.String()
-        vat_status = graphene.String()
-        sales_price = graphene.Int()
-        nearest_expiry_date = graphene.String()
+        measurement_unit_id = graphene.Int()
         preferred_supplier_id = graphene.String()
         backup_supplier_id = graphene.String()
-        tags = graphene.List(graphene.String)
-        image = graphene.String()
+        vat_status = graphene.Boolean()
         loyalty_weight = graphene.Int()
+        markup = graphene.Int()
+        image = graphene.String()
+        tags = graphene.List(graphene.String)
+        sku_number = graphene.Int()
+        auto_price = graphene.Boolean()
+        sales_price = graphene.Int()
+        nearest_expiry_date = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -96,14 +96,14 @@ class UpdateProduct(graphene.Mutation):
         if product.is_approved:
             proposed_edit = product
             proposed_edit.id = None
-            output = set_attributes(proposed_edit, **kwargs)
+            output = set_product_attributes(proposed_edit, **kwargs)
             output.parent_id = kwargs.get('id')
             output.is_approved = False
             output.user = user
             output.save()
             message = 'Proposed update pending approval'
             return UpdateProduct(product=output, message=message)
-        output = set_attributes(product, **kwargs)
+        output = set_product_attributes(product, **kwargs)
         message = 'Product successfully updated'
         return UpdateProduct(product=output, message=message)
 

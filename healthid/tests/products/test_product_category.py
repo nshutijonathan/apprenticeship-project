@@ -15,7 +15,7 @@ class TestProductCategory(BaseConfiguration):
             self.access_token_master,
             create_product_category.format(outlet_id=self.outlet.id)
         )
-        self.assertIn('Product Category created succesfully',
+        self.assertIn('Product Category created successfully',
                       response['data']['createProductCategory']['message'])
         self.assertIn('data', response)
         self.assertNotIn('errors', response)

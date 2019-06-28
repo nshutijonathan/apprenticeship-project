@@ -9,12 +9,11 @@ create_product = '''
                 description :"first treatment people try for mild to moderate pain",  # noqa E501
                 brand :"ventolinllke",
                 manufacturer:"Harmon Northrop",
-                vatStatus:"VAT",
-                salesPrice :1000,
-                unitCost:10.65,
+                vatStatus:true,
+                loyaltyWeight: 1
                 preferredSupplierId :"{supplier_id}",
                 backupSupplierId:"{backup_id}",
-                tags :"painkillers"
+                tags :["painkillers"]
                     ){{
                 product{{
                     id
@@ -22,8 +21,6 @@ create_product = '''
                     salesPrice
                     productName
                     vatStatus
-                    nearestExpiryDate
-                    skuNumber
                 }}
             }}
             }}
@@ -69,9 +66,8 @@ mutation {{
         description :"first treatment people try for mild to moderate pain",
         brand :"ventolinllke mklllll",
         manufacturer:"vbn",
-        vatStatus:"VAT",
-        salesPrice :1000,
-        unitCost:10.2,
+        vatStatus: true,
+        loyaltyWeight: 1
         preferredSupplierId : "{0}",
         backupSupplierId:"{0}",
         tags:["painkillers","panadol"]
@@ -145,7 +141,7 @@ def create_product_2(supplier_id, backup_id, user):
         description='first treatment people try',
         brand='ventolinllke',
         manufacturer="Harmon Northrop",
-        vat_status="VAT",
+        vat_status=True,
         sales_price=1000,
         preferred_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
@@ -163,7 +159,7 @@ def update_product(product_id, product_name):
                     description :"forever younger",
                     brand :"ventolinllke",
                     manufacturer:"Harmon",
-                    vatStatus:"VAT",
+                    vatStatus:true,
                     salesPrice :1400,
                     tags :["painkillers","headache"]
                 ){{
@@ -295,10 +291,15 @@ create_product_category = '''
     createProductCategory(
         name:"panadol",
         outletId: {outlet_id}
+        isVatApplicable: true
+        loyaltyWeight: 1
+        markup: 20
         ){{
         productCategory{{
             id
             name
+            isVatApplicable
+            markup
         }}
         message
         }}
@@ -309,8 +310,7 @@ edit_product_category = '''
     mutation {
     editProductCategory(
       id:6,
-        name:"panadolextra"
-
+      name:"panadolextra"
     ){
       productCategory{
         id

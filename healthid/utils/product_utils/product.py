@@ -4,23 +4,23 @@ from django.conf import settings
 from healthid.apps.products.models import Product
 
 
-def set_attributes(product, **kwargs):
-    tags = kwargs.get("tags")
-    kwargs.pop("tags")
+def set_product_attributes(product, **kwargs):
+    tags = kwargs.pop("tags", None)
     for (key, value) in kwargs.items():
-        if type(value) is str and value.strip() == "":
+        if isinstance(value, str) and value.strip() == "":
             raise GraphQLError("The {} field can't be empty".format(key))
         if key == 'id':
             continue
         setattr(product, key, value)
     with SaveContextManager(product, model=Product):
-        product.tags.set(*tags)
+        if tags is not None:
+            product.tags.set(*tags)
         return product
 
 
 def generate_reorder_points_and_max(product_instance):
     """
-        this fuction generates reorder points and reorder
+        this function generates reorder points and reorder
         max basing on the weekly average unit sales of a product
 
     """

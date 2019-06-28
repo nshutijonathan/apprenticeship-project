@@ -25,6 +25,8 @@ class ProductCategory(BaseModel):
     name = models.CharField(max_length=50, unique=True)
     amount_paid = models.PositiveIntegerField(default=100)
     loyalty_weight = models.PositiveIntegerField(default=0)
+    markup = models.PositiveIntegerField(default=25)
+    is_vat_applicable = models.BooleanField(default=False)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
 
 
@@ -43,12 +45,12 @@ class Product(BaseModel):
     product_name = models.CharField(max_length=244, unique=True)
     measurement_unit = models.ForeignKey(
         MeasurementUnit, on_delete=models.CASCADE)
-    sku_number = models.CharField(max_length=100, null=False)
+    sku_number = models.CharField(max_length=100, null=True)
     is_approved = models.BooleanField(default=False)
     description = models.CharField(max_length=150)
     brand = models.CharField(max_length=50)
     manufacturer = models.CharField(max_length=50)
-    vat_status = models.CharField(max_length=50)
+    vat_status = models.BooleanField(default=False)
     sales_price = models.DecimalField(
         max_digits=12, decimal_places=2, null=True)
     nearest_expiry_date = models.DateField(
@@ -63,11 +65,11 @@ class Product(BaseModel):
         related_name='product_creator')
     admin_comment = models.TextField(null=True)
     tags = TaggableManager()
-    markup = models.IntegerField(default=25)
+    markup = models.PositiveIntegerField(default=25)
     pre_tax_retail_price = models.DecimalField(
         max_digits=12, decimal_places=2, null=True)
     unit_cost = models.DecimalField(
-        max_digits=12, decimal_places=2, null=False)
+        max_digits=12, decimal_places=2, null=True)
     auto_price = models.BooleanField(default=False)
     loyalty_weight = models.IntegerField(default=0)
     parent = models.ForeignKey(

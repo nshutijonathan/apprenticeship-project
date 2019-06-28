@@ -1,6 +1,7 @@
 import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
+from django.forms import model_to_dict
 from healthid.apps.products.models import ProductCategory
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
@@ -22,6 +23,8 @@ class CreateProductCategory(graphene.Mutation):
         outlet_id = graphene.Int(required=True)
         loyalty_weight = graphene.Int()
         amount_paid = graphene.Int()
+        markup = graphene.Int(required=True)
+        is_vat_applicable = graphene.Boolean(required=True)
 
     message = graphene.List(graphene.String)
 
@@ -30,29 +33,30 @@ class CreateProductCategory(graphene.Mutation):
     def mutate(self, info, **kwargs):
         name = kwargs.get('name')
         if name.strip() == "":
-            raise GraphQLError("This name field can't be empty")
+            raise GraphQLError("Product category name cannot be blank")
         check_user_belongs_to_outlet(info.context.user,
                                      kwargs.get('outlet_id'))
-
         product_category = ProductCategory(**kwargs)
         with SaveContextManager(product_category, model=ProductCategory):
-            message = [f'Product Category created succesfully']
+            message = ['Product Category created successfully']
             return CreateProductCategory(
                 message=message, product_category=product_category)
 
 
 class EditProductCategory(graphene.Mutation):
     """
-    update productcategory
+    Mutation to edit a Product Category
     """
     product_category = graphene.Field(ProductCategoryType)
     message = graphene.String()
 
     class Arguments:
+        id = graphene.Int(required=True)
         name = graphene.String()
-        id = graphene.Int()
         loyalty_weight = graphene.Int()
         amount_paid = graphene.Int()
+        markup = graphene.Int()
+        is_vat_applicable = graphene.Boolean()
 
     @login_required
     @user_permission('Operations Admin')
@@ -64,12 +68,21 @@ class EditProductCategory(graphene.Mutation):
         product_category = get_model_object(ProductCategory, 'id', id)
         check_user_belongs_to_outlet(info.context.user,
                                      product_category.outlet.id)
-        for(key, value) in kwargs.items():
-            setattr(product_category, key, value)
-        with SaveContextManager(product_category, model=ProductCategory):
-            message = 'Product category successfully updated'
+        # add fields with changed values to new dictionary
+        changed_fields = {
+            key: kwargs.get(key)
+            for key, value in model_to_dict(product_category).items()
+            if key in kwargs and value != kwargs.get(key)}
+        if not changed_fields:
             return EditProductCategory(
-                message=message, product_category=product_category)
+                message="Product category unchanged, nothing to edit.",
+                product_category=product_category)
+        for field, value in changed_fields.items():
+            setattr(product_category, field, value)
+        with SaveContextManager(product_category, model=ProductCategory):
+            return EditProductCategory(
+                message='Product Category successfully updated',
+                product_category=product_category)
 
 
 class DeleteProductCategory(graphene.Mutation):

@@ -35,7 +35,7 @@ class HandleCsvValidations(object):
                 description=row[3],
                 brand=row[4],
                 manufacturer=row[5],
-                vat_status=row[6],
+                vat_status=True if row[6].lower() == 'vat' else False,
                 preferred_supplier_id=supplier.id,
                 backup_supplier_id=backup_supplier.id,
                 unit_cost=10.34,
