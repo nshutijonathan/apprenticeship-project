@@ -18,7 +18,27 @@ mutation{{
   }}
 
 '''
+edit_order = '''
+mutation{{
+  editInitiatedOrder(
+    orderId:{order_id},
+    name:"Important order",
+    deliveryDate:"2019-05-30",
+    productAutofill: false,
+    supplierAutofill: false,
+    destinationOutletId: {outlet_id}
+  ){{
+  order{{
+      id
+      orderNumber
+      destinationOutlet{{
+        id
+      }}
+  }}
+  }}
+  }}
 
+'''
 suppliers_autofill = '''
 mutation{{
   addOrderDetails(

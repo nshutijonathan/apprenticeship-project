@@ -43,6 +43,35 @@ class InitiateOrder(graphene.Mutation):
             return InitiateOrder(order=order, success=success)
 
 
+class EditInitiateOrder(graphene.Mutation):
+    order = graphene.Field(OrderType)
+    success = graphene.List(graphene.String)
+    error = graphene.List(graphene.String)
+
+    class Arguments:
+        order_id = graphene.Int(required=True)
+        name = graphene.String()
+        delivery_date = graphene.Date()
+        product_autofill = graphene.Boolean()
+        supplier_autofill = graphene.Boolean()
+        destination_outlet_id = graphene.Int()
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        """
+        Mutation to edit initiated order
+        """
+        order_id = kwargs['order_id']
+        order = get_model_object(Order, 'id', order_id)
+
+        for(key, value) in kwargs.items():
+            setattr(order, key, value)
+
+        with SaveContextManager(order) as order:
+            success = 'Order Edited Successfully!'
+            return InitiateOrder(order=order, success=success)
+
+
 class AddOrderDetails(graphene.Mutation):
     class Arguments:
         order_id = graphene.Int(required=True)
@@ -119,3 +148,4 @@ class Mutation(graphene.ObjectType):
     initiate_order = InitiateOrder.Field()
     add_order_details = AddOrderDetails.Field()
     approve_order = ApproveOrder.Field()
+    edit_initiated_order = EditInitiateOrder.Field()

@@ -151,7 +151,7 @@ class CreateSale(graphene.Mutation):
         new_sale = Sale()
         sale = new_sale.create_sale(info=info, **kwargs)
         return CreateSale(sale=sale,
-                          message='Sales was created successfully')
+                          message='Sale was created successfully')
 
 
 class Mutation(graphene.ObjectType):

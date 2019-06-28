@@ -118,4 +118,4 @@ class TestCreateSale(BaseConfiguration):
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertEqual(response['data']['createSale']['message'],
-                         "Sales was created successfully")
+                         "Sale was created successfully")
