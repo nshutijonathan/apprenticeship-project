@@ -13,7 +13,7 @@ class TestAddUser(BaseConfiguration):
         test user creation
         """
         email = 'test@gmail.com'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         user_data = {
             'email': email,
             'mobileNumber': mobile_number,
@@ -34,7 +34,7 @@ class TestAddUser(BaseConfiguration):
         email = 'newemail@test.com'
         firstname = 'newfirstname'
         job_title = 'Supervisor'
-        mobile_number = '+256 754434483'
+        mobile_number = '+256754434483'
         user_id = self.user.id
         user_data = {
             'firstname': firstname,
@@ -60,7 +60,7 @@ class TestAddUser(BaseConfiguration):
         test wrong email
         """
         email = 'test@gmail'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         user_data = {
             'email': email,
             'mobileNumber': mobile_number,
@@ -78,7 +78,7 @@ class TestAddUser(BaseConfiguration):
         test wrong mobile_number
         """
         email = 'test@gmail.com'
-        mobile_number = '+256 754434487aer'
+        mobile_number = '+256754'
         user_data = {
             'email': email,
             'mobileNumber': mobile_number,
@@ -89,13 +89,13 @@ class TestAddUser(BaseConfiguration):
 
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        self.assertIn("Please input a valid mobile number",
+        self.assertIn("Mobile number must have a 9-15 digits (ex. +2346787646)",
                       resp['errors'][0]['message'])
 
     def test_existing_email(self):
         # test if the email already exists
         email = 'john.doe@gmail.com'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         user_data = {
             'email': email,
             'mobileNumber': mobile_number,
@@ -114,7 +114,7 @@ class TestAddUser(BaseConfiguration):
         test user creation
         """
         email = 'test@gmail.com'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         user_data = {
             'email': email,
             'mobileNumber': mobile_number,
@@ -133,7 +133,7 @@ class TestAddUser(BaseConfiguration):
         test user creation
         """
         email = 'test@gmail.com'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         outlet_id = '12121212'
         user_data = {
             'email': email,
@@ -153,7 +153,7 @@ class TestAddUser(BaseConfiguration):
         test user creation
         """
         email = 'test@gmail.com'
-        mobile_number = '+256 754434487'
+        mobile_number = '+256754434487'
         role_id = '12121212'
         user_data = {
             'email': email,

@@ -52,7 +52,7 @@ class TestCustomerProfileEdit(BaseConfiguration):
             self.access_token, edit_customer_basic_profile(customer_data))
 
         message = response["errors"][0]["message"]
-        expected_message = "Please input a valid mobile number"
+        expected_message = "Mobile number must have a 9-15 digits (ex. +2346787646)"
 
         self.assertEqual(expected_message, message)
         self.assertEqual(None, response["data"]["editCustomerBasicProfile"])

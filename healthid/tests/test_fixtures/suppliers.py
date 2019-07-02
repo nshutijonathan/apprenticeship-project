@@ -3,7 +3,7 @@ supplier_mutation = '''
             addSupplier(input:{
                 name: "shadik.",
                 email: "email@ntale.com",
-                mobileNumber:"0702260027",
+                mobileNumber:"+256702260027",
                 addressLine1:"address",
                 addressLine2:"addressline2",
                 lga: "lga",
@@ -71,7 +71,7 @@ edit_request = '''
             id: "{supplier_id}"
             email: "email9@email.com"
             name: "shack",
-            mobileNumber:"0702260027",
+            mobileNumber:"+256702260027",
             addressLine1:"address",
             addressLine2:"addressline2",
             lga: "lga",
@@ -99,7 +99,7 @@ edit_proposal = '''
           editProposal(
             id: "{proposal_id}"
             name: "sean2",
-            mobileNumber:"0702260025",
+            mobileNumber:"+256702260027",
             addressLine1:"DreamVille",
             addressLine2:"addressline2",
             lga: "lga",

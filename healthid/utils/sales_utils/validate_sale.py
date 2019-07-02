@@ -72,7 +72,7 @@ class SalesValidator:
 
     def check_product_discount(self):
         message = "Discount with ids '{}' can't have negative values"
-        is_valid = [discount >= 1 and discount <=
+        is_valid = [discount >= 0 and discount <=
                     100 for discount in self.product_discounts]
         if not all(is_valid):
             invalid_quantities = list(
@@ -94,9 +94,9 @@ class SalesValidator:
             raise GraphQLError(
                 "Amount should be greater than 1")
 
-        if change_due < 1:
+        if change_due < 0:
             raise GraphQLError(
-                "The Change due should be greater than 1")
+                "The Change due should not be less than 0")
 
         if paid_amount < 1:
             raise GraphQLError(

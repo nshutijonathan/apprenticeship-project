@@ -38,7 +38,7 @@ class TestQueryCustomer(BaseConfiguration):
             response['data']['customer'][0]['lastName'])
 
     def test_query_customer_using_mobile_number(self):
-        mobile_number = '+256 788088831'
+        mobile_number = '+256788088831'
         first_name = 'Habib'
         response = self.query_with_token(
             self.access_token, customer_number_query.format(

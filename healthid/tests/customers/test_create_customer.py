@@ -53,7 +53,7 @@ class TestCustomerCreation(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_customer.format(**self.create_customer_data))
-        expected_message = "Please input a valid mobile number"
+        expected_message = "Mobile number must have a 9-15 digits (ex. +2346787646)"
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])

@@ -14,7 +14,7 @@ create_customer = '''
             addressLine2:"Oshodi 1",
             emergencyContactName:"Moses",
             emergencyContactEmail:"{emergency_contact_email}",
-            emergencyContactNumber:"+256 788088831"
+            emergencyContactNumber:"+256788088831"
         ){{
             message
         customer{{

@@ -11,7 +11,7 @@ class UserUpdateTestCase(TestCase):
         self.user = User.objects.create_user(
             email="shadik.ntale@andela.com",
             password="Echo-pwned-01",
-            mobile_number="0702260027")
+            mobile_number="+256770777777")
         self.user.is_active = True
         self.user.save()
         self._client.login(

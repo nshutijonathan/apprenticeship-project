@@ -9,7 +9,7 @@ def create_outlet(business_id, city_id, type_id):
                     addressLine2: "Nakawa, Kampala",
                     lga: "Nakawa",
                     cityId: {city_id},
-                    phoneNumber: "2567803201607",
+                    phoneNumber: "+2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
                     outlet{{name, id}}
@@ -27,7 +27,7 @@ def update_outlet(outlet_id, outlet_name):
                     addressLine1: "10/11 Nagera",
                     addressLine2: "Nakawa, Kampala",
                     lga: "Nakawa",
-                    phoneNumber: "2567803201607",
+                    phoneNumber: "+2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
                     outlet{{name, prefixId}}

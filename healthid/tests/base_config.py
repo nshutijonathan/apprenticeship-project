@@ -70,28 +70,28 @@ class BaseConfiguration(TestCase):
         """
         self.new_user = {
             "email": "john.doe@gmail.com",
-            "mobile_number": "+256 770777777",
+            "mobile_number": "+256770777777",
             "password": "Password123"
         }
         self.stock_count_user1 = {
             "email": "arkafuuma@gmail.com",
-            "mobile_number": "+256 470777777",
+            "mobile_number": "+256470777777",
             "password": "Password123"
         }
         self.stock_count_user2 = {
             "email": "arkafuuma2@gmail.com",
-            "mobile_number": "+256 570777777",
+            "mobile_number": "+256570777777",
             "password": "Password123"
         }
         self.master_admin = {
             "email": "you@example.com",
-            "mobile_number": "+256 770777797",
+            "mobile_number": "+256770777797",
             "password": "Password123"
         }
 
         self.second_master_admin = {
             "email": "you.second@example.com",
-            "mobile_number": "+256 770777798",
+            "mobile_number": "+256770777798",
             "password": "Password1234"
         }
 
@@ -118,7 +118,7 @@ class BaseConfiguration(TestCase):
         self.outlet = {
             'name': 'bingo',
             'address_line1': "wandegya",
-            'phone_number': "254745345342",
+            'phone_number': "+254745345342",
             'address_line2': "Central, Kla",
             'lga': "KCCA",
             'date_launched': "1995-10-20"
@@ -126,7 +126,7 @@ class BaseConfiguration(TestCase):
         self.second_outlet = {
             'name': 'bingow',
             'address_line1': "wandegya ku bitaala",
-            'phone_number': "254745345341",
+            'phone_number': "+254745345341",
             'address_line2': "Central, Kla",
             'lga': "KCCA",
             'date_launched': "1995-10-20"
@@ -171,8 +171,8 @@ class BaseConfiguration(TestCase):
             "email": "talktohabib@gmail.com",
             "city_id": self.outlet_kind['city_id'],
             "country_id": self.outlet_kind['country_id'],
-            "primary_mobile_number": "+256 788088831",
-            "secondary_mobile_number": "+256 788088831",
+            "primary_mobile_number": "+256788088831",
+            "secondary_mobile_number": "+256788088831",
             "loyalty_member": "true",
             "emergency_contact_email": "talktohabi2@gmail.com"
         }
@@ -183,15 +183,15 @@ class BaseConfiguration(TestCase):
             "email": "dany.stomborn@got.com",
             "city_id": self.outlet_kind['city_id'],
             "country_id": self.outlet_kind['country_id'],
-            "primary_mobile_number": "+234 788088831",
-            "secondary_mobile_number": "+234 788088832",
+            "primary_mobile_number": "+234788088831",
+            "secondary_mobile_number": "+234788088832",
             "loyalty_member": True,
             "local_government_area": "Heming way",
             "address_line_1": "20, king's Landing",
             "address_line_2": "Esos lane",
             "emergency_contact_name": "Frodo",
             "emergency_contact_email": "saruman@lotr.world",
-            "emergency_contact_number": "+234 897090878 "
+            "emergency_contact_number": "+234897090878 "
         })
         self.invoice_data = {
             "outlet_id": self.outlet.id,
@@ -303,7 +303,7 @@ class BaseConfiguration(TestCase):
         return Suppliers.objects.create(
             name='Sport Direct',
             email='sportdirect@mail.com',
-            mobile_number='254745345342',
+            mobile_number='+254745345342',
             city=city,
             tier=tier,
             payment_terms=payment_terms,

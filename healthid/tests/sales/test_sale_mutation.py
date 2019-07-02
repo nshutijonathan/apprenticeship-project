@@ -65,7 +65,7 @@ class TestCreateSale(BaseConfiguration):
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "The Change due should be greater than 1")
+                         "The Change due should not be less than 0")
 
     def test_invalid_paid_amount(self):
         self.sales_data["paid_amount"] = -590

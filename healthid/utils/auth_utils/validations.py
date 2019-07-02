@@ -17,8 +17,8 @@ class ValidateUser:
 
     def validate_mobile_number(self, mobile_number):
         mobile_number = mobile_number.strip()
-        if re.match(r'^\+?\(?\d{3}\)?[-. ]?\d{9}$', mobile_number) is None:
-            raise GraphQLError('Please input a valid mobile number')
+        if re.match(r'^\+\d{9,15}$', mobile_number) is None:
+            raise GraphQLError('Mobile number must have a 9-15 digits (ex. +2346787646)')
         return mobile_number
 
     def validate_password(self, password):

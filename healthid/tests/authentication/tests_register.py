@@ -16,7 +16,7 @@ class TestRegisterMutation(TestCase):
         self.user_data = {
             'password': 'Password12',
             'email': 'healthid@gmail.com',
-            'mobileNumber': +256788088831
+            'mobileNumber': "+256788088831"
         }
 
     def query(self, query: str):
