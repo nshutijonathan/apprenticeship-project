@@ -89,8 +89,9 @@ class TestAddUser(BaseConfiguration):
 
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        self.assertIn("Mobile number must have a 9-15 digits (ex. +2346787646)",
-                      resp['errors'][0]['message'])
+        self.assertIn(
+            "Mobile number must have a 9-15 digits (ex. +2346787646)",
+            resp['errors'][0]['message'])
 
     def test_existing_email(self):
         # test if the email already exists

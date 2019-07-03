@@ -35,9 +35,4 @@ class Migration(migrations.Migration):
             name='unit_cost',
             field=models.DecimalField(decimal_places=2, max_digits=12, null=True),
         ),
-        migrations.AlterField(
-            model_name='product',
-            name='vat_status',
-            field=models.BooleanField(default=False),
-        ),
     ]
