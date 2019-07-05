@@ -225,3 +225,25 @@ mutation {{
     message
   }}
 }}'''
+
+
+def query_sales_history(outlet_id):
+    return (f'''
+            query {{
+                outletSalesHistory(outletId: {outlet_id}){{
+                    id
+                    discountTotal
+                }}
+            }}
+    ''')
+
+
+def query_sale_history(sale_id):
+    return (f'''
+            query {{
+                saleHistory(saleId: {sale_id}){{
+                    id
+                    changeDue
+                }}
+            }}
+    ''')

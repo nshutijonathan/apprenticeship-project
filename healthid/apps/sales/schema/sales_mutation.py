@@ -157,7 +157,7 @@ class CreateSale(graphene.Mutation):
         receipt = new_receipt.create_receipt(sale, kwargs.get('outlet_id'))
         return CreateSale(sale=sale,
                           receipt=receipt,
-                          message='Sales was created successfully')
+                          message='Sale was created successfully')
 
 
 class Mutation(graphene.ObjectType):

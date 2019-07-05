@@ -1,7 +1,9 @@
 
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import create_customer
-from healthid.tests.test_fixtures.sales import create_sale
+from healthid.tests.test_fixtures.sales import (create_sale,
+                                                query_sales_history,
+                                                query_sale_history)
 from healthid.utils.sales_utils.validators import remove_quotes
 
 
@@ -14,7 +16,7 @@ class TestCreateSale(BaseConfiguration):
         self.customer_id = response["data"]["createCustomer"]['customer']['id']
 
         self.product_details = {"productId": self.product.id,
-                                "quantity": 4, "discount": 12, "price": 21}
+                                "quantity": 4, "discount": 0, "price": 21}
         self.sales_data = {
             "discount_total": 48.5,
             "amount_to_pay": 20,
@@ -91,7 +93,7 @@ class TestCreateSale(BaseConfiguration):
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "Discount with ids '{}' can't have negative values"
+                         "Products with ids '{}' can't have negative discount"
                          .format(self.product.id))
 
     def test_less_stock_than_actual_sale(self):
@@ -119,4 +121,23 @@ class TestCreateSale(BaseConfiguration):
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertEqual(response['data']['createSale']['message'],
-                         "Sales was created successfully")
+                         "Sale was created successfully")
+
+    def test_fetch_sales_history(self):
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        response = self.query_with_token(
+            self.access_token_master, query_sales_history(self.outlet.id))
+        self.assertEqual(self.sales_data['discount_total'], response['data']
+                         ['outletSalesHistory'][0]['discountTotal'])
+
+    def test_fetch_sale_history(self):
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        sale_id = response['data']['createSale']['sale']['id']
+        response = self.query_with_token(
+            self.access_token_master, query_sale_history(sale_id))
+        self.assertEqual(sale_id, response['data']['saleHistory']['id'])
+
+        self.assertEqual(self.sales_data['change_due'], response['data']
+                         ['saleHistory']['changeDue'])

@@ -79,7 +79,6 @@ class CountryTestCase(BaseConfiguration):
         self.assertIn('Country successfully updated',
                       response['data']['editCountry']['success'])
 
-    # test update country with name that already exists
     def test_update_country_name_that_exists(self):
         response = self.create_country('Kenya')
         response = self.create_country('uganda')

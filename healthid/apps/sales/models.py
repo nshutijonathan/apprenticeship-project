@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.db.models.signals import pre_save
 
 from healthid.apps.authentication.models import User
@@ -196,6 +196,26 @@ class Sale(BaseModel):
                     customer.save()
                 sale.save()
         return sale
+
+    def sales_history(self, outlet_id=None, search=None, first=None,
+                      skip=None):
+        sales = Sale.objects.filter(outlet_id=outlet_id)
+
+        if search:
+            search_keys = (
+                Q(customer__first_name__icontains=search) |
+                Q(customer__last_name__icontains=search) |
+                Q(customer__email__icontains=search) |
+                Q(saledetail__product__product_name__icontains=search) |
+                Q(notes__icontains=search)
+            )
+            sales = sales.filter(search_keys)
+        if skip:
+            sales = sales[skip:]
+
+        if first:
+            sales = sales[:first]
+        return sales
 
 
 class SaleDetail(BaseModel):
