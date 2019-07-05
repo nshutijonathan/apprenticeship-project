@@ -27,23 +27,6 @@ class Order(BaseModel):
     delivery_date = models.DateField()
     sent_status = models.BooleanField(default=False)
     closed = models.BooleanField(default=False)
-    approved = models.BooleanField(default=False)
-    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
-                                    related_name="approved_orders",
-                                    on_delete=models.CASCADE)
-
-    def approve_order(self, user):
-        """Approve an Order
-
-        Args:
-            user (:obj) : user instance
-
-        Returns:
-            self (:obj) : order instance
-        """
-        self.approved_by = user
-        self.approved = True
-        return self
 
 
 class OrderDetails(BaseModel):
@@ -77,6 +60,10 @@ class SupplierOrderDetails(BaseModel):
     additional_notes = models.CharField(max_length=500, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
+                                    related_name="approved_supplier_orders",
+                                    on_delete=models.CASCADE)
 
     @property
     def get_order_details(self):
@@ -140,3 +127,16 @@ class SupplierOrderDetails(BaseModel):
         """
         return self.delivery_due_date + \
             timedelta(days=self.supplier.credit_days)
+
+    def approve(self, user):
+        """Approve the Supplier Order Details
+
+        Args:
+            user (:obj) : user instance
+
+        Returns:
+            self (:obj) : The supplier order details instance
+        """
+        self.approved_by = user
+        self.approved = True
+        return self

@@ -163,13 +163,13 @@ query {{
 }}
 '''
 
-approve_order = '''
+approve_supplier_order = '''
 mutation{{
-  approveOrder(orderId:{order_id}){{
+  approveSupplierOrder(additionalNotes: "{additional_notes}", orderId: {order_id}, supplierOrderIds: {supplier_order_ids}){{
     message
-    order {{
+    supplierOrderDetails {{
       id
-      orderNumber
+      approved
     }}
   }}
   }}

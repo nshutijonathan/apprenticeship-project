@@ -1,7 +1,8 @@
 import graphene
 from graphql_jwt.decorators import login_required
+from graphql.error import GraphQLError
 
-from healthid.apps.orders.models.orders import Order
+from healthid.apps.orders.models.orders import Order, SupplierOrderDetails
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.orders_utils.add_order_details import add_order_details
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -125,27 +126,71 @@ class AddOrderDetails(graphene.Mutation):
                    suppliers_order_details=suppliers_order_details)
 
 
-class ApproveOrder(graphene.Mutation):
+class ApproveSupplierOrder(graphene.Mutation):
+    """Mutation to approve one or multiple supplier order details."""
     message = graphene.Field(graphene.String)
-    order = graphene.Field(OrderType)
+    supplier_order_details = graphene.List(SupplierOrderDetailsType)
 
     class Arguments:
         order_id = graphene.Int(required=True)
+        supplier_order_ids = graphene.List(graphene.String)
+        additional_notes = graphene.String()
 
     @login_required
     @user_permission('Manager', 'Admin')
     def mutate(self, info, **kwargs):
+        """Approve one or multple supplier orders
+
+        Receive a list of supplier order ids and order id.
+        Make sure the supplier order details are valid and are linked to the
+        recieved order.
+        Approve the supplier by supplying the approver.
+
+        Args:
+            order_id (str): The id for the order
+            supplier_order_ids (list: str): A list if supplier order ids
+            addtional_notes (str): Additional notes
+
+        Raises:
+            GraphQLError: if supplier orders ids do not suppliers ids in the
+                database
+
+        Returns:
+            supplier_order_details: A list of supplier order details
+        """
         order_id = kwargs.get('order_id')
+        additional_notes = kwargs.get('additional_notes')
+        supplier_order_ids = kwargs.get('supplier_order_ids')
+
         order = get_model_object(Order, 'id', order_id)
+
+        supplier_orders = SupplierOrderDetails.objects.filter(
+            id__in=supplier_order_ids,
+            order=order)
+
+        if not supplier_orders:
+            raise GraphQLError("No Supplier Order Details found matching"
+                               " provided ids and order")
+
         user = info.context.user
-        order.approve_order(user)
-        with SaveContextManager(order, model=Order) as order:
-            message = "Successfully approved order"
-            return ApproveOrder(message=message, order=order)
+        no_of_orders = len(supplier_orders)
+
+        for supplier_order in supplier_orders:
+            supplier_order.approve(user)
+            if no_of_orders == 1:
+                supplier_order.additional_notes = additional_notes
+
+            with SaveContextManager(supplier_order,
+                                    model=SupplierOrderDetails):
+                pass
+
+        message = "Successfully approved supplier orders"
+        return ApproveSupplierOrder(message=message,
+                                    supplier_order_details=supplier_orders)
 
 
 class Mutation(graphene.ObjectType):
     initiate_order = InitiateOrder.Field()
     add_order_details = AddOrderDetails.Field()
-    approve_order = ApproveOrder.Field()
+    approve_supplier_order = ApproveSupplierOrder.Field()
     edit_initiated_order = EditInitiateOrder.Field()
