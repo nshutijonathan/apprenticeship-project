@@ -36,6 +36,7 @@ class CustomerProfile(models.Model):
     emergency_contact_number = models.CharField(max_length=100, null=True)
     emergency_contact_email = models.EmailField(max_length=100, null=True)
     loyalty_member = models.BooleanField(default=False, null=True)
+    loyalty_points = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True

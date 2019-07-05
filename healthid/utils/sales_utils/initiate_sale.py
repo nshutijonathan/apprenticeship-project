@@ -1,3 +1,6 @@
+import math
+
+
 def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
     """
     This function create a sale detail by looping through all sold
@@ -12,7 +15,11 @@ def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
     """
     products = zip(sold_product_instances, sold_products)
     sale_details = []
+    sold_products_loyalty_points = []
     for sold_product, product_detail in products:
+        product_category = sold_product.product_category
+        loyalty_points = (product_detail.price / product_category.amount_paid) * sold_product.loyalty_weight  # noqa
+        sold_products_loyalty_points.append(math.floor(loyalty_points))
         batches = sold_product.batch_info.filter(
             batch_quantities__quantity_received__gt=0).order_by('expiry_date')
         product_quantity = product_detail.quantity
@@ -38,3 +45,4 @@ def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
         sale_details.append(detail)
 
     sale_detail.objects.bulk_create(sale_details)
+    return sum(sold_products_loyalty_points)

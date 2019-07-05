@@ -189,7 +189,8 @@
             "preferred_supplier": 1,
             "backup_supplier": 1,
             "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00
+            "unit_cost": 10.00,
+            "loyalty_weight": 1
         }
     },
     {
@@ -210,7 +211,8 @@
             "preferred_supplier": 1,
             "backup_supplier": 1,
             "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00
+            "unit_cost": 10.00,
+            "loyalty_weight": 2
         }
     },
     {
@@ -231,7 +233,8 @@
             "preferred_supplier": 1,
             "backup_supplier": 1,
             "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00
+            "unit_cost": 10.00,
+            "loyalty_weight": 3
         }
     },
     {
@@ -274,7 +277,8 @@
             "product": 1,
             "batch": "123456789",
             "proposed_by": "aul5xrp73",
-            "quantity_received": 10
+            "quantity_received": 10,
+            "is_approved": true
         }
     },
     {
@@ -284,7 +288,8 @@
             "product": 2,
             "batch": "098765432",
             "proposed_by": "aul5xrp73",
-            "quantity_received": 15
+            "quantity_received": 15,
+            "is_approved": true
         }
     },
     {
@@ -294,7 +299,29 @@
             "product": 3,
             "batch": "345678912",
             "proposed_by": "aul5xrp73",
-            "quantity_received": 20
+            "quantity_received": 20,
+            "is_approved": true
+        }
+    },
+    {
+        "model": "profiles.Profile",
+        "pk": "1",
+        "fields": {
+            "loyalty_member": true
+        }
+    },
+    {
+        "model": "profiles.Profile",
+        "pk": "2",
+        "fields": {
+            "loyalty_member": true
+        }
+    },
+    {
+        "model": "profiles.Profile",
+        "pk": "3",
+        "fields": {
+            "loyalty_member": true
         }
     }
 ]

@@ -1,8 +1,8 @@
 import graphene
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.receipts.models import FieldSet
-from healthid.apps.receipts.schema.receipt_schema import FieldSetType
+from healthid.apps.receipts.models import Receipt
+from healthid.apps.receipts.schema.receipt_schema import ReceiptType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -12,7 +12,7 @@ class CreateFieldSet(graphene.Mutation):
     """
     Creates fields for template
     """
-    field_set = graphene.Field(FieldSetType)
+    field_set = graphene.Field(ReceiptType)
 
     class Arguments:
         cashier = graphene.String()
@@ -30,14 +30,15 @@ class CreateFieldSet(graphene.Mutation):
         barcode = graphene.String()
         footer = graphene.String()
         receipt_template_id = graphene.String()
+        sale_id = graphene.Int()
 
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
-        field_set = FieldSet()
+        field_set = Receipt()
         for(key, value) in kwargs.items():
             setattr(field_set, key, value)
-        with SaveContextManager(field_set, model=FieldSet) as field_set:
+        with SaveContextManager(field_set, model=Receipt) as field_set:
             return CreateFieldSet(field_set=field_set)
 
 
@@ -45,7 +46,7 @@ class UpdateFieldSet(graphene.Mutation):
     """
     Updates a receipt template
     """
-    field_set = graphene.Field(FieldSetType)
+    field_set = graphene.Field(ReceiptType)
 
     class Arguments:
         id = graphene.String()
@@ -68,7 +69,7 @@ class UpdateFieldSet(graphene.Mutation):
     @user_permission()
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
-        field_set = get_model_object(FieldSet, 'id', id)
+        field_set = get_model_object(Receipt, 'id', id)
         update_values = []
         for(key, value) in kwargs.items():
             setattr(field_set, key, value)
@@ -93,6 +94,6 @@ class DeleteFieldSet(graphene.Mutation):
     @user_permission()
     def mutate(self, info, id):
         user = info.context.user
-        field_set = get_model_object(FieldSet, 'id', id)
+        field_set = get_model_object(Receipt, 'id', id)
         field_set.delete(user)
         return DeleteFieldSet(success="FieldSet has been deleted")

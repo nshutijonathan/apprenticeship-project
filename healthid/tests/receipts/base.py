@@ -1,5 +1,6 @@
 from healthid.tests.base_config import BaseConfiguration
-from healthid.apps.receipts.models import ReceiptTemplate, FieldSet
+from healthid.apps.receipts.models import ReceiptTemplate, Receipt
+from healthid.apps.sales.models import Sale
 
 
 class ReceiptBaseCase(BaseConfiguration):
@@ -12,14 +13,10 @@ class ReceiptBaseCase(BaseConfiguration):
             receipt_no=True)
 
     def create_fieldset(self):
+        sale = Sale.objects.create(
+            sales_person=self.user, outlet=self.outlet, amount_to_pay=10.00,
+            sub_total=10.00, paid_amount=10.00, change_due=0.00,
+            discount_total=10.00)
         receipt_template = self.create_receipt_template()
-        return FieldSet.objects.create(
-            cashier="Cashier is", discount_total="Discounted by",
-            total_tax="A tax of", subtotal="subtotal of",
-            purchase_total="total", change_due="your change",
-            loyalty="loyalty yes", loyalty_earned="new points",
-            loyalty_balance="total points", amount_to_pay="pay",
-            receipt="your receipt", receipt_no="no",
-            footer="Thanks for coming",
-            receipt_template_id=receipt_template.id,
-        )
+        return Receipt.objects.create(
+            receipt_template_id=receipt_template.id, sale=sale)

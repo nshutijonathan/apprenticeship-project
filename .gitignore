@@ -12,3 +12,4 @@ htmlcov/
 .env
 db.sqlite3
 .tox
+receipt.png

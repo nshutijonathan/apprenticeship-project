@@ -17,6 +17,7 @@ from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.preference.models import Timezone, OutletPreference
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
+from healthid.apps.receipts.models import ReceiptTemplate
 
 
 class BaseConfiguration(TestCase):
@@ -394,3 +395,6 @@ class BaseConfiguration(TestCase):
         customer_data["loyalty_member"] = str(
             customer_data["loyalty_member"]).lower()
         return customer_data
+
+    def create_receipt_template(self):
+        return ReceiptTemplate.objects.create(outlet=self.outlet)

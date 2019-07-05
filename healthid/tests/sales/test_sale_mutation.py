@@ -115,7 +115,8 @@ class TestCreateSale(BaseConfiguration):
                          .format(self.product.id))
 
     def test_create_sale_successfully(self):
+        self.create_receipt_template()
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertEqual(response['data']['createSale']['message'],
-                         "Sale was created successfully")
+                         "Sales was created successfully")

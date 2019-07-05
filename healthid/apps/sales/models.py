@@ -130,6 +130,7 @@ class Sale(BaseModel):
     change_due = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=35, default="cash")
     notes = models.TextField(blank=True, null=True)
+    loyalty_earned = models.PositiveIntegerField(default=0)
 
     def _validate_sales_details(self, **kwargs):
         """
@@ -184,12 +185,16 @@ class Sale(BaseModel):
                     notes=notes)
 
         with SaveContextManager(sale) as sale:
+            loyalty_points_earned = initiate_sale(
+                sold_product_instances, sold_products, sale, SaleDetail)
             if customer_id:
                 customer = get_model_object(Profile, "id", customer_id)
                 sale.customer = customer
+                if customer.loyalty_member:
+                    sale.loyalty_earned = loyalty_points_earned
+                    customer.loyalty_points += loyalty_points_earned
+                    customer.save()
                 sale.save()
-            initiate_sale(sold_product_instances,
-                          sold_products, sale, SaleDetail)
         return sale
 
 

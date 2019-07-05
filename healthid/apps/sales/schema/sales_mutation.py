@@ -9,6 +9,8 @@ from healthid.apps.sales.schema.sales_schema import SalesPromptType, SaleType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.apps.receipts.models import Receipt
+from healthid.apps.receipts.schema.receipt_schema import ReceiptType
 
 
 class CreateSalesPrompts(graphene.Mutation):
@@ -133,6 +135,7 @@ class CreateSale(graphene.Mutation):
     sale = graphene.Field(SaleType)
     message = graphene.String()
     error = graphene.String()
+    receipt = graphene.Field(ReceiptType)
 
     class Arguments:
         customer_id = graphene.String()
@@ -149,9 +152,12 @@ class CreateSale(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         new_sale = Sale()
+        new_receipt = Receipt()
         sale = new_sale.create_sale(info=info, **kwargs)
+        receipt = new_receipt.create_receipt(sale, kwargs.get('outlet_id'))
         return CreateSale(sale=sale,
-                          message='Sale was created successfully')
+                          receipt=receipt,
+                          message='Sales was created successfully')
 
 
 class Mutation(graphene.ObjectType):
