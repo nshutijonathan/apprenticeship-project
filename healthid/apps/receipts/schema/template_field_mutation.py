@@ -6,6 +6,7 @@ from healthid.apps.receipts.schema.receipt_schema import ReceiptType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class CreateFieldSet(graphene.Mutation):
@@ -96,4 +97,6 @@ class DeleteFieldSet(graphene.Mutation):
         user = info.context.user
         field_set = get_model_object(Receipt, 'id', id)
         field_set.delete(user)
-        return DeleteFieldSet(success="FieldSet has been deleted")
+        return DeleteFieldSet(
+               success=SUCCESS_RESPONSES[
+                       "deletion_success"].format("FieldSet"))

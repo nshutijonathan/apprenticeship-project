@@ -6,6 +6,8 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.authentication.models import Role, User
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.authentication_responses import (
+     AUTH_ERROR_RESPONSES)
 
 
 class UserType(DjangoObjectType):
@@ -43,7 +45,8 @@ class Query(graphene.AbstractType):
         """
         user = info.context.user
         if user.is_anonymous:
-            raise Exception("Please login to continue.")
+            login_error = AUTH_ERROR_RESPONSES["authentication_error_response"]
+            raise Exception(login_error)
         return user
 
     @staticmethod

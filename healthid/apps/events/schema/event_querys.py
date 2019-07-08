@@ -8,6 +8,7 @@ from healthid.apps.events.models import Event
 from healthid.apps.events.models import EventType as EventTypeModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
 
 
 class EventsType(DjangoObjectType):
@@ -39,11 +40,11 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_events(self, info, **kwargs):
         user = info.context.user
-        msg = "You can't view events if you're not attached to an outlet!"
+        msg = EVENTS_ERROR_RESPONSES["event_query_error"]
         outlet = get_model_object(Outlet, 'user', user, message=msg)
         events = Event.objects.filter(Q(user=user) | Q(outlet=outlet))
         if not events:
-            raise GraphQLError('No events to view yet!')
+            raise GraphQLError(EVENTS_ERROR_RESPONSES["no_events_error"])
         return events
 
     @login_required

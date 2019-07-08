@@ -9,6 +9,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.outlet_utils.validators import validate_fields
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class CreateOutlet(graphene.Mutation):
@@ -50,7 +52,8 @@ class CreateOutlet(graphene.Mutation):
         with SaveContextManager(outlet, model=Outlet) as outlet:
             outlet.user.add(user)
             return CreateOutlet(
-                outlet=outlet, success="Outlet created successfully"
+                outlet=outlet,
+                success=SUCCESS_RESPONSES["creation_success"].format("Outlet")
             )
 
 
@@ -83,11 +86,11 @@ class UpdateOutlet(graphene.Mutation):
         outlet_users = outlet.user.all()
         if user not in outlet_users:
             raise GraphQLError(
-                "You can't update an outlet that you are not assigned to!")
+                OUTLET_ERROR_RESPONSES["outlet_update_validation_error"])
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
         with SaveContextManager(outlet, model=Outlet) as outlet:
-            success = f'Successfully updated outlet {outlet.name}'
+            success = SUCCESS_RESPONSES["update_success"].format(outlet.name)
             return UpdateOutlet(outlet=outlet, success=success)
 
 
@@ -107,7 +110,8 @@ class DeleteOutlet(graphene.Mutation):
         user = info.context.user
         outlet = get_model_object(Outlet, 'id', id)
         outlet.delete(user)
-        return DeleteOutlet(success="Outlet has been deleted")
+        return DeleteOutlet(
+               success=SUCCESS_RESPONSES["deletion_success"].format("Outlet"))
 
 
 class CreateCountry(graphene.Mutation):
@@ -150,7 +154,10 @@ class CreateCity(graphene.Mutation):
         country = get_model_object(Country, 'id', country_id)
         cities = [city['name'] for city in list(country.city_set.values())]
         if city_name in cities:
-            raise GraphQLError(f'City {city_name} already exists')
+            raise GraphQLError(
+                  OUTLET_ERROR_RESPONSES[
+                      "city_double_creation_error"].format(
+                                                    "City " + city_name))
         city = City(name=city_name, country=country)
         with SaveContextManager(city, model=City):
             return CreateCity(city=city)
@@ -175,7 +182,7 @@ class EditCountry(graphene.Mutation):
         country = get_model_object(Country, 'id', id)
         country.name = name
         with SaveContextManager(country, model=Country):
-            success = "Country successfully updated"
+            success = SUCCESS_RESPONSES["update_success"].format("Country")
             return EditCountry(country=country, success=success)
 
 
@@ -198,10 +205,14 @@ class EditCity(graphene.Mutation):
         city = get_model_object(City, 'id', id)
         country_cities = City.objects.filter(country=city.country).all()
         if name in [str(city) in country_cities]:
-            raise GraphQLError(f'The city {name} already exists')
+            raise GraphQLError(OUTLET_ERROR_RESPONSES[
+                      "city_double_creation_error"].format(
+                                                    "The city " + name))
         city.name = name
         city.save()
-        return EditCity(city=city, success='City successfully updated')
+        return EditCity(city=city,
+                        success=SUCCESS_RESPONSES[
+                                "update_success"].format("City"))
 
 
 class DeleteCountry(graphene.Mutation):
@@ -220,7 +231,9 @@ class DeleteCountry(graphene.Mutation):
         id = kwargs.get('id')
         country = get_model_object(Country, 'id', id)
         country.delete(user)
-        return DeleteCountry(success='Country was successfully deleted')
+        return DeleteCountry(
+               success=SUCCESS_RESPONSES[
+                       "deletion_success"].format("Country"))
 
 
 class Mutation(graphene.ObjectType):

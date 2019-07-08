@@ -11,6 +11,9 @@ from healthid.apps.orders.models.invoices import Invoice
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.validators import validate_empty_field
+from healthid.utils.messages.orders_responses import\
+     ORDERS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class InvoiceType(DjangoObjectType):
@@ -51,12 +54,13 @@ class UploadInvoice(graphene.Mutation):
             Invoice.objects.filter(order_id=order_id).exists()
 
         if invoice_exist:
-            raise GraphQLError('An invoice for this order already exist')
+            raise GraphQLError(
+                  ORDERS_ERROR_RESPONSES["duplicate_upload_error"])
 
         # check if order belongs to an outlet
         if order.destination_outlet_id != outlet.id:
-            raise GraphQLError('Cannot upload Invoice.'
-                               ' Your outlet did not initiate this order')
+            raise GraphQLError(
+                  ORDERS_ERROR_RESPONSES["initiation_invoice_upload_error"])
 
         image_url = cloudinary.uploader.upload(invoice_document).get('url')
 
@@ -66,7 +70,7 @@ class UploadInvoice(graphene.Mutation):
         with SaveContextManager(invoice) as invoice:
             return UploadInvoice(
                 invoice=invoice,
-                message="Invoice uploaded successfully"
+                message=SUCCESS_RESPONSES["upload_success"].format("Invoice")
             )
 
 

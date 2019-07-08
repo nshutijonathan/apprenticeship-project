@@ -9,6 +9,7 @@ from healthid.tests.test_fixtures.events import (business_event, delete_event,
                                                  wrong_event_type,
                                                  wrong_user_delete_event,
                                                  wrong_user_update_event)
+from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
 
 
 class EventTestCase(BaseConfiguration):
@@ -47,7 +48,8 @@ class EventTestCase(BaseConfiguration):
                                          wrong_user_update_event(
                                              event['data']['createEvent'
                                                            ]['event']['id']))
-        self.assertEqual("Can't update events that don't belong to you!",
+        self.assertEqual(EVENTS_ERROR_RESPONSES[
+                          "event_update_validation_error"],
                          response['errors'][0]['message'])
 
     def test_delete_event(self):
@@ -91,7 +93,8 @@ class EventTestCase(BaseConfiguration):
                                              event['data']['createEvent'
                                                            ]['event']['id']))
 
-        self.assertEqual("You can't delete events that don't belong to you!",
+        self.assertEqual(EVENTS_ERROR_RESPONSES[
+                         "event_delete_validation_error"],
                          response['errors'][0]['message'])
 
     def test_create_outlet_event_unauthorised(self):
@@ -119,4 +122,5 @@ class EventTestCase(BaseConfiguration):
         """
         response = self.query_with_token(self.access_token, wrong_event_type)
         self.assertIn(response['errors'][0]['message'],
-                      'EventType with id f36bw1 does not exist.')
+                      EVENTS_ERROR_RESPONSES[
+                       "inexistent_event_type"].format("f36bw1"))

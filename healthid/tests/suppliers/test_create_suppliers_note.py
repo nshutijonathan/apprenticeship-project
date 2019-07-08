@@ -5,6 +5,10 @@ from healthid.tests.test_fixtures.suppliers import (
                                                        delete_supplier_note,
                                                        all_suppliers_note,
                                                        supplier_notes)
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class TestSuppliersNote(BaseConfiguration):
@@ -18,7 +22,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_suppliers_note.format(**data))
-        expected_message = "Successfully created Note"
+        expected_message = SUCCESS_RESPONSES[
+                           "creation_success"].format("Supplier's note")
         self.assertEqual(
             expected_message,
             response["data"]["createSuppliernote"]["message"])
@@ -34,7 +39,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_suppliers_note.format(**data))
-        expected_message = "Suppliers with id 0 does not exist."
+        expected_message = PRODUCTS_ERROR_RESPONSES[
+                           "inexistent_supplier"].format("0")
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
@@ -66,7 +72,7 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_suppliers_note.format(**data))
-        expected_message = "Suppliers note must be two or more words"
+        expected_message = ORDERS_ERROR_RESPONSES["supplier_note_length_error"]
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
@@ -81,7 +87,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_suppliers_note.format(**data))
-        expected_message = "Outlet with id 0 does not exist."
+        expected_message = OUTLET_ERROR_RESPONSES[
+                           "inexistent_outlet"].format("0")
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
@@ -96,7 +103,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             update_suppliers_note.format(**data))
-        expected_message = "Suppliers Note was updated successfully"
+        expected_message = SUCCESS_RESPONSES[
+                           "update_success"].format("Supplier's note")
         self.assertEqual(
             expected_message,
             response["data"]["updateSuppliernote"]["success"])
@@ -114,7 +122,7 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             update_suppliers_note.format(**data))
-        expected_message = "Suppliers note must be two or more words"
+        expected_message = ORDERS_ERROR_RESPONSES["supplier_note_length_error"]
         self.assertEqual(
             expected_message, response['errors'][0]['message'])
 
@@ -146,7 +154,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             update_suppliers_note.format(**data))
-        expected_message = "You can't update a note you didn't create"
+        expected_message = ORDERS_ERROR_RESPONSES[
+                           "supplier_note_update_validation_error"]
         self.assertEqual(
             expected_message, response['errors'][0]['message'])
 
@@ -173,7 +182,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             supplier_notes(0))
-        expected_message = "Suppliers with id 0 does not exist."
+        expected_message = PRODUCTS_ERROR_RESPONSES[
+                           "inexistent_supplier"].format("0")
         self.assertEqual(
             expected_message, response['errors'][0]['message'])
 
@@ -182,7 +192,8 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             delete_supplier_note(self.suppliers_note.id))
-        expected_message = "You can't delete a note you didn't create"
+        expected_message = ORDERS_ERROR_RESPONSES[
+                           "supplier_note_deletion_validation_error"]
         self.assertEqual(
             expected_message, response['errors'][0]['message'])
 
@@ -191,6 +202,7 @@ class TestSuppliersNote(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             delete_supplier_note(self.suppliers_note.id))
-        self.assertIn("Supplier note was deleted successfully",
+        self.assertIn(SUCCESS_RESPONSES[
+                      "deletion_success"].format("Supplier's note"),
                       response["data"]["deleteSuppliernote"]["success"])
         self.assertNotIn("errors", response)

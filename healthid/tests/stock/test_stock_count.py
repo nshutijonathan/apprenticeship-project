@@ -5,6 +5,9 @@ from healthid.tests.test_fixtures.stock import (
     delete_stock_batch, initate_stock_count_query, no_variance_reason_query,
     single_stock_count, update_stock_count_query)
 
+from healthid.utils.messages.stock_responses import\
+     STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
+
 
 class TestStockCount(BaseConfiguration):
     """
@@ -53,7 +56,7 @@ class TestStockCount(BaseConfiguration):
             self.access_token,
             initate_stock_count_query.format(**self.stock_data))
         self.assertIn('data', resp)
-        self.assertIn("There is a variance, Kindly state the variance reason",
+        self.assertIn(STOCK_ERROR_RESPONSES["variance_error"],
                       resp['errors'][0]['message'])
 
     def test_other_reason(self):
@@ -65,7 +68,7 @@ class TestStockCount(BaseConfiguration):
             self.access_token, no_variance_reason_query.format(
                 **self.stock_data))
         self.assertIn('data', resp)
-        self.assertIn("Specify the variance reason",
+        self.assertIn(STOCK_SUCCESS_RESPONSES["variance_reason"],
                       resp['errors'][0]['message'])
 
     def test_update_stock_count(self):
@@ -161,7 +164,7 @@ class TestStockCount(BaseConfiguration):
             delete_stock_batch.format(**self.approve_data))
         self.assertIn('data', response)
         self.assertIn(
-            "Stock must contain at least (one) 1 batch",
+            STOCK_ERROR_RESPONSES["batch_count_error"],
             response['errors'][0]['message'])
 
     def test_approve_stock_count(self):
@@ -177,7 +180,7 @@ class TestStockCount(BaseConfiguration):
             self.access_token_master,
             approve_stock_count.format(**self.approve_data))
         self.assertEqual(
-            "Batch with ids 'nanId' do not exist in this stock count.",
+            STOCK_ERROR_RESPONSES["inexistent_batch_error"].format("nanId"),
             response['errors'][0]['message'])
 
     def test_approve_stock_count_without_batchid(self):
@@ -186,5 +189,5 @@ class TestStockCount(BaseConfiguration):
             approve_stock_count_without_batch_ids.format(
                 stockCountId=self.stock_count_id))
         self.assertEqual(
-            "Please provide atleast one batch id.",
+            STOCK_ERROR_RESPONSES["inexistent_batch_id"],
             response['errors'][0]['message'])

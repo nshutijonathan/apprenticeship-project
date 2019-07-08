@@ -2,6 +2,8 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.stock import (
     open_stock_transfer, view_stock_transfers, close_stock_transfer,
     view_stock_transfer)
+from healthid.utils.messages.stock_responses import\
+     STOCK_SUCCESS_RESPONSES, STOCK_ERROR_RESPONSES
 
 
 class TestStockTransfer(BaseConfiguration):
@@ -37,7 +39,8 @@ since quantities [{wrong_quantity}] are above the available quantity!")
             self.second_master_admin_token,
             open_stock_transfer.format(**self.stock_transfer_params))
         self.assertEqual(response['data']['openStockTransfer']['success'][0],
-                         'Stock Transfer opened successfully!')
+                         STOCK_SUCCESS_RESPONSES[
+                                           "stock_transfer_open_success"])
 
     def test_close_transfer(self):
         """Test that a user can mark a transfer as closed
@@ -54,7 +57,8 @@ since quantities [{wrong_quantity}] are above the available quantity!")
                 **close_transer_params))
 
         self.assertEqual(response['data']['closeStockTransfer']['success'],
-                         "['Stock transfer closed successfully!']")
+                         STOCK_SUCCESS_RESPONSES[
+                              "stock_transfer_close_success"])
 
     def test_view_stock_transfers(self):
         """Test that user can view stock transfers
@@ -74,7 +78,7 @@ since quantities [{wrong_quantity}] are above the available quantity!")
             self.access_token_master,
             open_stock_transfer.format(**self.stock_transfer_params))
         self.assertEqual(response['errors'][0]['message'],
-                         "You can't open a transfer to your own outlet!")
+                         STOCK_ERROR_RESPONSES["outlet_transfer_validation"])
 
     def test_open_stock_transfer_vague_products(self):
         """Method to test that a stock transfer can't be opened
@@ -91,7 +95,7 @@ since quantities [{wrong_quantity}] are above the available quantity!")
                 **close_transer_params))
 
         self.assertEqual(response['errors'][0]['message'],
-                         "You don't have transfers to close!")
+                         STOCK_ERROR_RESPONSES["close_transfer_error"])
 
     def test_view_stock_transfer(self):
         """Test that user can view a single stock transfer

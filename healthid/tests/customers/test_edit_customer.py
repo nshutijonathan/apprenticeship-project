@@ -1,5 +1,8 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import edit_customer_basic_profile
+from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import\
+     SUCCESS_RESPONSES, ERROR_RESPONSES
 
 
 class TestCustomerProfileEdit(BaseConfiguration):
@@ -11,7 +14,7 @@ class TestCustomerProfileEdit(BaseConfiguration):
                 self.customer_fields_to_dict(self.customer_1)))
 
         message = response["data"]["editCustomerBasicProfile"]["message"]
-        expected_message = "Profile fields unchanged, nothing to edit"
+        expected_message = CUSTOMER_ERROR_RESPONSES["unchanged_edits"]
 
         self.assertEqual(expected_message, message)
 
@@ -38,7 +41,8 @@ class TestCustomerProfileEdit(BaseConfiguration):
             self.access_token, edit_customer_basic_profile(customer_data))
 
         message = response["errors"][0]["message"]
-        expected_message = "first_name can't be an empty String"
+        expected_message = CUSTOMER_ERROR_RESPONSES[
+                           "first_name_error"].format("first_name")
 
         self.assertEqual(expected_message, message)
         self.assertEqual(None, response["data"]["editCustomerBasicProfile"])
@@ -52,9 +56,12 @@ class TestCustomerProfileEdit(BaseConfiguration):
             self.access_token, edit_customer_basic_profile(customer_data))
 
         message = response["errors"][0]["message"]
+        expected_message = ERROR_RESPONSES[
+                           "invalid_field_error"
+                           ].format("mobile number (ex. +2346787646)")
 
         self.assertEqual(
-            "Mobile number must have a 9-15 digits (ex. +2346787646)", message)
+            expected_message, message)
         self.assertEqual(None, response["data"]["editCustomerBasicProfile"])
 
     def test_profile_edit_with_valid_data(self):
@@ -72,8 +79,9 @@ class TestCustomerProfileEdit(BaseConfiguration):
         response_data = response["data"]["editCustomerBasicProfile"]
 
         message = response_data["message"]
-        expected_message = f"Successfully updated {first_name}'s" \
-            " basic profile"
+        expected_message = SUCCESS_RESPONSES[
+                           "update_success"].format(
+                                             first_name + "'s basic profile")
 
         self.assertEqual(expected_message, message)
         self.assertEqual(

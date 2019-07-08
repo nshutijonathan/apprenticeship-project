@@ -2,6 +2,8 @@ from django.conf import settings
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import (
     register_user_query, user)
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 
 FRONTEND_URL = settings.FRONTEND_URL
@@ -33,8 +35,7 @@ class VerificationTestCase(BaseConfiguration):
             verification_link,
             content_type='application/json')
         self.assertIn(
-            ('Your account is already verified,'
-             ' Please click the button below to login'),
+            (AUTH_SUCCESS_RESPONSES["account_verification"]),
             response.context[0]['small_text_detail'])
         self.assertEqual(409, response.status_code)
 
@@ -44,8 +45,7 @@ class VerificationTestCase(BaseConfiguration):
         response = self.client.get(
             verification_link+'23',
             content_type='application/json')
-        self.assertIn(('We could not verify your account, the verification'
-                       ' link might have expired please contact your admin'),
+        self.assertIn((AUTH_ERROR_RESPONSES["account_verification_fail"]),
                       response.context[0]['small_text_detail'])
         self.assertEqual(401, response.status_code)
 
@@ -56,6 +56,6 @@ class VerificationTestCase(BaseConfiguration):
         response = self.client.get(
             f'http://{settings.FRONTEND_URL}/healthid/activate/{ubd6}/{token}',
             content_type='application/json')
-        self.assertIn('This verification link is corrupted',
+        self.assertIn(AUTH_ERROR_RESPONSES["verification_link_corrupt"],
                       response.context[0]['small_text_detail'])
         self.assertEqual(401, response.status_code)

@@ -13,6 +13,7 @@ from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.stock_utils.validate_stock_transfer import \
     validate
+from healthid.utils.messages.stock_responses import STOCK_ERROR_RESPONSES
 
 
 class StockCountTemplateType(DjangoObjectType):
@@ -99,7 +100,7 @@ class StockTransferQuery(graphene.ObjectType):
         stock_transfers = StockTransfer.objects.filter(
             Q(destination_outlet=outlet) | Q(sending_outlet=outlet))
         if not stock_transfers:
-            raise GraphQLError('No stock transfers yet!')
+            raise GraphQLError(STOCK_ERROR_RESPONSES["zero_stock_transfers"])
         return stock_transfers
 
     @login_required
@@ -117,7 +118,7 @@ class StockTransferQuery(graphene.ObjectType):
         if stock_transfer and (str(sending_outlet) == str(outlet)
                                or str(destination_outlet) == str(outlet)):
             return stock_transfer
-        raise GraphQLError('That stock transfer does not exist!')
+        raise GraphQLError(STOCK_ERROR_RESPONSES["inexistent_stock_transfer"])
 
 
 class Query(

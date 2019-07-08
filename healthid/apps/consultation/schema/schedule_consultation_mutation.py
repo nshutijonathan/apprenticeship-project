@@ -12,6 +12,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.notifications_utils.handle_notifications import \
     send_email_to
+from healthid.utils.messages.consultation_reponses import\
+    CONSULTATION_SUCCESS_RESPONSES
 
 
 class PaymentStatusEnum(graphene.Enum):
@@ -71,10 +73,11 @@ class Schedule(graphene.Mutation):
             consultation.save()
             consultation_type = get_model_object(
                 Consultation, 'id', consultation.consultation_type_id)
-            success = "Consultation has been scheduled"
+            success =\
+                CONSULTATION_SUCCESS_RESPONSES["consultation_schedule_success"]
             context = {
                 'template_type': 'Schedule Consultation',
-                'small_text_detail': 'Consultation Has Been Scheduled',
+                'small_text_detail': success,
                 'email': email,
                 'outlet_name': consultation_type.outlet.name,
                 'start_date': start_date,

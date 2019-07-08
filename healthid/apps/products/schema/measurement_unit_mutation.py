@@ -7,6 +7,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.auth_utils.decorator import user_permission
 
 from .product_query import MeasurementUnitType
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class CreateMeasurementUnit(graphene.Mutation):
@@ -25,10 +27,11 @@ class CreateMeasurementUnit(graphene.Mutation):
     def mutate(self, info, **kwargs):
         name = kwargs.get('name')
         if name.strip() == "":
-            raise GraphQLError("This name field can't be empty")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         measurement_unit = MeasurementUnit(name=name)
         with SaveContextManager(measurement_unit, model=MeasurementUnit):
-            message = [f'Measurement unit created succesfully']
+            message = [SUCCESS_RESPONSES[
+                       "creation_success"].format("Measurement Unit")]
             return CreateMeasurementUnit(
                 message=message, measurement_unit=measurement_unit)
 
@@ -50,11 +53,13 @@ class EditMeasurementUnit(graphene.Mutation):
         id = kwargs.get('id')
         name = kwargs.get('name')
         if name.strip() == "":
-            raise GraphQLError("The name field can't be empty")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         measuremnt_unit = get_model_object(MeasurementUnit, 'id', id)
         measuremnt_unit.name = name
         with SaveContextManager(measuremnt_unit, model=MeasurementUnit):
-            message = f'Measuremnt Unit of Id {id} is successfully updated'
+            message = SUCCESS_RESPONSES[
+                      "update_success"].format(
+                                        "Measuremnt Unit of Id " + str(id))
             return EditMeasurementUnit(
                 measuremnt_unit=measuremnt_unit, message=message)
 
@@ -76,7 +81,7 @@ class DeleteMeasurementUnit(graphene.Mutation):
         user = info.context.user
         measurement_unit = get_model_object(MeasurementUnit, 'id', id)
         measurement_unit.delete(user)
-        success = f'Measurement unit of Id {id} \
-            has been successfully deleted'
-
+        success = SUCCESS_RESPONSES[
+                      "deletion_success"].format(
+                                          "Measuremnt Unit of Id " + str(id))
         return DeleteMeasurementUnit(success=success)

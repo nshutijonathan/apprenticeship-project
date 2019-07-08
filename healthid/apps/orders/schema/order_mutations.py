@@ -12,6 +12,7 @@ from healthid.utils.orders_utils.supplier_order_details import \
 from healthid.apps.orders.schema.order_query import \
     SupplierOrderDetailsType, OrderDetailsType, OrderType
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
 
 
 class InitiateOrder(graphene.Mutation):
@@ -40,7 +41,7 @@ class InitiateOrder(graphene.Mutation):
             destination_outlet=outlet
         )
         with SaveContextManager(order) as order:
-            success = 'Order successfully initiated!'
+            success = ORDERS_SUCCESS_RESPONSES["order_initiation_success"]
             return InitiateOrder(order=order, success=success)
 
 
@@ -120,7 +121,7 @@ class AddOrderDetails(graphene.Mutation):
             order_details = add_order_details.supplier_autofill(kwargs)
         suppliers_order_details = create_suppliers_order_details(order)
 
-        message = 'Successfully added order details!'
+        message = ORDERS_SUCCESS_RESPONSES["order_addition_success"]
         return cls(order_details=order_details,
                    message=message,
                    suppliers_order_details=suppliers_order_details)

@@ -2,6 +2,7 @@ from graphql import GraphQLError
 from healthid.utils.auth_utils.validations import ValidateUser
 from healthid.utils.app_utils.validators import (special_cahracter_validation,
                                                  validate_email)
+from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
 
 
 def validate_customer_fields(customer, **kwargs):
@@ -31,8 +32,8 @@ def validate_customer_fields(customer, **kwargs):
         if key in fields_to_validate:
             special_cahracter_validation(value)
             if value.strip() == "":
-                raise GraphQLError(
-                    f"{key} can't be an empty String")
+                raise GraphQLError(CUSTOMER_ERROR_RESPONSES[
+                                   "first_name_error"].format(key))
         if key in emails_to_validate:
             validate_email(value)
         if key in numbers_to_validate:

@@ -9,6 +9,8 @@ from healthid.tests.test_fixtures.outlets import (
     update_country_string,
     create_city_string
 )
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class CountryTestCase(BaseConfiguration):
@@ -47,7 +49,7 @@ class CountryTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, query_string)
         self.assertIn(
-            f'Country with name Uganda already exists',
+            OUTLET_ERROR_RESPONSES["country_double_creation"].format("Uganda"),
             response['errors'][0]['message']
         )
 
@@ -56,16 +58,16 @@ class CountryTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, query_string)
         self.assertEqual(
-            'Invalid Country name, cannot contain'
-            ' special charaters or be blank',
+            OUTLET_ERROR_RESPONSES[
+                 "invalid_city_or_country_name"].format("Country"),
             response['errors'][0]['message'])
 
     def test_create_country_empty_country_name(self):
         query_string = create_country_string.format(country_name='')
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertEqual('Invalid Country name, cannot contain'
-                         ' special charaters or be blank',
+        self.assertEqual(OUTLET_ERROR_RESPONSES[
+                         "invalid_city_or_country_name"].format("Country"),
                          response['errors'][0]['message'])
 
     def test_update_country_name(self):
@@ -76,7 +78,7 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn('Country successfully updated',
+        self.assertIn(SUCCESS_RESPONSES["update_success"].format("Country"),
                       response['data']['editCountry']['success'])
 
     def test_update_country_name_that_exists(self):
@@ -88,7 +90,8 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn('Country with name Kenya already exists',
+        self.assertIn(OUTLET_ERROR_RESPONSES[
+                      "country_double_creation"].format("Kenya"),
                       response['errors'][0]['message'])
 
     def test_update_country_no_country_name(self):
@@ -99,8 +102,8 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn('Invalid country name, cannot contain'
-                      ' special charaters or be blank',
+        self.assertIn(OUTLET_ERROR_RESPONSES[
+                      "invalid_city_or_country_name"].format("country"),
                       response['errors'][0]['message'])
 
     def test_update_country_doesnot_exist(self):
@@ -111,7 +114,8 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn(f'Country with id {country_id} does not exist.',
+        self.assertIn(OUTLET_ERROR_RESPONSES[
+                      "invalid_country_id"].format(country_id),
                       response['errors'][0]['message'])
 
     def test_delete_country(self):
@@ -122,7 +126,7 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn('Country was successfully deleted',
+        self.assertIn(SUCCESS_RESPONSES["deletion_success"].format("Country"),
                       response['data']['deleteCountry']['success'])
 
     def test_delete_country_doesnot_exist(self):
@@ -132,7 +136,8 @@ class CountryTestCase(BaseConfiguration):
         )
         response = self.query_with_token(
             self.access_token_master, query_string)
-        self.assertIn(f'Country with id {country_id} does not exist',
+        self.assertIn(OUTLET_ERROR_RESPONSES[
+                      "invalid_country_id"].format(country_id),
                       response['errors'][0]['message'])
 
     def test_fetch_all_countries(self):
@@ -159,7 +164,7 @@ class CountryTestCase(BaseConfiguration):
             self.access_token_master,
             query_country_string_with_name.format(name='uganda')
         )
-        self.assertEqual('This country does not exist',
+        self.assertEqual(OUTLET_ERROR_RESPONSES["inexistent_country_error"],
                          response['errors'][0]['message'])
 
     def test_fetch_single_country_id(self):

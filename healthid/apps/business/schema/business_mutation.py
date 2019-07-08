@@ -10,6 +10,9 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.business_utils.validators import ValidateBusiness
+from healthid.utils.messages.business_responses import\
+     BUSINESS_ERROR_RESPONSES, BUSINESS_SUCCESS_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class BusinesType(DjangoObjectType):
@@ -55,7 +58,8 @@ class CreateBusiness(graphene.Mutation):
 
         with SaveContextManager(business, model=Business) as business:
             business.user.add(user)
-            success = ["Business successfully created!"]
+            success = [SUCCESS_RESPONSES[
+                       "creation_success"].format(business.legal_name)]
             return CreateBusiness(business=business, success=success)
 
 
@@ -95,14 +99,16 @@ class UpdateBusiness(graphene.Mutation):
         business_users = business.user.all()
 
         if user not in business_users:
-            raise GraphQLError("You can't update a business you're \
-not assigned to!")
+            update_error = BUSINESS_ERROR_RESPONSES["business_update_error"]
+            raise GraphQLError(update_error)
         for(key, value) in kwargs.items():
             if key is not None:
                 setattr(business, key, value)
-        msg = 'Business with legal name or email provided already exists.'
+        msg = BUSINESS_ERROR_RESPONSES["existing_business_error"]
         with SaveContextManager(business, message=msg):
-            success = ["Business has been updated successfully"]
+            success =\
+                [SUCCESS_RESPONSES[
+                    "update_success"].format(business.legal_name)]
             return UpdateBusiness(business=business, success=success)
 
 
@@ -126,8 +132,10 @@ class AddUserBusiness(graphene.Mutation):
         business_instance.user.add(user_instance)
         user_instance.save()
         message = [
-            f"Successfully added User with {user_instance.email}"
-            f" to {business_instance.legal_name} business"
+            BUSINESS_SUCCESS_RESPONSES[
+                "add_user_to_business_success"
+                 ].format(user_instance.email,
+                          business_instance.legal_name)
         ]
         return AddUserBusiness(user=user_instance, message=message)
 
@@ -149,7 +157,7 @@ class DeleteBusiness(graphene.Mutation):
         user = info.context.user
         business = get_model_object(Business, 'id', id)
         business.delete(user)
-        success = ["Business has been deleted successfully"]
+        success = [SUCCESS_RESPONSES["deletion_success"].format("Business")]
 
         return DeleteBusiness(success=success)
 

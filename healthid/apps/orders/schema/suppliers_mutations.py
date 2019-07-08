@@ -11,6 +11,9 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.validators import special_cahracter_validation
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.orders_responses import\
+      ORDERS_ERROR_RESPONSES, ORDERS_SUCCESS_RESPONSES
 
 
 class SuppliersInput(graphene.InputObjectType):
@@ -60,7 +63,8 @@ class ApproveSupplier(graphene.Mutation):
         supplier.is_approved = True
         name = supplier.name
         supplier.save()
-        success = f"supplier {name} has been approved!"
+        success = SUCCESS_RESPONSES[
+                  "approval_success"].format("Supplier" + name)
         return cls(success=success, supplier=supplier)
 
 
@@ -75,7 +79,8 @@ class DeleteSupplier(graphene.Mutation):
         supplier = get_model_object(Suppliers, 'id', id)
         name = supplier.name
         supplier.delete()
-        success = f"Supplier {name} has been deleted!"
+        success = SUCCESS_RESPONSES[
+                  "deletion_success"].format("Supplier" + name)
         return cls(success=success)
 
 
@@ -105,7 +110,8 @@ class EditSupplier(graphene.Mutation):
         edit_request = Suppliers()
         supplier = get_model_object(Suppliers, 'id', id)
         if not supplier.is_approved:
-            msg = "You can only propose an edit to an approved supplier!"
+            msg = ORDERS_ERROR_RESPONSES[
+                   "supplier_edit_proposal_validation_error"]
             raise GraphQLError(msg)
 
         kwargs.pop('id')
@@ -124,7 +130,8 @@ class EditSupplier(graphene.Mutation):
         edit_request.is_approved = True
         with SaveContextManager(edit_request, model=Suppliers) as edit_request:
             name = supplier.name
-            msg = f"Edit request for Supplier {name} has been sent!"
+            msg = ORDERS_SUCCESS_RESPONSES[
+                  "supplier_edit_request_success"].format(name)
             return cls(edit_request, msg)
 
 
@@ -153,7 +160,7 @@ class EditProposal(graphene.Mutation):
         id = kwargs.get('id')
         proposed_edit = get_model_object(Suppliers, 'id', id)
         if proposed_edit.user != info.context.user:
-            msg = "You can't edit an edit request you didnot propose!"
+            msg = ORDERS_ERROR_RESPONSES["edit_proposal_validation_error"]
             raise GraphQLError(msg)
         kwargs.pop('id')
         for (key, value) in kwargs.items():
@@ -162,7 +169,7 @@ class EditProposal(graphene.Mutation):
         params = {'model': Suppliers}
         with SaveContextManager(proposed_edit, **params) as edit_request:
             name = proposed_edit.parent.name
-            msg = f"Edit request for Supplier {name} has been updated!"
+            msg = SUCCESS_RESPONSES["update_success"].format("Supplier" + name)
             return cls(edit_request, msg)
 
 
@@ -193,7 +200,7 @@ class ApproveEditRequest(graphene.Mutation):
                 setattr(supplier, key, value)
         request_instance.hard_delete()
         supplier.save()
-        message = f"Supplier {name} has been successfully updated!"
+        message = SUCCESS_RESPONSES["update_success"].format("Supplier" + name)
         return cls(message, supplier)
 
 
@@ -214,7 +221,8 @@ class DeclineEditRequest(graphene.Mutation):
         edit_request.admin_comment = comment
         edit_request.save()
         supplier_name = edit_request.name
-        msg = f"Edit request for supplier {supplier_name} has been declined!"
+        msg = ORDERS_ERROR_RESPONSES[
+              "supplier_request_denied"].format(supplier_name)
         return cls(msg, edit_request)
 
 
@@ -239,7 +247,8 @@ class CreateSupplierNote(graphene.Mutation):
         note = kwargs.get("note")
         special_cahracter_validation(note)
         if len(note.split()) < 2:
-            raise GraphQLError("Suppliers note must be two or more words")
+            raise GraphQLError(
+                ORDERS_ERROR_RESPONSES["supplier_note_length_error"])
         supplier = get_model_object(Suppliers, "id", supplier_id)
         outlets = [get_model_object(Outlet, 'id', outlet_id)
                    for outlet_id in outlet_ids]
@@ -250,7 +259,8 @@ class CreateSupplierNote(graphene.Mutation):
             return cls(
                 supplier_note=supplier_note,
                 supplier=supplier,
-                message="Successfully created Note")
+                message=SUCCESS_RESPONSES[
+                        "creation_success"].format("Supplier's note"))
 
 
 class UpdateSupplierNote(graphene.Mutation):
@@ -272,13 +282,14 @@ class UpdateSupplierNote(graphene.Mutation):
         supplier_note = get_model_object(SupplierNote, "id", id)
         if info.context.user != supplier_note.user:
             raise GraphQLError(
-                "You can't update a note you didn't create")
+                ORDERS_ERROR_RESPONSES[
+                    "supplier_note_update_validation_error"])
         for key, value in kwargs.items():
             if key in ["note"]:
                 special_cahracter_validation(value)
                 if len(value.split()) < 2:
                     raise GraphQLError(
-                        "Suppliers note must be two or more words")
+                        ORDERS_ERROR_RESPONSES["supplier_note_length_error"])
             setattr(supplier_note, key, value)
 
         if outlet_ids:
@@ -288,7 +299,8 @@ class UpdateSupplierNote(graphene.Mutation):
             supplier_note.outlet.add(*outlets)
         with SaveContextManager(supplier_note) as supplier_note:
             return cls(
-                success="Suppliers Note was updated successfully",
+                success=SUCCESS_RESPONSES[
+                        "update_success"].format("Supplier's note"),
                 supplier_note=supplier_note)
 
 
@@ -308,10 +320,12 @@ class DeleteSupplierNote(graphene.Mutation):
         supplier_note = get_model_object(SupplierNote, "id", id)
         if info.context.user != supplier_note.user:
             raise GraphQLError(
-                "You can't delete a note you didn't create")
+                ORDERS_ERROR_RESPONSES[
+                    "supplier_note_deletion_validation_error"])
         supplier_note.delete(user)
         return DeleteSupplierNote(
-            success="Supplier note was deleted successfully")
+            success=SUCCESS_RESPONSES[
+                "deletion_success"].format("Supplier's note"))
 
 
 class Mutation(graphene.ObjectType):

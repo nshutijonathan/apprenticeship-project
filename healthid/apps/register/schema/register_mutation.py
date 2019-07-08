@@ -8,6 +8,8 @@ from healthid.apps.register.models import Register
 from healthid.apps.register.schema.register_schema import RegisterType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
+from healthid.utils.messages.register_responses import REGISTER_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class RegisterInput(graphene.InputObjectType):
@@ -41,7 +43,9 @@ class CreateRegister(graphene.Mutation):
             with SaveContextManager(register, model=Register) as register:
                 return CreateRegister(register=register)
 
-        raise GraphQLError(f'{register_name} is not a valid register name')
+        raise GraphQLError(
+              REGISTER_ERROR_RESPONSES[
+                 "invalid_register_name_error"].format(register_name))
 
 
 class UpdateRegister(graphene.Mutation):
@@ -64,9 +68,11 @@ class UpdateRegister(graphene.Mutation):
         if name.strip() != "":
             register.name = name
             register.save()
-            success = 'Update was successful'
+            success = SUCCESS_RESPONSES["update_success"].format("Register")
             return UpdateRegister(success=success, register=register)
-        raise GraphQLError(f'{name} is not a valid register name')
+        raise GraphQLError(
+            REGISTER_ERROR_RESPONSES[
+                "invalid_register_name_error"].format(name))
 
 
 class DeleteRegister(graphene.Mutation):
@@ -85,7 +91,9 @@ class DeleteRegister(graphene.Mutation):
         user = info.context.user
         register = get_model_object(Register, 'id', id)
         register.delete(user)
-        return DeleteRegister(success="Register was deleted successfully")
+        return DeleteRegister(
+            success=SUCCESS_RESPONSES[
+                    "deletion_success"].format("Register"))
 
 
 class Mutation(graphene.ObjectType):

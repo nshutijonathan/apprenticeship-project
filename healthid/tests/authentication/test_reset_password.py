@@ -5,6 +5,8 @@ from django.conf import settings
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import (password_reset_json,
                                                          password_reset_query)
+from healthid.utils.messages.authentication_responses import\
+     AUTH_SUCCESS_RESPONSES, AUTH_ERROR_RESPONSES
 
 
 class TestResetPassword(BaseConfiguration):
@@ -40,7 +42,7 @@ class TestResetPassword(BaseConfiguration):
         """
         self.assertIn(
             "resetLink", self.valid_response['data']["resetPassword"])
-        self.assertIn("check your email for a password reset link",
+        self.assertIn(AUTH_SUCCESS_RESPONSES["password_reset_link_success"],
                       self.valid_response['data']["resetPassword"]["success"])
 
     def test_successful_reset(self):
@@ -53,7 +55,8 @@ class TestResetPassword(BaseConfiguration):
             self.valid_json,
             content_type='application/json')
         message = json.loads(response._container[0])
-        self.assertIn("successfully reset", message["message"])
+        self.assertIn(AUTH_SUCCESS_RESPONSES[
+                      "password_reset_success"], message["message"])
         self.assertEqual(response.status_code, 200)
 
     def test_redirect_valid_link(self):
@@ -75,7 +78,7 @@ class TestResetPassword(BaseConfiguration):
         response = self.client.get(
             self.invalid_link,
             content_type='application/json')
-        self.assertIn('Reset link is expired or corrupted',
+        self.assertIn(AUTH_ERROR_RESPONSES["reset_link_expiration"],
                       response.context[0]['small_text_detail'])
         self.assertEqual(response.status_code, 400)  # test redirection
 
@@ -89,7 +92,7 @@ class TestResetPassword(BaseConfiguration):
             self.invalid_json,
             content_type='application/json')
         message = json.loads(response._container[0])
-        self.assertIn("password must have at least 8 characters",
+        self.assertIn(AUTH_ERROR_RESPONSES["short_password_error"],
                       message["message"])
         self.assertEqual(response.status_code, 400)
 
@@ -98,7 +101,7 @@ class TestResetPassword(BaseConfiguration):
         Method to test if a reset link can be generated
         for an email that is not yet registered.
         """
-        self.assertIn("Email address not found!",
+        self.assertIn(AUTH_ERROR_RESPONSES["password_reset_blank_email"],
                       self.invalid_response["errors"][0]["message"])
 
     def test_invalid_reset_link(self):
@@ -112,7 +115,7 @@ class TestResetPassword(BaseConfiguration):
             content_type='application/json'
         )
         message = json.loads(response._container[0])
-        self.assertIn("Verification link is corrupted or expired",
+        self.assertIn(AUTH_ERROR_RESPONSES["verification_link_corrupt"],
                       message["message"])
         self.assertEqual(response.status_code, 401)
 
@@ -125,5 +128,5 @@ class TestResetPassword(BaseConfiguration):
         response = self.query(
             password_reset_query.format(email=blank_email))
 
-        self.assertIn("Please provide your email",
+        self.assertIn(AUTH_ERROR_RESPONSES["password_reset_blank_email"],
                       response["errors"][0]["message"])

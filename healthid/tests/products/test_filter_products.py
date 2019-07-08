@@ -1,5 +1,6 @@
 from healthid.tests.products.test_create_product import TestCreateProduct
 from healthid.tests.test_fixtures.products import (product_search_query)
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class TestFilterProducts(TestCreateProduct):
@@ -11,7 +12,8 @@ class TestFilterProducts(TestCreateProduct):
                 search_term=search_term))
         self.assertIn('errors', response)
         self.assertEquals(response['errors'][0]['message'],
-                          'Please provide a valid search keyword')
+                          PRODUCTS_ERROR_RESPONSES[
+                                   "invalid_search_key"])
 
     def test_return_search_result(self):
         "method that tests correct search result is returned"
@@ -30,4 +32,5 @@ class TestFilterProducts(TestCreateProduct):
 
         self.assertIn('errors', response)
         self.assertEquals(response['errors'][0]['message'],
-                          "Product matching search query does not exist")
+                          PRODUCTS_ERROR_RESPONSES[
+                                   "inexistent_product_query"])

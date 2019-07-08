@@ -9,6 +9,9 @@ from healthid.tests.test_fixtures.business import (authentic_business,
                                                    missing_phone_number
                                                    )
 
+from healthid.utils.messages.business_responses import BUSINESS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+
 
 class GraphQLTestCase(BaseConfiguration):
 
@@ -26,7 +29,8 @@ class GraphQLTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, missing_business_email)
         self.assertEqual(response['errors'][0]['message'],
-                         'Please input a valid email')
+                         ERROR_RESPONSES[
+                             "invalid_field_error"].format("email"))
 
     def test_create_business_without_trading_name(self):
         """Test that a business can't be created without a trading
@@ -35,7 +39,7 @@ class GraphQLTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, missing_trading_name)
         self.assertEqual(response['errors'][0]['message'],
-                         'Both trading name and legal name are required!')
+                         BUSINESS_ERROR_RESPONSES["business_names_validation"])
 
     def test_create_business_without_address_line_1(self):
         """Test that a business can't be created without a address line 1
@@ -43,7 +47,7 @@ class GraphQLTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, missing_address_line_1)
         self.assertEqual(response['errors'][0]['message'],
-                         'Address Line 1 is required!')
+                         BUSINESS_ERROR_RESPONSES["invalid_address1_error"])
 
     def test_create_business_without_city(self):
         """Test that a business can't be created without a city
@@ -51,7 +55,7 @@ class GraphQLTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, missing_city)
         self.assertEqual(response['errors'][0]['message'],
-                         'Both city and country are required!')
+                         BUSINESS_ERROR_RESPONSES["blank_city_and_or_country"])
 
     def test_create_business_without_phone_number(self):
         """Test that a business can't be created without a city
@@ -59,7 +63,8 @@ class GraphQLTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, missing_phone_number)
         self.assertEqual(response['errors'][0]['message'],
-                         'Phone number is required!')
+                         ERROR_RESPONSES[
+                             "required_field"].format("Phone number"))
 
     def test_update_business(self):
         """Test that a business can be updated

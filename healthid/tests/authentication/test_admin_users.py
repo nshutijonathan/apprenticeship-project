@@ -1,5 +1,8 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.authentication.test_data import query_str
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES
 
 
 class TestAdminRegistration(BaseConfiguration):
@@ -22,7 +25,7 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            'You do not have permission to perform this action'
+            ERROR_RESPONSES["authorization_error"]
         )
 
     def test_update_admin_profile_with_invalid_email(self):
@@ -46,7 +49,7 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            'names must not contain special characters'
+            AUTH_ERROR_RESPONSES["special_characters_error"].format("names")
         )
 
     def test_update_admin_profile_with_invalid_phone_number(self):
@@ -58,7 +61,7 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            'Please input a valid mobileNumber'
+            ERROR_RESPONSES["invalid_field_error"].format("mobileNumber")
         )
 
     def test_update_admin_profile_with_very_long_name(self):
@@ -70,7 +73,7 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            'a name cannnot exceed 30 characters'
+            AUTH_ERROR_RESPONSES["characters_exceed_error"].format("a name")
         )
 
     def test_update_admin_profile_with_empty_name_field(self):
@@ -82,5 +85,5 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            'a name field must not be empty'
+            ERROR_RESPONSES["empty_field_error"].format("name field")
         )

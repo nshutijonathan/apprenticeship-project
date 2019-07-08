@@ -1,5 +1,7 @@
 from healthid.tests.sales.promotion_base import TestPromotion
 from healthid.tests.test_fixtures.sales import update_promotion
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class TestUpdatePromotion(TestPromotion):
@@ -25,7 +27,7 @@ class TestUpdatePromotion(TestPromotion):
                                                           'new promo'))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'You don\'t belong to outlet with this promomtion.')
+                         SALES_ERROR_RESPONSES["outlet_validation_error"])
 
     def test_cannot_update_promotion_that_doesnt_exist(self):
         response = self.query_with_token(self.access_token_master,
@@ -33,7 +35,8 @@ class TestUpdatePromotion(TestPromotion):
                                                           'new promo'))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'Promotion with id agfgadg does not exist.')
+                         SALES_ERROR_RESPONSES[
+                             "inexistent_promotion"].format("agfgadg"))
 
     def test_cannot_update_promotion_with_empty_title(self):
         response = self.query_with_token(self.access_token_master,
@@ -49,7 +52,9 @@ class TestUpdatePromotion(TestPromotion):
                 self.second_promotion.id, self.promotion.title))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'Promotion with title my promo already exists.')
+                         ERROR_RESPONSES[
+                         "duplication_error"].format(
+                              "Promotion with title my promo"))
 
     def test_cannot_update_promotion_when_unauthenticated(self):
         response = self.query_with_token('',

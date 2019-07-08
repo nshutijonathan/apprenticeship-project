@@ -10,6 +10,8 @@ from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_belongs_to_outlet
 
 from .product_query import ProductCategoryType
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class CreateProductCategory(graphene.Mutation):
@@ -33,12 +35,13 @@ class CreateProductCategory(graphene.Mutation):
     def mutate(self, info, **kwargs):
         name = kwargs.get('name')
         if name.strip() == "":
-            raise GraphQLError("Product category name cannot be blank")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         check_user_belongs_to_outlet(info.context.user,
                                      kwargs.get('outlet_id'))
         product_category = ProductCategory(**kwargs)
         with SaveContextManager(product_category, model=ProductCategory):
-            message = ['Product Category created successfully']
+            message = SUCCESS_RESPONSES[
+                      "creation_success"].format("Product Category")
             return CreateProductCategory(
                 message=message, product_category=product_category)
 
@@ -64,7 +67,7 @@ class EditProductCategory(graphene.Mutation):
         id = kwargs.get('id')
         name = kwargs.get('name')
         if name.strip() == "":
-            raise GraphQLError("This name field can't be empty")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         product_category = get_model_object(ProductCategory, 'id', id)
         check_user_belongs_to_outlet(info.context.user,
                                      product_category.outlet.id)
@@ -80,8 +83,10 @@ class EditProductCategory(graphene.Mutation):
         for field, value in changed_fields.items():
             setattr(product_category, field, value)
         with SaveContextManager(product_category, model=ProductCategory):
+            message = SUCCESS_RESPONSES[
+                      "update_success"].format("Product Category")
             return EditProductCategory(
-                message='Product Category successfully updated',
+                message=message,
                 product_category=product_category)
 
 
@@ -104,6 +109,8 @@ class DeleteProductCategory(graphene.Mutation):
         check_user_belongs_to_outlet(info.context.user,
                                      product_category.outlet.id)
         product_category.delete(user)
-        message = f'Prduct category of Id {id} has been successfully deleted'
+        message = SUCCESS_RESPONSES[
+                  "deletion_success"].format(
+                                      "Product category of Id " + str(id))
 
         return DeleteProductCategory(message=message)

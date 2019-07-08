@@ -6,6 +6,7 @@ from healthid.tests.authentication.test_data import (
     login_user_query,
     test_users_query
 )
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class UserTests(JSONWebTokenTestCase):
@@ -45,7 +46,8 @@ class UserTests(JSONWebTokenTestCase):
             'password': 'Passsword12'
         }
         response = self.client.execute(login_mutation, variables=variables)
-        self.assertIn('Please, enter valid credentials', str(response.errors))
+        self.assertIn(ERROR_RESPONSES[
+                      "invalid_login_credentials"], str(response.errors))
 
     def test_incorrect_password_login(self):
         # Test if the user can log in with a wrong password.
@@ -54,4 +56,5 @@ class UserTests(JSONWebTokenTestCase):
             'password': 'Incorrect1234'
         }
         response = self.client.execute(login_mutation, variables=variables)
-        self.assertIn('Please, enter valid credentials', str(response.errors))
+        self.assertIn(ERROR_RESPONSES[
+                      "invalid_login_credentials"], str(response.errors))

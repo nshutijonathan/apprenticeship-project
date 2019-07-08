@@ -9,6 +9,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
                                                     suppliers_query)
 from healthid.views import HandleCSV
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
@@ -55,7 +56,9 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.query_with_token(self.access_token, supplier_mutation)
         response = self.query_with_token(self.access_token, supplier_mutation)
         self.assertIn('errors', response)
-        self.assertIn('Suppliers with email email@ntale.com already exists.',
+        self.assertIn(ERROR_RESPONSES[
+                      "duplication_error"].format(
+                        "Suppliers with email email@ntale.com"),
                       response['errors'][0]['message'])
 
     def test_suppliers_query(self):

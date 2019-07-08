@@ -1,5 +1,6 @@
 import re
 from graphql import GraphQLError
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class ValidateFields:
@@ -11,8 +12,8 @@ class ValidateFields:
         regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:]')
         if(regex.search(name) is not None) or len(name.strip()) < 1:
             raise GraphQLError(
-                f'Invalid {city_country} name, cannot'
-                ' contain special charaters or be blank')
+                OUTLET_ERROR_RESPONSES[
+                    "invalid_city_or_country_name"].format(city_country))
         return name
 
 

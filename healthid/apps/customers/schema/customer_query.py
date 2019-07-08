@@ -10,6 +10,7 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.profiles.models import Profile
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
 
 
 class CustomerCustomerType(DjangoObjectType):
@@ -82,8 +83,10 @@ class Query(graphene.AbstractType):
                 Q(first_name__iexact=name) | Q(
                     last_name__iexact=name))
             if not resolved_value:
-                raise GraphQLError(
-                    'No customers found matching the name {}'.format(name))
+                name_query_error =\
+                    CUSTOMER_ERROR_RESPONSES[
+                        "customer_name_query_error"].format(name)
+                raise GraphQLError(name_query_error)
             return resolved_value
 
         if mobile_number:
@@ -91,9 +94,10 @@ class Query(graphene.AbstractType):
                 Q(primary_mobile_number=mobile_number) |
                 Q(secondary_mobile_number=mobile_number))
             if not resolved_value:
-                raise GraphQLError(
-                    'No customers found matching'
-                    ' the mobile number {}'.format(mobile_number))
+                mobile_query_error =\
+                    CUSTOMER_ERROR_RESPONSES[
+                        "customer_mobile_query_error"].format(name)
+                raise GraphQLError(mobile_query_error)
             return resolved_value
 
         if customer_id:
@@ -107,7 +111,7 @@ class Query(graphene.AbstractType):
         for key in kwargs:
             if key == 'email__iexact':
                 EmailValidator(
-                    message='Please provide a valid email')(
+                    message=CUSTOMER_ERROR_RESPONSES["invalid_email"])(
                     kwargs[key])
             else:
                 RegexValidator(
@@ -121,7 +125,8 @@ class Query(graphene.AbstractType):
 
         if not resolved_value:
             queries = ', '.join(list(kwargs.values()))
-            raise GraphQLError(
-                'Customer matching the search'
-                ' parameters ({}) does not exist'.format(queries))
+            query_error =\
+                CUSTOMER_ERROR_RESPONSES[
+                    "customer_query_error"].format(queries)
+            raise GraphQLError(query_error)
         return resolved_value

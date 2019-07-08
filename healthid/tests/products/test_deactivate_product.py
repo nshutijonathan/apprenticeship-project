@@ -1,6 +1,7 @@
 from healthid.tests.test_fixtures.products import (
     deactivate_product, retrieve_deactivated_products, activate_product)
 from healthid.tests.products.test_create_product import TestCreateProduct
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class TestDeactivateProducts(TestCreateProduct):
@@ -46,7 +47,8 @@ class TestDeactivateProducts(TestCreateProduct):
         response = self.query_with_token(self.access_token_master,
                                          deactivate_product([101]))
         self.assertEqual(response['errors'][0]['message'],
-                         'Product with id 101 doen\'t exist or is deactivated')
+                         "Product with id [101] does not exist or is "
+                         "already deactivated.")
 
     def test_cannot_deactivate_product_when_unauthenticated(self):
         '''
@@ -126,7 +128,8 @@ class TestDeactivateProducts(TestCreateProduct):
         response = self.query_with_token(self.access_token_master,
                                          activate_product([101]))
         self.assertEqual(response['errors'][0]['message'],
-                         'Product with id 101 doen\'t exist or is activated.')
+                         PRODUCTS_ERROR_RESPONSES[
+                         "product_activation_error"].format("[101]"))
 
     def test_cannot_activate_product_when_unauthenticated(self):
         '''

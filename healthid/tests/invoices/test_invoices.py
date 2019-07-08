@@ -2,6 +2,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.invoices import upload_invoice
 from healthid.tests.test_fixtures.orders import order as initiate_order
 from mock import patch
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class InvoiceTestCase(BaseConfiguration):
@@ -37,7 +38,8 @@ class InvoiceTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             upload_invoice.format(**self.invoice_data))
-        expected_message = "Invoice uploaded successfully"
+        expected_message = SUCCESS_RESPONSES[
+                           "upload_success"].format("Invoice")
         self.assertEqual(
             expected_message,
             response["data"]["uploadInvoice"]["message"])

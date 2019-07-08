@@ -3,6 +3,8 @@ from healthid.tests.test_fixtures.batch_info \
     import batch_info_query, update_batch_info, \
     query_product_batch_info, single_batch_info, \
     all_batch_info, delete_batch_info
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class TestBatchInfo(BaseConfiguration):
@@ -78,9 +80,9 @@ class TestBatchInfo(BaseConfiguration):
         self.batch_data['supplier_id'] = supplier_id
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**self.batch_data))
-        self.assertIn(
-            f"Suppliers with supplier_id {supplier_id} does not exist.",
-            resp['errors'][0]['message'])
+        self.assertIn("Suppliers with supplier_id "
+                      "S-UNI2021 does not exist.",
+                      resp['errors'][0]['message'])
 
     def test_invalid_product_id(self):
         """
@@ -90,7 +92,8 @@ class TestBatchInfo(BaseConfiguration):
         self.batch_data['product_id'] = product_id
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**self.batch_data))
-        self.assertIn(f"Product with id {product_id} does not exist.",
+        self.assertIn(PRODUCTS_ERROR_RESPONSES[
+                      "inexistent_product"].format(product_id),
                       resp['errors'][0]['message'])
 
     def test_invalid_date_format(self):
@@ -102,8 +105,8 @@ class TestBatchInfo(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn(
-            f"Incorrect data format for {date_field}, "
-            f"should be YYYY-MM-DD", resp['errors'][0]['message'])
+            ERROR_RESPONSES["invalid_date_format"].format(date_field),
+            resp['errors'][0]['message'])
 
     def test_invalid_batch_info_id(self):
         """
@@ -116,7 +119,8 @@ class TestBatchInfo(BaseConfiguration):
             update_batch_info.format(**self.batch_data))
 
         self.assertIn('data', resp)
-        self.assertIn(f"BatchInfo with id {batch_info_id} does not exist.",
+        self.assertIn(PRODUCTS_ERROR_RESPONSES[
+                      "inexistent_batchinfo"].format(batch_info_id),
                       resp['errors'][0]['message'])
 
     def test_delete_batch_info(self):

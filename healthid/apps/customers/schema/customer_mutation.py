@@ -8,6 +8,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.customer_utils.create_customer_validation \
      import (validate_customer_fields)
+from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class CreateCustomer(graphene.Mutation):
@@ -59,7 +61,8 @@ class CreateCustomer(graphene.Mutation):
         customer = validate_customer_fields(Profile(), **kwargs)
         with SaveContextManager(customer, model=Profile) as customer:
             return CreateCustomer(
-                message="Customer Created successfully",
+                message=SUCCESS_RESPONSES[
+                        "creation_success"].format("Customer"),
                 customer=customer)
 
 
@@ -111,7 +114,8 @@ class EditCustomerBasicProfile(graphene.Mutation):
     @login_required
     def mutate(self, info, id, **kwargs):
         customer = get_model_object(
-            Profile, "id", id, message="Customer profile cannot be found")
+            Profile, "id", id, message=CUSTOMER_ERROR_RESPONSES[
+                                       "customer_profile_not_found"])
         existing_fields = model_to_dict(customer)
         if "city_id" in kwargs:
             kwargs["city"] = kwargs.pop("city_id")
@@ -124,7 +128,7 @@ class EditCustomerBasicProfile(graphene.Mutation):
             if key in kwargs and value != kwargs.get(key)}
         if not changed_fields:
             return EditCustomerBasicProfile(
-                message='Profile fields unchanged, nothing to edit',
+                message=CUSTOMER_ERROR_RESPONSES["unchanged_edits"],
                 customer=customer)
         if "city" in changed_fields:
             changed_fields["city_id"] = changed_fields.pop("city")
@@ -132,8 +136,9 @@ class EditCustomerBasicProfile(graphene.Mutation):
             changed_fields["country_id"] = changed_fields.pop("country")
         customer = validate_customer_fields(customer, **changed_fields)
         with SaveContextManager(customer, model=Profile) as customer:
-            message = f"Successfully updated {customer.first_name}'s"\
-                " basic profile"
+            message = SUCCESS_RESPONSES[
+                      "update_success"].format(
+                      customer.first_name + "'s basic profile")
             return EditCustomerBasicProfile(
                 message=message,
                 customer=customer)

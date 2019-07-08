@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from healthid.apps.preference.models import OutletPreference
 from graphql_jwt.decorators import login_required
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class OutletTypePreference(DjangoObjectType):
@@ -41,7 +42,8 @@ class UpdateOutletPreference(graphene.Mutation):
                                                           **kwargs)
         return cls(
                 preference=preference,
-                success="Preference updated successfully")
+                success=SUCCESS_RESPONSES[
+                        "update_success"].format("Preference"))
 
 
 class Mutation(graphene.ObjectType):

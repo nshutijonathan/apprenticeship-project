@@ -1,6 +1,10 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import \
     add_user_query, admin_update_user_query
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES
 
 
 class TestAddUser(BaseConfiguration):
@@ -70,7 +74,7 @@ class TestAddUser(BaseConfiguration):
 
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        self.assertIn("Please input a valid email",
+        self.assertIn(ERROR_RESPONSES["invalid_field_error"].format("email"),
                       resp['errors'][0]['message'])
 
     def test_wrong_mobile_number(self):
@@ -89,9 +93,10 @@ class TestAddUser(BaseConfiguration):
 
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        self.assertIn(
-            "Mobile number must have a 9-15 digits (ex. +2346787646)",
-            resp['errors'][0]['message'])
+        self.assertIn(ERROR_RESPONSES[
+                      "invalid_field_error"
+                      ].format("mobile number (ex. +2346787646)"),
+                      resp['errors'][0]['message'])
 
     def test_existing_email(self):
         # test if the email already exists
@@ -126,7 +131,7 @@ class TestAddUser(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
         self.assertIn('errors', resp)
-        self.assertIn("Outlet Id cannot be Empty",
+        self.assertIn(ERROR_RESPONSES["empty_field_error"].format("Outlet Id"),
                       resp['errors'][0]['message'])
 
     def test_invalid_outlet_id(self):
@@ -146,7 +151,8 @@ class TestAddUser(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
         self.assertIn('errors', resp)
-        self.assertIn(f"Outlet with id {outlet_id} does not exist.",
+        self.assertIn(OUTLET_ERROR_RESPONSES[
+                      "inexistent_outlet"].format(outlet_id),
                       resp['errors'][0]['message'])
 
     def test_invalid_role_id(self):
@@ -166,5 +172,5 @@ class TestAddUser(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
         self.assertIn('errors', resp)
-        self.assertIn(f"Role with id {role_id} does not exist.",
+        self.assertIn(AUTH_ERROR_RESPONSES["inexistent_role"].format(role_id),
                       resp['errors'][0]['message'])

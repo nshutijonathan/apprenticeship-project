@@ -24,6 +24,10 @@ from healthid.utils.auth_utils.password_generator import generate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.auth_utils.validations import ValidateUser
 from healthid.utils.app_utils.send_mail import SendMail
+from healthid.utils.messages.authentication_responses import (
+    AUTH_SUCCESS_RESPONSES,
+    AUTH_ERROR_RESPONSES)
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
@@ -90,11 +94,12 @@ class RegisterUser(graphene.Mutation):
             send_mail = SendMail(
                 email_verify_template, context, subject, to_email)
             send_mail.send()
+            registration_message =\
+                AUTH_SUCCESS_RESPONSES["registration_success"]
+            verification_message = AUTH_SUCCESS_RESPONSES["email_verification"]
 
             success = [
-                "message",
-                "You have successfully registered with healthID."
-                " Please check your email to verify your account"
+                registration_message + verification_message
             ]
             verification_link = f"{DOMAIN}/healthid/activate/{uid}/{token}"
             return RegisterUser(success=success, user=user,
@@ -191,9 +196,10 @@ class AddUser(graphene.Mutation):
                 email_verify_template, context, subject, to_email)
             send_mail.send()
             verification_link = f"{DOMAIN}/healthid/activate/{uid}/{token}"
+            add_user_message =\
+                AUTH_SUCCESS_RESPONSES["adding_new_user"].format(user.username)
             success = [
-                'message',
-                'You have successfully registered a User.'
+                add_user_message
             ]
 
             return AddUser(success=success, user=user,
@@ -246,9 +252,9 @@ class AdminUpdateUserDetails(graphene.Mutation):
             user.profile_image = \
                 cloudinary.uploader.upload(profile_image).get('url')
         user.save()
+        update_message = SUCCESS_RESPONSES["update_success"]
         message = [
-            'message',
-            'You have successfully updated this User.'
+            update_message.format(user.username)
         ]
         return AdminUpdateUserDetails(message=message, user=user)
 
@@ -279,14 +285,16 @@ class UpdateUserDetails(graphene.Mutation):
             old_password = password_input[0].old_password
             check_old_password = user.check_password(old_password)
             if not check_old_password:
-                raise GraphQLError('password does not match old password!')
+                error_message = AUTH_ERROR_RESPONSES["password_match_error"]
+                raise GraphQLError(error_message)
         if kwargs.get('email') is not None:
             email = kwargs.get('email')
             if User.objects.filter(email=email):
-                raise GraphQLError('email has already been registered.')
+                email_error = AUTH_ERROR_RESPONSES["email_duplicate_error"]
+                raise GraphQLError(email_error)
 
         user_update_instance.update_user(user, **kwargs)
-        success = "user successfully updated"
+        success = SUCCESS_RESPONSES["update_success"].format(user.username)
         return UpdateUserDetails(
             success=success, error=None, user=user)
 
@@ -346,12 +354,12 @@ class UpdateUserRole(graphene.Mutation):
         business_admin = business_users.filter(
             role=admin_instance).count()
         if user_instance.role == role_instance:
-            raise GraphQLError("This user is already assigned to this role")
+            role_error = AUTH_ERROR_RESPONSES["assigning_user_roles"]
+            raise GraphQLError(role_error)
         if business_admin == 1 \
                 and role_instance != admin_instance:
-            raise GraphQLError("You cannot downgrade this User: "
-                               "This user is the only Master Admin "
-                               "in this business")
+            downgrade_error = AUTH_ERROR_RESPONSES["downgrade_user"]
+            raise GraphQLError(downgrade_error)
         user_instance.role = role_instance
         user_instance.save()
         message = [
@@ -386,7 +394,8 @@ class EditRole(graphene.Mutation):
         role_instance.name = input.name
         with SaveContextManager(role_instance, model=Role):
             success = True
-            message = [f"Successfully Edited the role"]
+            edit_success = SUCCESS_RESPONSES["update_success"]
+            message = [edit_success.format(role_instance.name)]
             return EditRole(
                 success=success, role=role_instance, message=message
             )
@@ -411,7 +420,8 @@ class DeleteRole(graphene.Mutation):
     def mutate(root, info, id):
         role_instance = get_model_object(Role, 'id', id)
         success = True
-        message = [f"Role {role_instance.name} has been deleted"]
+        message =\
+            SUCCESS_RESPONSES["deletion_success"].format(role_instance.name)
         role_instance.delete()
         return DeleteRole(success=success, message=message)
 
@@ -438,7 +448,7 @@ class UpdateAdminUser(graphene.Mutation):
             if key is not None:
                 setattr(user_instance, key, value)
         user_instance.save()
-        success = 'admin profile successfully updated'
+        success = SUCCESS_RESPONSES["update_success"].format("Admin Profile")
         return UpdateAdminUser(user=user_instance, success=success)
 
 

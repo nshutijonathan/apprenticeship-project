@@ -7,6 +7,8 @@ from django.dispatch import receiver
 from healthid.apps.products.models import BatchInfo, Product, Quantity
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.notifications_utils.handle_notifications import notify
+from healthid.utils.messages.products_responses import \
+     PRODUCTS_SUCCESS_RESPONSES
 
 
 @receiver(post_save, sender=Product)
@@ -70,8 +72,8 @@ def notify_quantity(sender, instance, created, **kwargs):
                 if str(user.role) == "Master Admin" or str(user.role) == \
                         "Operations Admin":
                     all_users.append(user)
-            message = ("Batch no: {} has a"
-                       " proposed quantity edit.").format(batch.batch_no)
+            message = PRODUCTS_SUCCESS_RESPONSES[
+                      "batch_edit_proposal"].format(batch.batch_no)
             notify(all_users, message, event_name='batch_quantity')
     # if quantity instance is not a proposal,
     # we can check if the product quantity is low
@@ -86,8 +88,8 @@ def notify_quantity(sender, instance, created, **kwargs):
 
         # notify all outlet users.
         if product.quantity < quantity_threshold:
-            message = "Low quantity alert!"
-            message += " Product name: {}, Unit(s) left: {}." \
-                .format(product.product_name,
-                        product.quantity)
+            message = PRODUCTS_SUCCESS_RESPONSES[
+                      "low_quantity_alert"].format(
+                                             product.product_name,
+                                             product.quantity)
             notify(outlet_users, message, event_name='product_quantity')

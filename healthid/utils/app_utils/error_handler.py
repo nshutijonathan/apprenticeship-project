@@ -6,7 +6,7 @@ class ErrorHandler():
 
     def check_conflict(self, model, field, value, error_type=None):
         # Database integrity error
-        message = f'{model} with {field} {value} already exists.'
+        message = f'{model} with {field} {value}, already exists!'
         if error_type is not None:
             raise error_type({'error': message})
         raise GraphQLError(message)

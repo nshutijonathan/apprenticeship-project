@@ -10,6 +10,8 @@ from django.views import View
 from healthid.apps.authentication.models import User
 from healthid.utils.app_utils.validators import validate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 FRONTEND_URL = settings.FRONTEND_URL
 HTTP = settings.HTTP
@@ -25,17 +27,15 @@ def activate(request, uidb64, token):
 
     if not check_token and user:
         if user.is_active:
-            message = ('Your account is already verified,'
-                       ' Please click the button below to login')
+            message = AUTH_SUCCESS_RESPONSES["account_verification"]
             link = f'{HTTP}://{FRONTEND_URL}/login'
             status = 409  # conflict
         else:  # token may be expired
-            message = ('We could not verify your account,'
-                       ' the verification link might have expired'
-                       ' please contact your admin')
+            message = AUTH_ERROR_RESPONSES["account_verification_fail"]
             status = 401  # unauthorised
     if not user and not check_token:  # token tampered with/corrupted
-        message = 'This verification link is corrupted'  # link tampered with
+        # link tampered with
+        message = AUTH_ERROR_RESPONSES["verification_link_corrupt"]
         status = 401
     context = {
         'template_type': 'Email Verification Failed',
@@ -56,8 +56,7 @@ class PasswordResetView(View):
                 f'{HTTP}://{FRONTEND_URL}/reset_password/{uidb64}/{token}'
             )
         else:
-            error = ('Reset link is expired or corrupted.'
-                     ' Please request another.')
+            error = AUTH_ERROR_RESPONSES["reset_link_expiration"]
             context = {
                 'template_type': 'Reseting password  failed',
                 'small_text_detail': error,
@@ -80,12 +79,12 @@ class PasswordResetView(View):
             else:
                 user.set_password(new_password)
                 user.save()
-                message = "Your password was successfully reset."
+                message = AUTH_SUCCESS_RESPONSES["password_reset_success"]
                 status = 200
             response = {"message": message}
             return JsonResponse(response, status=status)
         else:
-            message = 'Verification link is corrupted or expired'
+            message = AUTH_ERROR_RESPONSES["verification_link_corrupt"]
             response = {"message": message}
         return JsonResponse(response, status=401)
 

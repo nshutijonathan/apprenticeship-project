@@ -1,5 +1,7 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import (create_product_category)
+from healthid.utils.messages.common_responses import\
+     SUCCESS_RESPONSES, ERROR_RESPONSES
 
 
 class TestProductCategory(BaseConfiguration):
@@ -15,8 +17,10 @@ class TestProductCategory(BaseConfiguration):
             self.access_token_master,
             create_product_category.format(outlet_id=self.outlet.id)
         )
-        self.assertIn('Product Category created successfully',
-                      response['data']['createProductCategory']['message'])
+        self.assertIn(SUCCESS_RESPONSES[
+                      "creation_success"].format("Product Category"),
+                      "".join(response['data'][
+                                       'createProductCategory']['message']))
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
 
@@ -32,6 +36,8 @@ class TestProductCategory(BaseConfiguration):
             self.access_token_master,
             create_product_category.format(outlet_id=self.outlet.id)
         )
-        self.assertIn('ProductCategory with name panadol already exists.',
+        self.assertIn(ERROR_RESPONSES[
+                      "duplication_error"
+                      ].format("ProductCategory with name panadol"),
                       duplicate_category['errors'][0]['message'])
         self.assertIn('errors', duplicate_category)

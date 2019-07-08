@@ -11,6 +11,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.events_utils.validate_role import ValidateAdmin
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class EventType(DjangoObjectType):
@@ -42,7 +44,7 @@ class CreateEvent(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
-        msg = "Sorry, calendar is only used by outlet staff!"
+        msg = EVENTS_ERROR_RESPONSES["calendar_restriction_error"]
 
         outlet = get_model_object(Outlet, 'user', user, message=msg)
         event_type = kwargs.get('event_type')
@@ -63,7 +65,7 @@ class CreateEvent(graphene.Mutation):
             event.user.add(user)
             event.outlet.add(outlet)
             event.save()
-            success = ["Event created successfully!"]
+            success = SUCCESS_RESPONSES["creation_success"].format("Event")
             return CreateEvent(event=event, success=success)
 
 
@@ -91,14 +93,16 @@ class UpdateEvent(graphene.Mutation):
         event = get_model_object(Event, 'id', _id)
         event_creator = event.user.first()
         if str(request_user.email) != str(event_creator.email):
-            raise GraphQLError("Can't update events that don't belong to you!")
+            authorization_error =\
+                EVENTS_ERROR_RESPONSES["event_update_validation_error"]
+            raise GraphQLError(authorization_error)
         new_event = kwargs.items()
 
         for key, value in new_event:
             if key is not None:
                 setattr(event, key, value)
         event.save()
-        success = ["Event updated successfully!"]
+        success = SUCCESS_RESPONSES["update_success"].format("Event")
         return UpdateEvent(event=event, success=success)
 
 
@@ -118,11 +122,11 @@ class DeleteEvent(graphene.Mutation):
         event = get_model_object(Event, 'id', id)
         event_creator = event.user.first()
         if request_user != event_creator:
-            raise GraphQLError(
-                "You can't delete events that don't belong to you!"
-            )
+            delete_error =\
+                EVENTS_ERROR_RESPONSES["event_delete_validation_error"]
+            raise GraphQLError(delete_error)
         event.delete(request_user)
-        success = ["Event deleted successfully!"]
+        success = SUCCESS_RESPONSES["deletion_success"].format("Event")
         return DeleteEvent(success=success)
 
 
@@ -142,7 +146,8 @@ class CreateEventType(graphene.Mutation):
         params = {'model': 'EventType'}
         event_type = EventTypeModel(name=name)
         with SaveContextManager(event_type, **params) as event_type:
-            success = ['Event Type created successfully!']
+            success =\
+                SUCCESS_RESPONSES["creation_success"].format("Event type")
             return CreateEventType(
                 success=success, event_type=event_type
             )

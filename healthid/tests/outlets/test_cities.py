@@ -7,6 +7,7 @@ from healthid.tests.test_fixtures.outlets import (
     query_city_string_by_name,
     query_city_string_by_id,
 )
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class CityTestCase(CountryTestCase):
@@ -39,7 +40,8 @@ class CityTestCase(CountryTestCase):
             self.access_token_master, query_string
         )
         self.assertEqual(
-            'Invalid city name, cannot contain special charaters or be blank',
+            OUTLET_ERROR_RESPONSES[
+                "invalid_city_or_country_name"].format("city"),
             response['errors'][0]['message'])
 
     def test_create_city_country_does_not_exist(self):
@@ -52,7 +54,7 @@ class CityTestCase(CountryTestCase):
             self.access_token_master, query_string
         )
         self.assertEqual(
-            f'Country with id {country_id} does not exist.',
+            OUTLET_ERROR_RESPONSES["invalid_country_id"].format(country_id),
             response['errors'][0]['message'])
 
     def test_create_city_already_exists(self):
@@ -65,7 +67,8 @@ class CityTestCase(CountryTestCase):
         response = self.query_with_token(
             self.access_token_master, query_string
         )
-        self.assertEqual('City Kampala already exists',
+        self.assertEqual(OUTLET_ERROR_RESPONSES[
+                         "city_double_creation_error"].format("City Kampala"),
                          response['errors'][0]['message'])
 
     def test_edit_city(self):
@@ -91,7 +94,7 @@ class CityTestCase(CountryTestCase):
             self.access_token_master, query_string
         )
         self.assertEqual(
-            f'City with id {faked_id} does not exist.',
+            OUTLET_ERROR_RESPONSES["invalid_city_id"].format(faked_id),
             response['errors'][0]['message'])
 
     def test_fetch_all_cities(self):
@@ -116,7 +119,7 @@ class CityTestCase(CountryTestCase):
             self.access_token_master,
             query_city_string_by_name.format(name='kampala')
         )
-        self.assertEqual('This city does not exist',
+        self.assertEqual(OUTLET_ERROR_RESPONSES["inexistent_city_error"],
                          response['errors'][0]['message'])
 
     def test_fetch_single_city_with_id(self):

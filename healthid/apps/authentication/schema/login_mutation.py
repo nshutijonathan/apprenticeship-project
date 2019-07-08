@@ -8,6 +8,8 @@ from rest_framework.authtoken.models import Token
 from healthid.apps.authentication.models import User
 from healthid.apps.authentication.schema.auth_queries import UserType
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 
 class LoginUser(graphene.Mutation):
@@ -25,7 +27,7 @@ class LoginUser(graphene.Mutation):
         email = kwargs.get('email')
         mobile_number = kwargs.get('mobile_number')
         password = kwargs.get('password')
-        message = "Invalid login credentials"
+        message = AUTH_ERROR_RESPONSES["login_validation_error"]
         if email is None:
             user = get_model_object(
                 User, 'mobile_number', mobile_number, message=message)
@@ -35,7 +37,7 @@ class LoginUser(graphene.Mutation):
             user_auth = authenticate(username=email, password=password)
             if user_auth is None:
                 raise GraphQLError(message)
-            message = "Login Successful"
+            message = AUTH_SUCCESS_RESPONSES["login_success"]
             # Create token to access GraphQL-based views
             payload = jwt_payload(user_auth)
             token = jwt_encode(payload)

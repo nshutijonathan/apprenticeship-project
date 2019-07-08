@@ -6,6 +6,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.apps.sales.schema.cart_query import CartItemType
 from healthid.apps.sales.models import Cart, CartItem
 from healthid.apps.products.models import Product
+from healthid.utils.messages.sales_responses import\
+     SALES_SUCCESS_RESPONSES, SALES_ERROR_RESPONSES
 
 
 class AddCartItem(graphene.Mutation):
@@ -34,17 +36,20 @@ class AddCartItem(graphene.Mutation):
         product_id = kwargs.get('product_id')
         product = get_model_object(Product, 'id', product_id)
         if not product.is_approved:
-            raise GraphQLError(f'{product.product_name} isn\'t approved yet.')
+            raise GraphQLError(
+                  SALES_ERROR_RESPONSES[
+                      "unapproved_product_error"].format(product.product_name))
         quantity = kwargs.get('quantity')
         if quantity > product.quantity:
             raise GraphQLError(
-                f'There is only quantity {product.quantity} of '
-                f'{product.product_name} available in stock.'
-            )
+                SALES_ERROR_RESPONSES[
+                    "in_stock_product_error"].format(
+                        product.quantity, product.product_name))
         cart_item = CartItem(product=product, quantity=quantity)
         with SaveContextManager(cart_item) as cart_item:
             cart.items.add(cart_item)
-            return AddCartItem(success='Product added to cart.',
+            return AddCartItem(success=SALES_SUCCESS_RESPONSES[
+                               "add_to_cart_success"],
                                cart_item=cart_item)
 
 

@@ -1,6 +1,8 @@
 from django.core.management import call_command
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures import products
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class ApproveProducts(BaseConfiguration):
@@ -25,7 +27,8 @@ class ApproveProducts(BaseConfiguration):
             products.approve_product.format(product_id=product_id))
         self.assertIn("success", response["data"]["approveProduct"])
         self.assertNotIn("errors", response)
-        self.assertIn(f"Product {product_id} has successfully been approved.",
+        self.assertIn(SUCCESS_RESPONSES[
+                      "approval_success"].format("Product " + product_id),
                       response['data']["approveProduct"]["success"])
 
     def test_approve_product_with_invalid_id(self):
@@ -36,7 +39,7 @@ class ApproveProducts(BaseConfiguration):
             products.approve_product.format(product_id=invalid_id))
         self.assertNotIn("success", response)
         self.assertIn("errors", response)
-        self.assertIn(f"Product with id {invalid_id} does not exist.",
+        self.assertIn("Product with id 10 does not exist.",
                       response['errors'][0]['message'])
 
     def test_approve_already_approved_product(self):
@@ -48,6 +51,7 @@ class ApproveProducts(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             products.approve_product.format(product_id=product_id))
-        self.assertIn(f"Product {product_id} has already been approved",
+        self.assertIn(PRODUCTS_ERROR_RESPONSES[
+                      "product_approval_duplication"].format(product_id),
                       response['errors'][0]['message'])
         self.assertIn('errors', response)

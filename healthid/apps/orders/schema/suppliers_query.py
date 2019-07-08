@@ -8,6 +8,7 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models import Suppliers, SupplierNote
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
 
 
 class SuppliersType(DjangoObjectType):
@@ -69,12 +70,13 @@ class Query(graphene.AbstractType):
     def resolve_filter_suppliers(self, info, **kwargs):
         for key in kwargs:
             if kwargs[key] == "":
-                message = 'Please provide a valid search keyword'
+                message = ORDERS_ERROR_RESPONSES["supplier_search_key_error"]
                 raise GraphQLError(message)
 
         supplier = Suppliers.objects.filter(**kwargs, parent=None)
         if not supplier:
-            message = "Supplier matching query does not exist!"
+            message = ORDERS_ERROR_RESPONSES[
+                      "inexistent_supplier_search_error"]
             raise GraphQLError(message)
 
         return supplier

@@ -23,6 +23,9 @@ from healthid.utils.product_utils.activate_deactivate_product import \
 from healthid.utils.product_utils.product import set_product_attributes
 from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import\
+     PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
 
 
 class ProductInput(graphene.InputObjectType):
@@ -101,10 +104,10 @@ class UpdateProduct(graphene.Mutation):
             output.is_approved = False
             output.user = user
             output.save()
-            message = 'Proposed update pending approval'
+            message = PRODUCTS_SUCCESS_RESPONSES["approval_pending"]
             return UpdateProduct(product=output, message=message)
         output = set_product_attributes(product, **kwargs)
-        message = 'Product successfully updated'
+        message = SUCCESS_RESPONSES["update_success"].format("Product")
         return UpdateProduct(product=output, message=message)
 
 
@@ -123,10 +126,12 @@ class DeleteProduct(graphene.Mutation):
         user = info.context.user
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
-            raise GraphQLError("Approved product can't be deleted.")
+            raise GraphQLError(
+                  PRODUCTS_ERROR_RESPONSES["approve_deletion_error"])
         product.delete(user)
 
-        return DeleteProduct(success="Product has been deleted")
+        return DeleteProduct(
+               success=SUCCESS_RESPONSES["deletion_success"].format("Product"))
 
 
 class ApproveProduct(graphene.Mutation):
@@ -146,11 +151,13 @@ class ApproveProduct(graphene.Mutation):
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
             raise GraphQLError(
-                "Product {} has already been approved".format(id))
+               PRODUCTS_ERROR_RESPONSES[
+                   "product_approval_duplication"].format(id))
         product.is_approved = True
         product.save()
         success = [
-            'message', 'Product {} has successfully been approved.'.format(id)
+            'message',
+            SUCCESS_RESPONSES["approval_success"].format("Product " + str(id))
         ]
         return ApproveProduct(success=success, product=product)
 
@@ -165,7 +172,8 @@ class ApproveProposedEdits(graphene.Mutation):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         request_id = kwargs.get('edit_request_id')
-        message = "No proposed edit with id {request_id}"
+        message = PRODUCTS_ERROR_RESPONSES[
+                  "inexistent_proposed_edit"].format(request_id)
 
         proposed_edit = get_model_object(
             Product, 'id', request_id, message=message)
@@ -192,7 +200,8 @@ class ApproveProposedEdits(graphene.Mutation):
                 setattr(parent, key, value)
         proposed_edit.hard_delete()
         parent.save()
-        message = ["You have succesfully aapproved edit request"]
+        message = [SUCCESS_RESPONSES["approval_success"].format(
+                                                         "Edit request")]
         return ApproveProposedEdits(product=parent, message=message)
 
 
@@ -212,7 +221,8 @@ class DeclineProposedEdits(graphene.Mutation):
         edit_request.admin_comment = comment
         edit_request.save()
         product_name = edit_request.product_name
-        msg = f"Edit request for product {product_name} has been declined!"
+        msg = PRODUCTS_SUCCESS_RESPONSES[
+              "edit_request_decline"].format(product_name)
         return DeclineProposedEdits(message=msg, edit_request=edit_request)
 
 
@@ -251,7 +261,7 @@ class UpdatePrice(graphene.Mutation):
             return UpdatePrice(products=set_price.products, errors=errors)
         return UpdatePrice(
             products=set_price.products,
-            message='successfully set prices for products')
+            message=PRODUCTS_SUCCESS_RESPONSES["set_price_success"])
 
 
 class UpdateLoyaltyWeight(graphene.Mutation):
@@ -269,7 +279,8 @@ class UpdateLoyaltyWeight(graphene.Mutation):
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
-            raise GraphQLError("Loyalty weight can't be set below one")
+            raise GraphQLError(
+                  PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
         product_category_id = kwargs.get("product_category_id")
         products = ProductQuery().query_product_category(product_category_id)
         category = get_model_object(ProductCategory, 'id', product_category_id)
@@ -277,7 +288,7 @@ class UpdateLoyaltyWeight(graphene.Mutation):
             product.loyalty_weight = loyalty_value
             product.save()
 
-        message = 'Loyalty weight was successfully updated'
+        message = SUCCESS_RESPONSES["update_success"].format("Loyalty weight")
         return UpdateLoyaltyWeight(category=category, message=message)
 
 
@@ -296,12 +307,13 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
-            raise GraphQLError("Loyalty weight can't be set below one")
+            raise GraphQLError(
+                  PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
         product_id = kwargs.get("id")
         product = get_model_object(Product, 'id', product_id)
         product.loyalty_weight = loyalty_value
         product.save()
-        message = 'Loyalty weight was successfully updated'
+        message = SUCCESS_RESPONSES["update_success"].format("Loyalty weight")
         return UpdateAProductLoyaltyWeight(product=product, message=message)
 
 
@@ -325,10 +337,11 @@ class ActivateProduct(ActivateDeactivateProducts):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         product_ids = kwargs.get('product_ids')
-        error_msg = \
-            'Product with id {product_id} doen\'t exist or is activated.'
+        error_msg = PRODUCTS_ERROR_RESPONSES[
+                    "product_activation_error"].format(product_ids)
         products = activate_deactivate_products(product_ids, False, error_msg)
-        success = f'Products with ids {product_ids} have been activated.'
+        success = PRODUCTS_SUCCESS_RESPONSES[
+                  "product_activation_success"].format(product_ids)
         return ActivateProduct(success=success, products=products)
 
 
@@ -341,10 +354,11 @@ class DeativateProduct(ActivateDeactivateProducts):
     @user_permission('Operations Admin')
     def mutate(self, info, **kwargs):
         product_ids = kwargs.get('product_ids')
-        error_msg = \
-            'Product with id {product_id} doen\'t exist or is deactivated'
+        error_msg = PRODUCTS_ERROR_RESPONSES[
+                    "product_deactivation_error"].format(product_ids)
         products = activate_deactivate_products(product_ids, True, error_msg)
-        success = f'Products with ids {product_ids} have been deactivated.'
+        success = PRODUCTS_SUCCESS_RESPONSES[
+                  "product_deactivation_success"].format(product_ids)
         return DeativateProduct(success=success, products=products)
 
 

@@ -6,6 +6,8 @@ from healthid.tests.test_fixtures.price_check_survey import (
     update_price_survey_without_suppliers)
 from healthid.apps.products.models import Survey
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class TestPriceCheckSurvey(BaseConfiguration):
@@ -54,7 +56,7 @@ class TestPriceCheckSurvey(BaseConfiguration):
             update_price_survey.format(**self.survey_data)
         )
 
-        self.assertIn('successfully updated',
+        self.assertIn('updated successfully!',
                       response['data']['updatePriceCheckSurvey']['success'])
 
     def test_get_all_surveys(self):
@@ -117,7 +119,7 @@ class TestPriceCheckSurvey(BaseConfiguration):
             update_price_survey.format(**self.survey_data)
         )
 
-        message = 'This survey has already been closed'
+        message = PRODUCTS_ERROR_RESPONSES["closed_survey_error"]
         self.assertIn(message, response['errors'][0]['message'])
 
     def test_empty_name_when_creating(self):
@@ -133,7 +135,7 @@ class TestPriceCheckSurvey(BaseConfiguration):
             create_price_survey.format(**self.survey_data)
         )
 
-        message = 'name field cannot be blank'
+        message = "name field cannot be blank!"
         self.assertIn(message, response['errors'][0]['message'])
 
     def test_update_to_existing_survey_name(self):
@@ -156,7 +158,7 @@ class TestPriceCheckSurvey(BaseConfiguration):
             update_price_survey.format(**self.survey_data)
         )
 
-        message = 'New Survey already exists'
+        message = ERROR_RESPONSES["duplication_error"].format("New Survey")
         self.assertIn(message, response['errors'][0]['message'])
 
     def test_create_with_existing_name(self):
@@ -170,7 +172,8 @@ class TestPriceCheckSurvey(BaseConfiguration):
             create_price_survey.format(**self.survey_data)
         )
 
-        message = 'Painkillers survey already exists.'
+        message = ERROR_RESPONSES[
+                  "duplication_error"].format("Painkillers survey")
         self.assertIn(message, response['errors'][0]['message'])
 
     def test_delete_non_existent_survey(self):
@@ -202,7 +205,7 @@ class TestPriceCheckSurvey(BaseConfiguration):
             update_price_survey_without_products.format(**self.survey_data)
         )
 
-        message = 'Please specify at least one product'
+        message = PRODUCTS_ERROR_RESPONSES["product_prompt"]
         self.assertIn(message, response['errors'][0]['message'])
 
     def test_update_with_empty_suppliers(self):
@@ -217,5 +220,5 @@ class TestPriceCheckSurvey(BaseConfiguration):
             update_price_survey_without_suppliers.format(**self.survey_data)
         )
 
-        message = 'Please specify at least one supplier'
+        message = PRODUCTS_ERROR_RESPONSES["supplier_prompt"]
         self.assertIn(message, response['errors'][0]['message'])

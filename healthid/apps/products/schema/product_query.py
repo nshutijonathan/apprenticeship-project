@@ -14,6 +14,8 @@ from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity, Survey)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 @convert_django_field.register(TaggableManager)
@@ -131,11 +133,13 @@ class Query(graphene.AbstractType):
 
         for key in kwargs:
             if isinstance(kwargs[key], str) and kwargs[key].strip() == "":
-                raise GraphQLError('Please provide a valid search keyword')
+                raise GraphQLError(
+                      PRODUCTS_ERROR_RESPONSES["invalid_search_key"])
 
         response = Product.objects.filter(**kwargs).order_by("product_name")
         if not response:
-            raise GraphQLError("Product matching search query does not exist")
+            raise GraphQLError(
+                  PRODUCTS_ERROR_RESPONSES["inexistent_product_query"])
         return response
 
     @login_required
@@ -151,7 +155,7 @@ class Query(graphene.AbstractType):
         id = kwargs.get('id')
         if id:
             return get_model_object(Product, 'id', id)
-        raise GraphQLError("Please provide the product id")
+        raise GraphQLError(ERROR_RESPONSES["invalid_field_error"].format(id))
 
     @login_required
     def resolve_proposed_edits(self, info):

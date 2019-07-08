@@ -11,6 +11,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.apps.receipts.models import Receipt
 from healthid.apps.receipts.schema.receipt_schema import ReceiptType
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class CreateSalesPrompts(graphene.Mutation):
@@ -40,11 +42,11 @@ class CreateSalesPrompts(graphene.Mutation):
 
         if not valid_list or len(product_ids) < 1:
 
-            raise GraphQLError('List inputs are incomplete or empty')
+            raise GraphQLError(SALES_ERROR_RESPONSES["incomplete_list"])
 
         for title, description in zip(titles, prompt_descriptions):
             if title.strip() == "" or description.strip() == "":
-                raise GraphQLError("Titles and discription must contain words")
+                raise GraphQLError(SALES_ERROR_RESPONSES["title_error"])
         created_prompts = []
         for index, title in enumerate(titles, 0):
 
@@ -63,7 +65,10 @@ class CreateSalesPrompts(graphene.Mutation):
 
         return CreateSalesPrompts(
             sales_prompts=created_prompts,
-            message=f'Successfully created {sales_prompt_count} sales prompt')
+            message=SUCCESS_RESPONSES[
+                    "creation_success"].format(
+                                        "Sales prompt " + str(
+                                                         sales_prompt_count)))
 
 
 class UpdateSalesPrompt(graphene.Mutation):
@@ -87,13 +92,13 @@ class UpdateSalesPrompt(graphene.Mutation):
         for key, value in kwargs.items():
             if key in ["prompt_title", "description"]:
                 if value.strip() == "":
-                    raise GraphQLError(
-                        "Titles or discription must contain words")
+                    raise GraphQLError(SALES_ERROR_RESPONSES["title_error"])
             setattr(salesPrompt, key, value)
         params = {'model': SalesPrompt}
         with SaveContextManager(salesPrompt, **params) as salesPrompt:
             return UpdateSalesPrompt(
-                success='Sales prompt was updated successfully',
+                success=SUCCESS_RESPONSES[
+                        "update_success"].format("Sales prompt"),
                 salesPrompt=salesPrompt)
 
 
@@ -114,7 +119,8 @@ class DeleteSalesPrompt(graphene.Mutation):
         prompt = get_model_object(SalesPrompt, 'id', id)
         prompt.delete(user)
         return DeleteSalesPrompt(
-            success="Sales Prompt was deleted successfully")
+            success=SUCCESS_RESPONSES[
+                    "deletion_success"].format("Sales prompt"))
 
 
 class Products(graphene.InputObjectType):

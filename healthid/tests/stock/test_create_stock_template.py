@@ -12,6 +12,7 @@ from healthid.tests.test_fixtures.stock import (
 )
 from healthid.utils.stock_utils.stock_count_alert import \
     generate_stock_counts_notifications
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class StockTemplateTestCase(BaseConfiguration):
@@ -45,7 +46,8 @@ class StockTemplateTestCase(BaseConfiguration):
 
     def test_create_stock_template(self):
         response = self.create_stock_template()
-        self.assertEqual('successfuly created stock count template',
+        self.assertEqual(SUCCESS_RESPONSES[
+                         "creation_success"].format("Stock count template"),
                          response['data']['createStockCountTemplate']
                          ['success'])
         self.assertEqual(len(mail.outbox), 1)
@@ -59,7 +61,8 @@ class StockTemplateTestCase(BaseConfiguration):
             edit_stock_template_string.format(
                 **self.stock_template_data, template_id=template_id)
         )
-        self.assertEqual('successfuly edited stock count template',
+        self.assertEqual(SUCCESS_RESPONSES[
+                         "edit_success"].format("Stock count template"),
                          response['data']['editStockCountTemplate']
                          ['success'])
         self.assertEqual(len(mail.outbox), 2)
@@ -72,7 +75,8 @@ class StockTemplateTestCase(BaseConfiguration):
             self.access_token_master,
             delete_stock_template_string.format(id=template_id)
         )
-        self.assertEqual('Stock template was successfully deleted',
+        self.assertEqual(SUCCESS_RESPONSES[
+                         "deletion_success"].format("Stock template"),
                          response['data']['deleteStockCountTemplate']
                          ['success'])
 

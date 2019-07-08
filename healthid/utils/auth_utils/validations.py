@@ -2,6 +2,7 @@ import re
 
 from graphql import GraphQLError
 from healthid.utils.app_utils.validators import validate_email
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class ValidateUser:
@@ -19,7 +20,9 @@ class ValidateUser:
         mobile_number = mobile_number.strip()
         if re.match(r'^\+\d{9,15}$', mobile_number) is None:
             raise GraphQLError(
-                'Mobile number must have a 9-15 digits (ex. +2346787646)')
+                ERROR_RESPONSES[
+                    "invalid_field_error"].format(
+                                           "mobile number (ex. +2346787646)"))
         return mobile_number
 
     def validate_password(self, password):

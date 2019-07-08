@@ -7,6 +7,7 @@ from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import get_model_object
 
 from .validations import ValidateUser
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class UpdateUser:
@@ -62,7 +63,9 @@ class UpdateUser:
                                        'to at least 1 (one) outlet')
                 for outlet in outlets:
                     if outlet == '':
-                        raise GraphQLError('Outlet Id cannot be Empty')
+                        raise GraphQLError(ERROR_RESPONSES[
+                                           "empty_field_error"].format(
+                                                                 "Outlet Id"))
                     get_model_object(Outlet, 'id', outlet)
             return func(*args, **kwargs)
         return wrapper

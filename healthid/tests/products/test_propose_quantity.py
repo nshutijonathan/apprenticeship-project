@@ -3,6 +3,7 @@ from healthid.apps.products.models import Quantity
 from healthid.tests.test_fixtures.batch_quantity import (propose_quantity,
                                                          propose_quantity2,
                                                          approve_quantity)
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class TestProposeQuantity(BaseConfiguration):
@@ -63,7 +64,7 @@ class TestProposeQuantity(BaseConfiguration):
         self.data['value'] = 'true'
         response = self.query_with_token(
             self.access_token_master, approve_quantity.format(**self.data))
-        self.assertIn("successfully approved",
+        self.assertIn("has been approved",
                       response['data']['approveQuantity']['message'])
 
     def test_decline_proposed_quantity(self):
@@ -90,5 +91,5 @@ class TestProposeQuantity(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master, approve_quantity.format(**self.data))
         self.assertIn(
-            f"Proposal for product with ids {self.product.id} doesn't exist",
+            PRODUCTS_ERROR_RESPONSES["inexistent_proposal_error"],
             response['errors'][0]['message'])

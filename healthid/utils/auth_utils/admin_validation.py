@@ -2,6 +2,9 @@
 import re
 
 from graphql import GraphQLError
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.authentication_responses import\
+      AUTH_ERROR_RESPONSES
 
 
 class ValidateAdmin:
@@ -28,13 +31,15 @@ class ValidateAdmin:
 
         name = name.strip()
         if not len(name) > 0:
-            raise GraphQLError('a name field must not be empty')
+            raise GraphQLError(ERROR_RESPONSES[
+                               "empty_field_error"].format("name field"))
 
         if not len(name) < 30:
-            raise GraphQLError('a name cannnot exceed 30 characters')
+            raise GraphQLError(AUTH_ERROR_RESPONSES[
+                               "characters_exceed_error"].format("a name"))
         if re.match(r'^[A-Za-z0-9_]*$', name) is None:
-            raise GraphQLError('names must not contain special characters')
-
+            raise GraphQLError(AUTH_ERROR_RESPONSES[
+                               "special_characters_error"].format("names"))
         return name
 
     def _validate_secondary_email(self, email):
@@ -42,7 +47,8 @@ class ValidateAdmin:
         email = email.strip()
         if re.match(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]{2,5}$',
                     email) is None:
-            raise GraphQLError(f'{email} is not a valid email address')
+            raise GraphQLError(AUTH_ERROR_RESPONSES[
+                              "invalid_email_address"].format(email))
         return email
 
     def _validate_secondary_phone_number(self, phone_number):
@@ -51,7 +57,8 @@ class ValidateAdmin:
         if re.match(
             r'^\+?\(?\d{3}\)?[-. ]?\d{9}$',
                 phone_number) is None:
-            raise GraphQLError('Please input a valid mobileNumber')
+            raise GraphQLError(ERROR_RESPONSES[
+                              "invalid_field_error"].format("mobileNumber"))
         return phone_number
 
 

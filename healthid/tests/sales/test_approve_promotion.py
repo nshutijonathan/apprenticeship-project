@@ -1,5 +1,6 @@
 from healthid.tests.test_fixtures.sales import approve_promotion
 from healthid.tests.sales.promotion_base import TestPromotion
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 
 class TestApprovePromotion(TestPromotion):
@@ -20,14 +21,15 @@ class TestApprovePromotion(TestPromotion):
                                          approve_promotion(self.promotion.id))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'You don\'t belong to outlet with this promomtion.')
+                         SALES_ERROR_RESPONSES["outlet_validation_error"])
 
     def test_cannot_approve_promotion_that_doesnt_exist(self):
         response = self.query_with_token(self.access_token_master,
                                          approve_promotion('iewi1237011'))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         f'Promotion with id iewi1237011 does not exist.')
+                         SALES_ERROR_RESPONSES[
+                             "inexistent_promotion"].format("iewi1237011"))
 
     def test_cannot_approve_promotion_when_unauthenticated(self):
         response = self.query_with_token('',

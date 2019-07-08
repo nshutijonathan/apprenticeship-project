@@ -8,7 +8,8 @@ from graphql import GraphQLError
 from healthid.apps.authentication.models import User
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.app_utils.send_mail import SendMail
-
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
 
@@ -28,13 +29,13 @@ class ResetPassword(graphene.Mutation):
 
     def mutate(self, info, email):
         if email.strip() == "":
-            raise GraphQLError(
-                "Please provide your email to reset your password.")
+            blank_email = AUTH_ERROR_RESPONSES["password_reset_blank_email"]
+            raise GraphQLError(blank_email)
 
         user = User.objects.filter(email=email).first()
         if user is None:
-            raise GraphQLError("Email address not found! "
-                               "Please use the email you registered with.")
+            invalid_email = AUTH_ERROR_RESPONSES["password_reset_blank_email"]
+            raise GraphQLError(invalid_email)
 
         token = account_activation_token.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(
@@ -66,7 +67,6 @@ class ResetPassword(graphene.Mutation):
 
         reset_link = "{}/healthid/password_reset/{}/{}".format(
             DOMAIN, uid, token)
-        success = "Please check your email for a password reset link."
-        success += " Look inside your Spam folder in case you cannot trace it."
+        success = AUTH_SUCCESS_RESPONSES["password_reset_link_success"]
 
         return ResetPassword(reset_link=reset_link, success=success)

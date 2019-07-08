@@ -11,6 +11,9 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.validators import validate_empty_field
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.products_responses import\
+     PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class SupplierType(DjangoObjectType):
@@ -62,8 +65,8 @@ class CreatePriceCheckSurvey(graphene.Mutation):
                     price_check_survey.product = product
                     price_check_survey.save()
                     price_check_survey.survey.add(survey_instance)
-
-            success = 'Master survey, {}, successfully created.'.format(name)
+            success = SUCCESS_RESPONSES[
+                      "creation_success"].format("Master survey, " + name)
             return CreatePriceCheckSurvey(success=success,
                                           survey=survey_instance)
 
@@ -90,10 +93,8 @@ class DeletePriceCheckSurvey(graphene.Mutation):
         survey = get_model_object(Survey, 'id', survey_id)
         survey.survey_price_checks.all().delete(user)
         survey.delete(user)
-
-        message = 'Survey id, {}, and all its associated price '.format(
-            survey_id)
-        message += 'checks have been deleted!'
+        message = PRODUCTS_SUCCESS_RESPONSES[
+                  "survey_deletion_success"].format(survey_id)
         return DeletePriceCheckSurvey(success=message)
 
 
@@ -124,13 +125,12 @@ class UpdatePriceCheckSurvey(graphene.Mutation):
         # find survey and check if it is still open.
         survey_instance = get_model_object(Survey, 'id', survey_id)
         if survey_instance.survey_closed:
-            raise GraphQLError('This survey has already been closed. '
-                               ' It cannot be updated!')
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["survey_update_error"])
 
         if suppliers and not products:
-            raise GraphQLError("Please specify at least one product.")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["product_prompt"])
         if products and not suppliers:
-            raise GraphQLError("Please specify at least one supplier.")
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["supplier_prompt"])
 
         # update survey name if it has been provided.
         if name:
@@ -157,7 +157,7 @@ class UpdatePriceCheckSurvey(graphene.Mutation):
                     price_check_survey.save()
                     price_check_survey.survey.add(survey_instance)
 
-        success = 'Survey, {}, successfully updated.'.format(
-            survey_instance.id)
+        success = SUCCESS_RESPONSES["update_success"].format(
+                                                      survey_instance.id)
         return UpdatePriceCheckSurvey(success=success,
                                       survey=survey_instance)

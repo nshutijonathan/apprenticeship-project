@@ -9,6 +9,8 @@ from healthid.apps.receipts.schema.template_field_mutation import (
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.receipts_responses import RECEIPTS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class CreateReceiptTemplate(graphene.Mutation):
@@ -41,7 +43,8 @@ class CreateReceiptTemplate(graphene.Mutation):
             if (value is True or value is False) or key == 'outlet_id':
                 setattr(receipt_template, key, value)
             else:
-                raise GraphQLError(f'{key} should be true or false')
+                raise GraphQLError(
+                      RECEIPTS_ERROR_RESPONSES["key_error"].format(key))
         with SaveContextManager(receipt_template) as receipt_template:
             return CreateReceiptTemplate(receipt_template=receipt_template)
 
@@ -78,7 +81,8 @@ class UpdateReceiptTemplate(graphene.Mutation):
             if type(value) is bool or key in ('outlet_id', 'id'):
                 setattr(receipt_template, key, value)
             else:
-                raise GraphQLError(f'{key} should be true or false')
+                raise GraphQLError(
+                      RECEIPTS_ERROR_RESPONSES["key_error"].format(key))
         receipt_template.save()
 
         return UpdateReceiptTemplate(receipt_template=receipt_template)
@@ -102,7 +106,8 @@ class DeleteReceiptTemplate(graphene.Mutation):
         receipt_template.delete(user)
 
         return DeleteReceiptTemplate(
-            success="Receipt template has been deleted"
+            success=SUCCESS_RESPONSES[
+                    "deletion_success"].format("Receipt template")
         )
 
 

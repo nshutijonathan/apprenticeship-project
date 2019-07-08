@@ -1,6 +1,8 @@
 from graphql import GraphQLError
 
 from healthid.utils.app_utils.validators import validate_email
+from healthid.utils.messages.business_responses import BUSINESS_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class ValidateBusiness:
@@ -14,10 +16,13 @@ class ValidateBusiness:
         if not (business_fields['trading_name'] and
                 business_fields['legal_name']):
             raise GraphQLError(
-                'Both trading name and legal name are required!')
+                BUSINESS_ERROR_RESPONSES["business_names_validation"])
         elif not business_fields['phone_number']:
-            raise GraphQLError('Phone number is required!')
+            raise GraphQLError(ERROR_RESPONSES[
+                               "required_field"].format("Phone number"))
         elif not business_fields['city'] and business_fields['country']:
-            raise GraphQLError('Both city and country are required!')
+            raise GraphQLError(BUSINESS_ERROR_RESPONSES[
+                                "blank_city_and_or_country"])
         elif not business_fields['address_line_1']:
-            raise GraphQLError('Address Line 1 is required!')
+            raise GraphQLError(BUSINESS_ERROR_RESPONSES[
+                               "invalid_address1_error"])

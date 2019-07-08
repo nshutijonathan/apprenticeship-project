@@ -8,6 +8,7 @@ from healthid.apps.products.models import BatchInfo, Product
 from healthid.apps.preference.models import OutletPreference
 
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
 
 
 class BarcodeScanForm(forms.Form):
@@ -86,15 +87,13 @@ class BarcodeScanForm(forms.Form):
             raise GraphQLError("Barcode scanning is disabled")
 
         if not order.closed:
-            raise GraphQLError("Scan rejected: this order"
-                               " is not marked closed.")
+            raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_order_rejection"])
 
         if batch_info not in outlet.outlet_batches.all():
-            raise GraphQLError("Scan rejected: BatchInfo does"
-                               " not match the provided outlet")
+            raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_batch_rejection"])
 
         if product not in batch_info.product.all():
-            raise GraphQLError("Scan rejected: Product does"
-                               " not match the provided BatchInfo")
+            raise GraphQLError(
+                  ORDERS_ERROR_RESPONSES["scan_product_rejection"])
 
         return cleaned_data

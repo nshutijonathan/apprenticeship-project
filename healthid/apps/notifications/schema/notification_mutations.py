@@ -5,6 +5,8 @@ from healthid.apps.notifications.models import Notification
 from healthid.apps.notifications.schema.notification_queries import \
     NotificationType
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.notifications_responses import\
+     NOTIFICATION_ERROR_RESPONSES, NOTIFICATION_SUCCESS_RESPONSES
 
 
 class UpdateNotificationReadStatus(graphene.Mutation):
@@ -28,12 +30,13 @@ class UpdateNotificationReadStatus(graphene.Mutation):
             record = notification_record[0]
             record.read_status = not record.read_status
             record.save()
-            success = "Notification was marked as {}.".format(
-                'unread' if not record.read_status else 'read')
+            success = NOTIFICATION_SUCCESS_RESPONSES[
+                      "notification_toggle"].format(
+                      'unread' if not record.read_status else 'read')
 
             return UpdateNotificationReadStatus(notification=notification,
                                                 success=success)
-        error = "You are not among the recipients for this notification!"
+        error = NOTIFICATION_ERROR_RESPONSES["notification_validation_error"]
         return UpdateNotificationReadStatus(error=error)
 
 
@@ -57,12 +60,12 @@ class DeleteNotification(graphene.Mutation):
         if notification_record:
             record = notification_record[0]
             record.notification.clear()
-            success = ("Notification with id {} was successfully deleted."
-                       .format(id))
+            success = (NOTIFICATION_SUCCESS_RESPONSES[
+                "notification_deletion_success"].format(id))
 
             return DeleteNotification(success=success)
-        error = "You cannot delete this notification \
-since you are not a recipient!"
+        error = NOTIFICATION_ERROR_RESPONSES[
+                "notification_validation_deletion_error"]
         return DeleteNotification(error=error)
 
 

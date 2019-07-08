@@ -7,6 +7,9 @@ from healthid.tests.test_fixtures.products import (
     proposed_product_query, supplier_mutation, update_a_product_loyalty_weight,
     update_loyalty_weight, update_product, decline_proposed_edits,
     approve_proposed_edits)
+from healthid.utils.messages.products_responses import\
+     PRODUCTS_SUCCESS_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -110,7 +113,7 @@ class TestCreateProduct(BaseConfiguration):
 
     def test_update_approved_product(self):
         update_name = 'Cold cap'
-        message = 'Proposed update pending approval'
+        message = PRODUCTS_SUCCESS_RESPONSES["approval_pending"]
         product = self.product
         product.is_approved = True
         product.save()
@@ -138,8 +141,10 @@ class TestCreateProduct(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             approve_proposed_edits.format(edit_request_id=edit_request_id))
-        self.assertIn("You have succesfully aapproved edit request",
-                      response['data']['approveProposedEdits']['message'])
+        self.assertIn(SUCCESS_RESPONSES[
+                      "approval_success"].format(
+                                          "Edit request"), response['data'][
+                                       'approveProposedEdits']['message'])
         self.assertIn('data', response)
 
     def test_decline_edit_request(self):
@@ -154,5 +159,6 @@ class TestCreateProduct(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             decline_proposed_edits.format(edit_request_id=edit_request_id))
-        self.assertIn('Edit request for product Cold cap has been declined!',
+        self.assertIn(PRODUCTS_SUCCESS_RESPONSES[
+                      "edit_request_decline"].format("Cold cap"),
                       response['data']['declineProposedEdits']['message'])

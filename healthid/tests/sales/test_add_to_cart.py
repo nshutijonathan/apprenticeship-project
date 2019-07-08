@@ -1,5 +1,6 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.sales import add_to_cart
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 
 class TestCreateCart(BaseConfiguration):
@@ -15,7 +16,9 @@ class TestCreateCart(BaseConfiguration):
         response = self.query_with_token(self.access_token_master,
                                          add_to_cart(self.product.id, 1))
         self.assertEqual(response['errors'][0]['message'],
-                         f'{self.product.product_name} isn\'t approved yet.')
+                         SALES_ERROR_RESPONSES[
+                         "unapproved_product_error"].format(
+                                                    self.product.product_name))
 
     def test_user_cant_add_product_to_cart_with_quantity_than_available(self):
         self.product.is_approved = True
@@ -25,8 +28,9 @@ class TestCreateCart(BaseConfiguration):
                                          add_to_cart(product.id,
                                                      product.quantity + 10))
         self.assertEqual(response['errors'][0]['message'],
-                         f'There is only quantity {product.quantity} of '
-                         f'{product.product_name} available in stock.')
+                         SALES_ERROR_RESPONSES[
+                         "in_stock_product_error"].format(
+                            product.quantity, product.product_name))
 
     def test_user_cant_add_product_to_cart_when_unathenticated(self):
         response = self.query_with_token('', add_to_cart(self.product.id, 1))

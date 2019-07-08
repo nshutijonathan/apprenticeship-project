@@ -10,6 +10,9 @@ from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.consultation_reponses import\
+     CONSULTATION_ERROR_RESPONSES
 
 
 class CreateConsultation(graphene.Mutation):
@@ -34,13 +37,17 @@ class CreateConsultation(graphene.Mutation):
         consultation = Consultation()
         for (key, value) in kwargs.items():
             if type(value) is str and value.strip() == "":
-                raise GraphQLError("The {} field can't be empty".format(key))
+                raise GraphQLError(
+                      CONSULTATION_ERROR_RESPONSES[
+                          "empty_field_error"].format(key))
             setattr(consultation, key, value)
         params = {
             'model': Consultation, 'field': 'consultation_name', 'value': name
         }
         with SaveContextManager(consultation, **params) as consultation:
-            success = ["consultation type has succesfully been created"]
+            success =\
+                [SUCCESS_RESPONSES[
+                    "creation_success"].format("Consultation type")]
             return CreateConsultation(
                 success=success, consultation=consultation)
 
@@ -77,7 +84,9 @@ class EditConsultation(graphene.Mutation):
             'value': consultation.consultation_name
         }
         with SaveContextManager(consultation, **params) as consultation:
-            message = ["consultation updated successfully!"]
+            message =\
+                [SUCCESS_RESPONSES[
+                    "update_success"].format(consultation.consultation_name)]
             return EditConsultation(consultation=consultation, message=message)
 
 
@@ -98,7 +107,8 @@ class DeleteConsultation(graphene.Mutation):
         user = info.context.user
         consultation = get_model_object(Consultation, 'id', id)
         consultation.delete(user)
-        message = ["Consultation deleted successfully!"]
+        message = [SUCCESS_RESPONSES[
+                   "deletion_success"].format("Consulatation")]
         return DeleteConsultation(message=message)
 
 

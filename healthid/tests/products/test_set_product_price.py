@@ -1,5 +1,7 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import set_price_string
+from healthid.utils.messages.products_responses import\
+     PRODUCTS_SUCCESS_RESPONSES
 
 
 class TestSetProductPriceTestCase(BaseConfiguration):
@@ -18,7 +20,7 @@ class TestSetProductPriceTestCase(BaseConfiguration):
         self.data['product_ids'] = f'[{self.product_id1}, {self.product_id2}]'
         response = self.query_with_token(self.access_token_master,
                                          set_price_string.format(**self.data))
-        self.assertEqual('successfully set prices for products',
+        self.assertEqual(PRODUCTS_SUCCESS_RESPONSES["set_price_success"],
                          response['data']['updatePrice']['message'])
 
     def test_set_product_prices_manually(self):
@@ -26,5 +28,5 @@ class TestSetProductPriceTestCase(BaseConfiguration):
         self.data['auto_price'] = 'false'
         response = self.query_with_token(self.access_token_master,
                                          set_price_string.format(**self.data))
-        self.assertEqual('successfully set prices for products',
+        self.assertEqual(PRODUCTS_SUCCESS_RESPONSES["set_price_success"],
                          response['data']['updatePrice']['message'])

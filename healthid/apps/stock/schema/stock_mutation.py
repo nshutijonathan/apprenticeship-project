@@ -20,6 +20,9 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.notifications_utils.handle_notifications import notify
 from healthid.utils.stock_utils.stock_count_utils import validate_stock
 from healthid.utils.stock_utils.stock_counts import stock_counts
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.stock_responses import\
+    STOCK_SUCCESS_RESPONSES, STOCK_ERROR_RESPONSES
 
 
 class CreateStockCountTemplate(graphene.Mutation):
@@ -58,7 +61,8 @@ class CreateStockCountTemplate(graphene.Mutation):
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
         send_mail.send()
-        message = 'successfuly created stock count template'
+        message = SUCCESS_RESPONSES[
+            "creation_success"].format("Stock count template")
         return CreateStockCountTemplate(
             stock_template=stock_tempalate, success=message)
 
@@ -102,7 +106,8 @@ class EditStockCountTemplate(graphene.Mutation):
             send_mail = SendMail(email_stock_template,
                                  context, subject, to_email)
             send_mail.send()
-            message = 'successfuly edited stock count template'
+            message = SUCCESS_RESPONSES["edit_success"].format(
+                "Stock count template")
             return EditStockCountTemplate(
                 stock_template=stock_tempalate, success=message)
 
@@ -135,7 +140,8 @@ class DeleteStockCountTemplate(graphene.Mutation):
         send_mail = SendMail(email_stock_template, context, subject, to_email)
         stock_tempalate.delete(user)
         send_mail.send()
-        message = 'Stock template was successfully deleted'
+        message = SUCCESS_RESPONSES[
+            "deletion_success"].format("Stock template")
         return DeleteStockCountTemplate(success=message)
 
 
@@ -181,17 +187,17 @@ class InitiateStockCount(graphene.Mutation):
         stock_template_products = stock_template.products.all()
         if product_instance not in stock_template_products:
             errors.custom_message(
-                'Product must belong to this stock template')
+                STOCK_ERROR_RESPONSES["product_template_error"])
         for batch in batch_info:
             batch_instance = get_model_object(BatchInfo, 'id', batch)
             if batch_instance not in all_batches:
                 errors.custom_message(
-                    f'Product {product_instance.product_name} '
-                    f'does not have a batch with id {batch_instance}')
+                   STOCK_ERROR_RESPONSES["product_batch_id_error"])
         stock_count = StockCount()
         validate_stock.add_stock(kwargs, stock_count)
         with SaveContextManager(stock_count) as stock_count:
-            message = [f' Stock Count has been saved in progress']
+            message = [STOCK_SUCCESS_RESPONSES[
+                       "stock_account_save_in_progress"]]
             for index, value in enumerate(batch_info):
                 record_instance = StockCountRecord.objects.create(
                     quantity_counted=quantity_counted[index],
@@ -218,7 +224,7 @@ class InitiateStockCount(graphene.Mutation):
                     message=subject, event_name=event_name,
                     subject=context, html_body=email_stock_count,
                 )
-                message = [f'Stock Count has been sent for approval']
+                message = [STOCK_SUCCESS_RESPONSES["stock_approval_success"]]
         return InitiateStockCount(message=message, stock_count=stock_count)
 
 
@@ -278,7 +284,7 @@ class UpdateStockCount(graphene.Mutation):
                     message=subject, event_name=event_name,
                     subject=context, html_body=email_stock_count,
                 )
-        message = ['Stock Count has been updated successfully']
+        message = [SUCCESS_RESPONSES["update_success"].format("Stock Count")]
         return UpdateStockCount(
             message=message, stock_count=stock_count)
 
@@ -305,12 +311,13 @@ class RemoveBatchStock(graphene.Mutation):
             stock_count, batch_info_ids=batch_info)
         if len(stock_count.stock_count_record.values_list('batch_info')) <= 1:
             errors.custom_message(
-                'Stock must contain at least (one) 1 batch')
+                STOCK_ERROR_RESPONSES["batch_count_error"])
         for batch_id in batch_info:
             record_instance = stock_count.stock_count_record.get(
                 batch_info=batch_id)
             stock_count.stock_count_record.remove(record_instance)
-        message = [f'{len(batch_info)} Batch Deleted from stock count']
+        message = [STOCK_SUCCESS_RESPONSES[
+                   "batch_deletion_success"].format(len(batch_info))]
         return RemoveBatchStock(message=message, stock_count=stock_count)
 
 
@@ -335,7 +342,8 @@ class DeleteStockCount(graphene.Mutation):
         validate_stock.check_empty_id(stock_count_id, name='Stock Count')
         stock_count = get_model_object(StockCount, 'id', stock_count_id)
         validate_stock.check_approved_stock(info, stock_count)
-        message = f'Stock Count with id {stock_count.id} has been deleted'
+        message = STOCK_SUCCESS_RESPONSES[
+            "stock_count_delete_success"].format(stock_count.id)
         stock_count.delete(user)
         return DeleteStockCount(message=message)
 
@@ -358,14 +366,14 @@ class ReconcileStock(graphene.Mutation):
         batch_info_ids = kwargs.get('batch_info')
         stock_count_id = kwargs.get('stock_count_id')
         if stock_count_id.strip() == "":
-            raise GraphQLError("Stock Count id field can't be empty")
+            raise GraphQLError(STOCK_ERROR_RESPONSES["invalid_count_field"])
         stock_count = get_model_object(StockCount, 'id', stock_count_id)
         stock_count_batch_ids = stock_count.stock_count_record.values_list(
             'batch_info_id', flat=True)
-        message = "Batch with ids '{}' do not exist in this stock count."
+        message = STOCK_ERROR_RESPONSES["inexistent_batch_error"]
         check_validity_of_ids(batch_info_ids, stock_count_batch_ids, message)
         if stock_count.is_approved:
-            raise GraphQLError("Stockcount is already aproved.")
+            raise GraphQLError(STOCK_ERROR_RESPONSES["duplication_approval"])
         for batch_id in batch_info_ids:
             stock_record = stock_count.stock_count_record.get(
                 batch_info_id=batch_id)
@@ -376,7 +384,7 @@ class ReconcileStock(graphene.Mutation):
             quantity.save()
         stock_count.is_approved = True
         stock_count.save()
-        message = 'Stock Count has been approved'
+        message = SUCCESS_RESPONSES["approval_success"].format("Stock Count")
         return ReconcileStock(message=message, stock_count=stock_count)
 
 

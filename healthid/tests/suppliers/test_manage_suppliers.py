@@ -14,6 +14,7 @@ from healthid.tests.test_fixtures.suppliers import (approve_request,
                                                     supplier_mutation,
                                                     user_requests,
                                                     edit_proposal)
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
 
 
 class ManageSuppliersTestCase(BaseConfiguration):
@@ -45,7 +46,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
     def test_approve_supplier(self):
         response = self.approve_suppler
         self.assertIn(
-            'approved!',
+            'approved successfully!',
             response['data']['approveSupplier']['success'])
 
     def test_delete_supplier(self):
@@ -56,7 +57,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
             )
         )
         self.assertIn(
-            'deleted!',
+            'deleted successfully!',
             response['data']['deleteSupplier']['success'])
 
     def test_propose_edit(self):
@@ -68,7 +69,8 @@ class ManageSuppliersTestCase(BaseConfiguration):
             edit_proposal.format(
                 proposal_id=self.request_id)
         )
-        self.assertIn('updated!', response['data']['editProposal']['message'])
+        self.assertIn('updated successfully!',
+                      response['data']['editProposal']['message'])
 
     def test_cannot_edit_request_you_didnot_propose(self):
         response = self.query_with_token(
@@ -76,7 +78,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
             edit_proposal.format(
                 proposal_id=self.request_id)
         )
-        self.assertIn('didnot propose!', response['errors'][0]['message'])
+        self.assertIn('did not propose!', response['errors'][0]['message'])
 
     def test_query_edit_requests(self):
         response = self.query_with_token(
@@ -93,7 +95,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
             )
         )
         self.assertIn(
-            'updated!',
+            'updated successfully!',
             response['data']['approveEditRequest']['message'])
 
     def test_decline_edit_request(self):
@@ -142,5 +144,5 @@ class ManageSuppliersTestCase(BaseConfiguration):
             self.access_token,
             invalid_search
         )
-        self.assertIn('Please provide a valid search keyword',
+        self.assertIn(ORDERS_ERROR_RESPONSES["supplier_search_key_error"],
                       response['errors'][0]['message'])

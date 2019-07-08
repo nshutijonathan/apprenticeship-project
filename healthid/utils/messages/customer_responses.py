@@ -1,0 +1,13 @@
+
+CUSTOMER_ERROR_RESPONSES = {
+    "customer_profile_not_found": "Customer profile cannot be found",
+    "unchanged_edits": "Profile fields unchanged, nothing to edit",
+    "customer_name_query_error": "No customers found matching the name {}",
+    "customer_mobile_query_error": "No customers found matching the,"
+                                   "mobile number {}",
+    "customer_query_error": "Customer matching the search parameters ({}),"
+                            "does not exist' {}",
+    "invalid_email": "Please provide a valid email",
+    "first_name_error": "{} can't be an empty String",
+
+}

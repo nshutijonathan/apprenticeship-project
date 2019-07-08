@@ -2,6 +2,9 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import (update_email_query,
                                                          update_image_query,
                                                          update_username_query)
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.authentication_responses import\
+     AUTH_ERROR_RESPONSES
 
 
 class TestProfileUpdate(BaseConfiguration):
@@ -52,7 +55,7 @@ class TestProfileUpdate(BaseConfiguration):
         response = self.query_with_token(
             self.access_token, update_username_query.format(username))
 
-        self.assertIn("cannot be blank",
+        self.assertIn("contain special characters",
                       response['errors'][0]['message'])
 
     def test_special_characters_username(self):
@@ -60,7 +63,6 @@ class TestProfileUpdate(BaseConfiguration):
         username = "$dollarSign$"
         response = self.query_with_token(
             self.access_token, update_username_query.format(username))
-
         self.assertIn("contain special characters",
                       response['errors'][0]['message'])
 
@@ -69,8 +71,7 @@ class TestProfileUpdate(BaseConfiguration):
         email = ""
         response = self.query_with_token(
             self.access_token, update_email_query.format(email))
-
-        self.assertIn("Please input a valid email",
+        self.assertIn(ERROR_RESPONSES["invalid_field_error"].format("email"),
                       response['errors'][0]['message'])
 
     def test_existing_email(self):
@@ -79,6 +80,5 @@ class TestProfileUpdate(BaseConfiguration):
         email = "john.doe@gmail.com"
         response = self.query_with_token(
             self.access_token, update_email_query.format(email))
-
-        self.assertIn("already been registered",
+        self.assertIn(AUTH_ERROR_RESPONSES["email_duplicate_error"],
                       response['errors'][0]['message'])

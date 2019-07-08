@@ -12,6 +12,8 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.batch_utils import (
     check_validity_of_ids, check_validity_of_quantity)
 from healthid.utils.stock_utils.validate_stock_transfer import validate
+from healthid.utils.messages.stock_responses import\
+      STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
 
 
 class StockTransferType(DjangoObjectType):
@@ -46,7 +48,8 @@ class OpenStockTransfer(graphene.Mutation):
         destination_outlet = get_model_object(
             Outlet, 'id', kwargs['destination_outlet_id'])
         if str(sending_outlet) == str(destination_outlet):
-            raise GraphQLError("You can't open a transfer to your own outlet!")
+            raise GraphQLError(
+                  STOCK_ERROR_RESPONSES["outlet_transfer_validation"])
         batch_product_ids = batch.product.values_list("id", flat=True)
 
         check_validity_of_ids(kwargs['products'], batch_product_ids)
@@ -69,7 +72,7 @@ class OpenStockTransfer(graphene.Mutation):
                 )
                 stock_transfer.stock_transfer_record.add(stock_transfer_record)
 
-        success = ['Stock Transfer opened successfully!']
+        success = [STOCK_SUCCESS_RESPONSES["stock_transfer_open_success"]]
         return OpenStockTransfer(
             stock_transfer=stock_transfer, success=success)
 
@@ -92,9 +95,9 @@ class CloseStockTransfer(graphene.Mutation):
             id=kwargs['transfer_number'],
             destination_outlet=destination_outlet).first()
         if not transfer:
-            raise GraphQLError("You don't have transfers to close!")
+            raise GraphQLError(STOCK_ERROR_RESPONSES["close_transfer_error"])
         transfer.complete_status = False
         transfer.save()
 
-        success = ['Stock transfer closed successfully!']
+        success = STOCK_SUCCESS_RESPONSES["stock_transfer_close_success"]
         return CloseStockTransfer(success=success)

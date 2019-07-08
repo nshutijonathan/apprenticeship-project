@@ -6,6 +6,7 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class OutletType(DjangoObjectType):
@@ -85,9 +86,11 @@ class CityQuery(graphene.ObjectType):
                 Q(id=city_id) | Q(name=city_name)
             ).first()
             if city is None:
-                raise GraphQLError('This city does not exist')
+                raise GraphQLError(
+                      OUTLET_ERROR_RESPONSES["inexistent_city_error"])
             return city
-        raise GraphQLError('You must provide either a city Id or name')
+        raise GraphQLError(
+              OUTLET_ERROR_RESPONSES["city_query_invalid_input_error"])
 
 
 class CountryQuery(graphene.ObjectType):
@@ -112,9 +115,11 @@ class CountryQuery(graphene.ObjectType):
                 Q(id=ctry_id) | Q(name=ctry_name)
             ).first()
             if ctry is None:
-                raise GraphQLError('This country does not exist')
+                raise GraphQLError(
+                      OUTLET_ERROR_RESPONSES["inexistent_country_error"])
             return ctry
-        raise GraphQLError('You must provide either a city id or name')
+        raise GraphQLError(
+              OUTLET_ERROR_RESPONSES["city_query_invalid_input_error"])
 
 
 class Query(

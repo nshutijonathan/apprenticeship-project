@@ -8,6 +8,7 @@ from healthid.apps.orders.models import BarcodeScan
 
 from healthid.utils.app_utils.database import SaveContextManager
 from healthid.apps.orders.forms import BarcodeScanForm
+from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
 
 
 class BarcodeScanType(DjangoObjectType):
@@ -78,7 +79,7 @@ class RecordScan(graphene.Mutation):
         )
 
         with SaveContextManager(barcode_scan) as barcode_scan:
-            message = "Scan successfully saved"
+            message = ORDERS_SUCCESS_RESPONSES["scan_save_success"]
             return RecordScan(barcode_scan=barcode_scan, message=message)
 
 

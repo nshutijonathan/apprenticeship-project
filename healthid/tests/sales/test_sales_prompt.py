@@ -6,6 +6,10 @@ from healthid.tests.test_fixtures.sales import (
                                                        query_all_sales_prompt,
                                                        query_a_sales_prompt,
                                                        incomplete_sales_entry)
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class TestSalesPrompt(BaseConfiguration):
@@ -20,7 +24,8 @@ class TestSalesPrompt(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             create_sales_prompts.format(**data))
-        expected_message = 'Successfully created 1 sales prompt'
+        expected_message = SUCCESS_RESPONSES[
+                           "creation_success"].format("Sales prompt 1")
         self.assertEqual(
             expected_message,
             response["data"]["createSalesprompts"]["message"])
@@ -40,7 +45,7 @@ class TestSalesPrompt(BaseConfiguration):
             self.access_token_master,
             create_sales_prompts.format(**data))
         self.assertIn(
-            "Product with id 0 does not exist.",
+            PRODUCTS_ERROR_RESPONSES["inexistent_product"].format("0"),
             response['errors'][0]['message'])
 
     def test_sales_prompts_with_invalid_list(self):
@@ -72,7 +77,7 @@ class TestSalesPrompt(BaseConfiguration):
             self.access_token_master,
             create_sales_prompts.format(**data))
         self.assertIn(
-            "Titles and discription must contain words",
+            SALES_ERROR_RESPONSES["title_error"],
             response['errors'][0]['message'])
 
     def test_sales_prompts_with_invalid_incomplete_inputs(self):
@@ -88,7 +93,7 @@ class TestSalesPrompt(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             incomplete_sales_entry.format(**data))
-        self.assertEqual("List inputs are incomplete or empty",
+        self.assertEqual(SALES_ERROR_RESPONSES["incomplete_list"],
                          response['errors'][0]['message'])
         self.assertIn("errors", response)
 
@@ -107,7 +112,7 @@ class TestSalesPrompt(BaseConfiguration):
             create_sales_prompts.format(**data))
         self.assertIn("errors", response)
         self.assertIn(
-            "Outlet with id 0 does not exist.",
+            OUTLET_ERROR_RESPONSES["inexistent_outlet"].format("0"),
             response['errors'][0]['message'])
 
     def test_update_sales_prompts(self):
@@ -122,7 +127,8 @@ class TestSalesPrompt(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             update_sales_prompt.format(**data))
-        self.assertIn("Sales prompt was updated successfully",
+        self.assertIn(SUCCESS_RESPONSES[
+                      "update_success"].format("Sales prompt"),
                       response["data"]["updateSalesprompt"]["success"])
         self.assertNotIn("errors", response)
 
@@ -140,7 +146,7 @@ class TestSalesPrompt(BaseConfiguration):
             update_sales_prompt.format(**data))
         self.assertIn("errors", response)
         self.assertIn(
-            "Titles or discription must contain words",
+            SALES_ERROR_RESPONSES["title_error"],
             response['errors'][0]['message'])
 
     def test_get_all_sales_prompt(self):
@@ -164,6 +170,7 @@ class TestSalesPrompt(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             delete_sales_prompt(self.sales_prompt.id))
-        self.assertIn("Sales Prompt was deleted successfully",
+        self.assertIn(SUCCESS_RESPONSES[
+                      "deletion_success"].format("Sales prompt"),
                       response["data"]["deleteSalesprompt"]["success"])
         self.assertNotIn("errors", response)

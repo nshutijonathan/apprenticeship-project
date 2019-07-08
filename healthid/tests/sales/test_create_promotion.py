@@ -1,6 +1,8 @@
 from healthid.tests.sales.promotion_base import TestPromotion
 from healthid.tests.test_fixtures.sales import (create_promotion,
                                                 create_promotion_type)
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 
 class TestCreatePromotion(TestPromotion):
@@ -27,7 +29,9 @@ class TestCreatePromotion(TestPromotion):
                                          create_promotion(self.promotion_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'Promotion with title another promo already exists.')
+                         ERROR_RESPONSES[
+                         "duplication_error"].format(
+                               "Promotion with title another promo"))
 
     def test_only_manager_admin_can_create_promotion(self):
         self.business.user.add(self.user)
@@ -41,8 +45,9 @@ class TestCreatePromotion(TestPromotion):
                                          create_promotion(self.promotion_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'You don\'t belong to outlet with id '
-                         f'{self.outlet.id}.')
+                         SALES_ERROR_RESPONSES[
+                             "outlet_id_validation_error"].format(
+                                                           self.outlet.id))
 
     def test_cannot_create_promotion_when_unauthenticated(self):
         response = self.query_with_token('',
@@ -60,7 +65,7 @@ class TestCreatePromotion(TestPromotion):
                                          create_promotion_type(''))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'Please provide promotion type name.')
+                         SALES_ERROR_RESPONSES["promotion_type_error"])
 
     def test_cannot_create_promotion_type_with_same_name(self):
         self.query_with_token(self.access_token_master,
@@ -69,5 +74,6 @@ class TestCreatePromotion(TestPromotion):
                                          create_promotion_type('Monthly'))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         'PromotionType with name Monthly already exists.'
-                         )
+                         ERROR_RESPONSES[
+                         "duplication_error"].format(
+                               "PromotionType with name Monthly"))
