@@ -114,7 +114,9 @@ class BaseConfiguration(TestCase):
             'lastname': 'henry',
             'username': 'kafuumahenry',
             'email': 'healthid@gmail.com',
-            'phone': +256788088831
+            'secondary_email': 'healthid@gmail.com',
+            'mobile_number': '254786299914',
+            'secondary_phone_number': "254786299914"
         }
         self.outlet = {
             'name': 'bingo',

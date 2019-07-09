@@ -5,6 +5,7 @@ from graphql import GraphQLError
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.authentication_responses import\
       AUTH_ERROR_RESPONSES
+from healthid.utils.auth_utils.validations import ValidateUser
 
 
 class ValidateAdmin:
@@ -15,6 +16,8 @@ class ValidateAdmin:
         first_name = kwargs.get('first_name', '')
         last_name = kwargs.get('last_name', '')
         username = kwargs.get('username', '')
+        email = kwargs.get('email', '')
+        mobile_number = kwargs.get('mobile_number', '')
         secondary_email = kwargs.get('secondary_email', '')
         secondary_phone_number = kwargs.get(
             'secondary_phone_number', '')
@@ -22,9 +25,12 @@ class ValidateAdmin:
             "first_name": self._validate_name(first_name),
             "last_name": self._validate_name(last_name),
             "username": self._validate_name(username),
+            "email": self._validate_secondary_email(email),
             "secondary_email": self._validate_secondary_email(secondary_email),
-            "secondary_phone_number":
-            self._validate_secondary_phone_number(secondary_phone_number)
+            "mobile_number": ValidateUser().validate_mobile_number(
+                             mobile_number),
+            "secondary_phone_number": ValidateUser().validate_mobile_number(
+                secondary_phone_number)
         }
 
     def _validate_name(self, name):
@@ -50,16 +56,6 @@ class ValidateAdmin:
             raise GraphQLError(AUTH_ERROR_RESPONSES[
                               "invalid_email_address"].format(email))
         return email
-
-    def _validate_secondary_phone_number(self, phone_number):
-
-        phone_number = phone_number.strip()
-        if re.match(
-            r'^\+?\(?\d{3}\)?[-. ]?\d{9}$',
-                phone_number) is None:
-            raise GraphQLError(ERROR_RESPONSES[
-                              "invalid_field_error"].format("mobileNumber"))
-        return phone_number
 
 
 validate_instance = ValidateAdmin()

@@ -434,6 +434,8 @@ class UpdateAdminUser(graphene.Mutation):
         first_name = graphene.String()
         last_name = graphene.String()
         username = graphene.String()
+        email = graphene.String()
+        mobile_number = graphene.String()
         secondary_email = graphene.String()
         secondary_phone_number = graphene.String()
 

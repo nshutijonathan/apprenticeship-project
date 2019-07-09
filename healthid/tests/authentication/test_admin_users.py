@@ -54,7 +54,7 @@ class TestAdminRegistration(BaseConfiguration):
 
     def test_update_admin_profile_with_invalid_phone_number(self):
         self.update_user_data['id'] = str(self.user.id)
-        self.update_user_data['phone'] = '00778'
+        self.update_user_data['mobile_number'] = '00778'
         response = self.query_with_token(
             self.access_token_master,
             query_str.format(**self.update_user_data))

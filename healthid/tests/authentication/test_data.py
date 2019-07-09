@@ -63,8 +63,10 @@ query_str = '''
               firstName:"{firstname}",
               lastName:"{lastname}",
               username:"{username}",
+              email:"{email}",
               secondaryEmail:"{email}",
-              secondaryPhoneNumber:"{phone}",
+              mobileNumber:"{mobile_number}",
+              secondaryPhoneNumber:"{mobile_number}",
               ){{
               user{{
                   firstName
