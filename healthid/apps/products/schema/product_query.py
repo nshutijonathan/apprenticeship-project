@@ -185,9 +185,10 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_product_autofill(self, info):
         product_list = []
-        for each in Product.objects.all():
-            if each.quantity < each.reorder_point:
-                product_list.append(each)
+        products = Product.objects.all()
+        for product in products:
+            if product.quantity and product.quantity < product.reorder_point:
+                product_list.append(product)
         return product_list
 
 
