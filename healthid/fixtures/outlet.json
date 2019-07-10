@@ -558,8 +558,7 @@
       "phone_number": "256705201617",
       "date_launched": "2018-01-27",
       "prefix_id": "",
-      "business": "112t0mti8",
-      "user": []
+      "business": "112t0mti8"
     }
   },
   {
@@ -575,8 +574,15 @@
       "phone_number": "256705201617",
       "date_launched": "2018-01-27",
       "prefix_id": "KY006-PAL",
-      "business": "112t0mti8",
-      "user": ["aul5xrp73"]
+      "business": "112t0mti8"
     }
+  },
+  {
+      "model": "outlets.outletuser",
+      "pk": 1,
+      "fields":{
+         "outlet": 6,
+         "user": "aul5xrp73"
+      }
   }
 ]

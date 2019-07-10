@@ -14,7 +14,7 @@ from healthid.utils.sales_utils.validators import (
     validate_fields, add_products_to_promotion
 )
 from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_belongs_to_outlet
+    check_user_is_active_in_outlet
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.sales_responses import\
      SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES
@@ -60,7 +60,7 @@ class CreatePromotion(graphene.Mutation):
         promotion = validate_fields(Promotion(), **kwargs)
         outlet_id = kwargs.get('outlet_id')
         user = info.context.user
-        check_user_belongs_to_outlet(user, outlet_id)
+        check_user_is_active_in_outlet(user, outlet_id=outlet_id)
         with SaveContextManager(promotion, model=Promotion) as promotion:
             product_ids = kwargs.get('product_ids', [])
             promotion = add_products_to_promotion(promotion, product_ids)
@@ -88,9 +88,7 @@ class UpdatePromotion(graphene.Mutation):
         promotion_id = kwargs.pop('promotion_id')
         user = info.context.user
         promotion = get_model_object(Promotion, 'id', promotion_id)
-        if user not in promotion.outlet.user.all():
-            raise GraphQLError(
-                  SALES_ERROR_RESPONSES["outlet_validation_error"])
+        check_user_is_active_in_outlet(user, outlet=promotion.outlet)
         product_ids = \
             kwargs.pop('product_ids') if kwargs.get('product_ids') else []
         validate_fields(Promotion(), **kwargs)
@@ -115,9 +113,7 @@ class DeletePromotion(graphene.Mutation):
         promotion_id = kwargs.get('promotion_id')
         user = info.context.user
         promotion = get_model_object(Promotion, 'id', promotion_id)
-        if user not in promotion.outlet.user.all():
-            raise GraphQLError(
-                SALES_ERROR_RESPONSES["outlet_validation_error"])
+        check_user_is_active_in_outlet(user, outlet=promotion.outlet)
         promotion.delete(user)
         return DeletePromotion(
                success=SUCCESS_RESPONSES[
@@ -137,9 +133,7 @@ class ApprovePromotion(graphene.Mutation):
         promotion_id = kwargs.get('promotion_id')
         user = info.context.user
         promotion = get_model_object(Promotion, 'id', promotion_id)
-        if user not in promotion.outlet.user.all():
-            raise GraphQLError(
-                  SALES_ERROR_RESPONSES["outlet_validation_error"])
+        check_user_is_active_in_outlet(user, outlet=promotion.outlet)
         promotion.is_approved = True
         promotion.save()
         return ApprovePromotion(

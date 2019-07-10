@@ -5,7 +5,6 @@ import cloudinary
 import cloudinary.api
 import cloudinary.uploader
 from graphql_jwt.decorators import login_required
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.orders.models import Order
 from healthid.apps.orders.models.invoices import Invoice
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -14,6 +13,8 @@ from healthid.utils.app_utils.validators import validate_empty_field
 from healthid.utils.messages.orders_responses import\
      ORDERS_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class InvoiceType(DjangoObjectType):
@@ -44,7 +45,7 @@ class UploadInvoice(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
+        outlet = check_user_has_an_active_outlet(user)
         order_id = kwargs.get('order_id')
         order = get_model_object(Order, 'id', order_id)
         invoice_document = kwargs.get('invoice_file')

@@ -36,7 +36,7 @@ def trigger_notification(expired_batches):
     for batch in expired_batches:
         outlet = batch['batch'].outlet
 
-        users = outlet.user.all()
+        users = outlet.active_outlet_users
         outlet_master_admins = [
             user for user in users if str(user.role) == 'Master Admin']
         batch_number = batch["batch"].batch_no

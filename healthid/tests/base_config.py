@@ -8,7 +8,8 @@ from healthid.apps.authentication.models import Role, User
 from healthid.apps.events.models import Event, EventType
 from healthid.apps.orders.models import (Order, PaymentTerms, SupplierNote,
                                          Suppliers, Tier)
-from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
+from healthid.apps.outlets.models import (
+    City, Country, Outlet, OutletKind, OutletUser)
 from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
                                            ProductCategory, Quantity)
 from healthid.apps.profiles.models import Profile
@@ -89,6 +90,11 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256770777797",
             "password": "Password123"
         }
+        self.another_master_admin = {
+            "email": "for@example.com",
+            "mobile_number": "+256770777799",
+            "password": "Password123"
+        }
 
         self.second_master_admin = {
             "email": "you.second@example.com",
@@ -109,14 +115,18 @@ class BaseConfiguration(TestCase):
             "email": "you@example.com",
             "password": "Password123"
         }
+        self.login_another_master_admin = {
+            "email": "for@example.com",
+            "password": "Password123"
+        }
         self.update_user_data = {
             'firstname': 'kafuuma',
             'lastname': 'henry',
             'username': 'kafuumahenry',
             'email': 'healthid@gmail.com',
             'secondary_email': 'healthid@gmail.com',
-            'mobile_number': '254786299914',
-            'secondary_phone_number': "254786299914"
+            'mobile_number': '+254786299914',
+            'secondary_phone_number': "+254786299914"
         }
         self.outlet = {
             'name': 'bingo',
@@ -155,18 +165,27 @@ class BaseConfiguration(TestCase):
         self.order = self.create_order()
 
         # register and log in user
-        self.outlet.user.add(self.user)
+        OutletUser.objects.create(
+            user=self.user, outlet=self.outlet, is_active_outlet=True)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin(self.master_admin)
+        self.another_master_admin_user = self.register_master_admin(
+            self.another_master_admin)
         self.second_master_admin_user = self.register_master_admin(
             self.second_master_admin)
         self.second_master_admin_token = self.admin_login(
             self.login_second_master_admin)
         self.access_token_master = self.admin_login(self.login_master_admin)
+        self.another_master_admin_token = self.admin_login(
+            self.login_another_master_admin)
         self.preference = OutletPreference.objects.filter().first()
         self.second_outlet = self.create_outlet(self.second_outlet)
-        self.second_outlet.user.add(self.second_master_admin_user)
-        self.outlet.user.add(self.master_admin_user)
+        OutletUser.objects.create(user=self.second_master_admin_user,
+                                  outlet=self.second_outlet,
+                                  is_active_outlet=True)
+        OutletUser.objects.create(user=self.master_admin_user,
+                                  outlet=self.outlet,
+                                  is_active_outlet=True)
 
         self.create_customer_data = {
             "first_name": "Habib",

@@ -3,9 +3,11 @@ import csv
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.orders.models.suppliers import PaymentTerms, Suppliers, Tier
-from healthid.apps.outlets.models import City, Outlet
+from healthid.apps.outlets.models import City
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class AddSupplier:
@@ -50,7 +52,7 @@ class AddSupplier:
                     value = pay_term.id
                 setattr(instance, key, value)
             instance.user = user
-            outlet = get_model_object(Outlet, 'user', user)
+            outlet = check_user_has_an_active_outlet(user)
             with SaveContextManager(instance, **params) as supplier:
                 supplier.outlet.add(outlet)
 

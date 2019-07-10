@@ -4,7 +4,6 @@ from graphene_django import DjangoObjectType
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.stock.models import (StockCount, StockCountTemplate,
                                         StockTransfer)
 from healthid.apps.stock.schema.stock_transfer_mutations import \
@@ -14,6 +13,8 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.stock_utils.validate_stock_transfer import \
     validate
 from healthid.utils.messages.stock_responses import STOCK_ERROR_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class StockCountTemplateType(DjangoObjectType):
@@ -96,7 +97,7 @@ class StockTransferQuery(graphene.ObjectType):
     @login_required
     def resolve_stock_transfers(self, info):
         user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
+        outlet = check_user_has_an_active_outlet(user)
         stock_transfers = StockTransfer.objects.filter(
             Q(destination_outlet=outlet) | Q(sending_outlet=outlet))
         if not stock_transfers:
@@ -108,7 +109,7 @@ class StockTransferQuery(graphene.ObjectType):
         """Method to retrieve a single stock transfer using its number
         """
         user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
+        outlet = check_user_has_an_active_outlet(user)
         validate.validate_transfer(kwargs['transfer_number'])
         stock_transfer = get_model_object(
             StockTransfer, 'id', kwargs['transfer_number'])

@@ -108,8 +108,15 @@
             "city": 2,
             "phone_number": "1234567890",
             "date_launched": "2019-05-05",
-            "business": "123456789",
-            "user": ["aul5xrp73"]
+            "business": "123456789"
+        }
+    },
+    {
+        "model": "outlets.outletuser",
+        "pk": 1,
+        "fields":{
+           "outlet": 1,
+           "user": "aul5xrp73"
         }
     },
   {

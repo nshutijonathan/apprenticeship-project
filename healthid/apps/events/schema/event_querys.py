@@ -6,9 +6,10 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.events.models import Event
 from healthid.apps.events.models import EventType as EventTypeModel
-from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class EventsType(DjangoObjectType):
@@ -40,8 +41,7 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_events(self, info, **kwargs):
         user = info.context.user
-        msg = EVENTS_ERROR_RESPONSES["event_query_error"]
-        outlet = get_model_object(Outlet, 'user', user, message=msg)
+        outlet = check_user_has_an_active_outlet(user)
         events = Event.objects.filter(Q(user=user) | Q(outlet=outlet))
         if not events:
             raise GraphQLError(EVENTS_ERROR_RESPONSES["no_events_error"])

@@ -7,11 +7,23 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.apps.authentication.schema.auth_queries import UserType
 
 
 class OutletType(DjangoObjectType):
+    active_outlet_users = graphene.List(UserType)
+
     class Meta:
         model = Outlet
+
+    def resolve_active_outlet_users(self, info, **kwargs):
+        """
+        get's users active in an outlet
+
+        Returns:
+            list(obj): users who are active in an outlet
+        """
+        return self.active_outlet_users
 
 
 class CityType(DjangoObjectType):

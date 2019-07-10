@@ -59,7 +59,7 @@ def create_promotion(products, title, discount, outlet):
         with SaveContextManager(promotion, model=Promotion) as promotion:
             promotion.products.add(*products)
     if products_added:
-        users = outlet.user.all()
+        users = outlet.active_outlet_users
         roles = ('Master Admin', 'Manager')
         users = [user for user in users if str(user.role) in roles]
         message = f'Products have been added to promotion {title}.'

@@ -1,5 +1,7 @@
 OUTLET_SUCCESS_RESPONSES = {
     "outlet_update_success": "Successfully updated outlet {}",
+    "activated_user_in_outlet": "User activated succesfully in outlet",
+    "deactivated_user_in_outlet": "User deactivated succesfully from outlet"
 
 }
 
@@ -16,6 +18,12 @@ OUTLET_ERROR_RESPONSES = {
                                     "contain special characters or be blank",
     "invalid_country_id": "Country with id {} does not exist.",
     "invalid_city_id": "City with id {} does not exist.",
-    "country_double_creation": "Country with name {}, already exists"
+    "country_double_creation": "Country with name {}, already exists",
+    "logged_in_user_not_in_outlet": "You do not belong to this outlet",
+    "logged_in_user_not_active_in_outlet": "You are not active in this outlet",
+    "user_active_in_another_outlet": "This user is active in another outlet",
+    "user_not_in_outlet": "User does not belong to this outlet",
+    "one_user_active_in_outlet": "An outlet must have an active user",
+    "user_not_active_in_any_outlet": "You are not active in any outlet"
 
 }

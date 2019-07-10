@@ -104,6 +104,31 @@ class User(AbstractBaseUser, PermissionsMixin):
     def hard_delete(self):
         super().delete()
 
+    @property
+    def active_outlet(self):
+        """
+        Method to return outlet user is active to
+
+        Returns:
+            outlet(obj): if user is active to an outlet
+            None: if user is not active to any outlet
+        """
+        outlet_user = \
+            self.outletuser_set.filter(is_active_outlet=True)
+        if outlet_user.exists():
+            return outlet_user.first().outlet
+        return None
+
+    @property
+    def outlets(self):
+        """
+        Method to return outlets user belongs in
+
+        Returns:
+            list(obj): outlets user belongs in
+        """
+        return self.outlets.all()
+
 
 class Role(models.Model):
     """

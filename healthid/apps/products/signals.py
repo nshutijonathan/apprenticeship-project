@@ -65,8 +65,7 @@ def notify_quantity(sender, instance, created, **kwargs):
     if created:
         if instance.parent_id:
             batch = instance.batch
-            outlet_users = batch.outlet.user.exclude(
-                id=instance.proposed_by.id)
+            outlet_users = [user for user in batch.outlet.active_outlet_users if user.id != instance.proposed_by.id]  # noqa
             all_users = []
             for user in outlet_users:
                 if str(user.role) == "Master Admin" or str(user.role) == \
@@ -84,7 +83,7 @@ def notify_quantity(sender, instance, created, **kwargs):
         quantity_threshold = 50
         batch = instance.batch
         product = instance.product
-        outlet_users = batch.outlet.user.all()
+        outlet_users = batch.outlet.active_outlet_users
 
         # notify all outlet users.
         if product.quantity < quantity_threshold:

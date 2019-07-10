@@ -5,7 +5,7 @@ from healthid.apps.sales.models import (
     Promotion, PromotionType as PromotionTypeModel
 )
 from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_belongs_to_outlet
+    check_user_is_active_in_outlet
 from healthid.utils.auth_utils.decorator import user_permission
 
 
@@ -29,7 +29,8 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_outlet_promotions(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_belongs_to_outlet(user, kwargs.get('outlet_id'))
+        outlet = check_user_is_active_in_outlet(
+            user, outlet_id=kwargs.get('outlet_id'))
         return Promotion.objects.filter(outlet=outlet)
 
     @login_required
@@ -40,5 +41,6 @@ class Query(graphene.AbstractType):
     @user_permission('Manager')
     def resolve_promotions_pending_approval(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_belongs_to_outlet(user, kwargs.get('outlet_id'))
+        outlet = check_user_is_active_in_outlet(
+            user, outlet_id=kwargs.get('outlet_id'))
         return Promotion.objects.filter(outlet=outlet, is_approved=False)

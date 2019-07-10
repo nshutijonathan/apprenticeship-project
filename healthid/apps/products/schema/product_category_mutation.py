@@ -7,7 +7,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_belongs_to_outlet
+    check_user_is_active_in_outlet
 
 from .product_query import ProductCategoryType
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
@@ -36,8 +36,8 @@ class CreateProductCategory(graphene.Mutation):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
-        check_user_belongs_to_outlet(info.context.user,
-                                     kwargs.get('outlet_id'))
+        check_user_is_active_in_outlet(info.context.user,
+                                       outlet_id=kwargs.get('outlet_id'))
         product_category = ProductCategory(**kwargs)
         with SaveContextManager(product_category, model=ProductCategory):
             message = SUCCESS_RESPONSES[
@@ -69,8 +69,8 @@ class EditProductCategory(graphene.Mutation):
         if name.strip() == "":
             raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         product_category = get_model_object(ProductCategory, 'id', id)
-        check_user_belongs_to_outlet(info.context.user,
-                                     product_category.outlet.id)
+        check_user_is_active_in_outlet(info.context.user,
+                                       outlet_id=product_category.outlet.id)
         # add fields with changed values to new dictionary
         changed_fields = {
             key: kwargs.get(key)
@@ -106,8 +106,8 @@ class DeleteProductCategory(graphene.Mutation):
         id = kwargs.get('id')
         user = info.context.user
         product_category = get_model_object(ProductCategory, 'id', id)
-        check_user_belongs_to_outlet(info.context.user,
-                                     product_category.outlet.id)
+        check_user_is_active_in_outlet(info.context.user,
+                                       outlet_id=product_category.outlet.id)
         product_category.delete(user)
         message = SUCCESS_RESPONSES[
                   "deletion_success"].format(

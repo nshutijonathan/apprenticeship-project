@@ -14,7 +14,7 @@ from healthid.apps.authentication.schema.auth_queries import RoleType, UserType
 from healthid.apps.authentication.schema.login_mutation import LoginUser
 from healthid.apps.authentication.schema.reset_password_mutation import \
     ResetPassword
-from healthid.apps.outlets.models import Outlet
+from healthid.apps.outlets.models import Outlet, OutletUser
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils import user_update_instance
@@ -166,7 +166,10 @@ class AddUser(graphene.Mutation):
                 outlet_instance = get_model_object(Outlet, 'id', outlet_id)
                 business_instance = outlet_instance.business
                 business_instance.user.add(user)
-                user.users.add(outlet_instance)
+                is_active_outlet = False if user.outlets.exists() else True
+                OutletUser.objects.create(user=user,
+                                          outlet=outlet_instance,
+                                          is_active_outlet=is_active_outlet)
             if profile_image:
                 user.profile_image = \
                     cloudinary.uploader.upload(profile_image).get('url')

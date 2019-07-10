@@ -14,6 +14,8 @@ from healthid.utils.product_utils.batch_utils import (
 from healthid.utils.stock_utils.validate_stock_transfer import validate
 from healthid.utils.messages.stock_responses import\
       STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class StockTransferType(DjangoObjectType):
@@ -44,7 +46,7 @@ class OpenStockTransfer(graphene.Mutation):
         quantities = kwargs['quantities']
 
         batch = get_model_object(BatchInfo, 'batch_no', kwargs['batch_number'])
-        sending_outlet = get_model_object(Outlet, 'user', user)
+        sending_outlet = check_user_has_an_active_outlet(user)
         destination_outlet = get_model_object(
             Outlet, 'id', kwargs['destination_outlet_id'])
         if str(sending_outlet) == str(destination_outlet):
@@ -90,7 +92,7 @@ class CloseStockTransfer(graphene.Mutation):
     def mutate(self, info, **kwargs):
         user = info.context.user
 
-        destination_outlet = get_model_object(Outlet, 'user', user)
+        destination_outlet = check_user_has_an_active_outlet(user)
         transfer = StockTransfer.objects.filter(
             id=kwargs['transfer_number'],
             destination_outlet=destination_outlet).first()

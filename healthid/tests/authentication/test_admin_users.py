@@ -61,7 +61,8 @@ class TestAdminRegistration(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             response['errors'][0]['message'],
-            ERROR_RESPONSES["invalid_field_error"].format("mobileNumber")
+            ERROR_RESPONSES["invalid_field_error"].format(
+                "mobile number (ex. +2346787646)")
         )
 
     def test_update_admin_profile_with_very_long_name(self):

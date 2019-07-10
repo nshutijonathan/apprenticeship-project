@@ -157,3 +157,15 @@ query_cities_string = '''
     }
 }
 '''
+
+activate_deactivate_outlet_user = '''
+mutation {{
+    activateDeactivateOutletUser(
+        userId: "{user_id}",
+        outletId: {outlet_id},
+        isActive: {is_active}
+        ){{
+            message
+        }}
+}}
+'''

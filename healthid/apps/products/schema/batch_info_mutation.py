@@ -21,6 +21,8 @@ from healthid.utils.product_utils.product import \
 from healthid.utils.messages.products_responses import\
      PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class CreateBatchInfo(graphene.Mutation):
@@ -48,7 +50,7 @@ class CreateBatchInfo(graphene.Mutation):
     @batch_info_instance
     def mutate(self, info, **kwargs):
         user = info.context.user
-        outlet = get_model_object(Outlet, 'user', user)
+        outlet = check_user_has_an_active_outlet(user)
         supplier_id = kwargs.get('supplier_id')
         products = kwargs.get('product')
         quantities = kwargs.get('quantities')

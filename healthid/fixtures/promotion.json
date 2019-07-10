@@ -87,8 +87,56 @@
            "city": 1,
            "phone_number": "1234567890",
            "date_launched": "2019-05-05",
-           "business": "123456789",
-           "user": ["aul5xrp73"]
+           "business": "123456789"
+        }
+    },
+    {
+        "model": "outlets.outlet",
+        "pk": 2,
+        "fields":{
+           "kind": 1,
+           "name": "cool",
+           "address_line1": "jkahsd",
+           "address_line2": "sdcs",
+           "lga": "sdfad",
+           "city": 1,
+           "phone_number": "1234567899",
+           "date_launched": "2019-05-05",
+           "business": "123456789"
+        }
+    },
+    {
+        "model": "outlets.outletuser",
+        "pk": 1,
+        "fields":{
+           "outlet": 1,
+           "user": "aul5xrp73",
+           "is_active_outlet": true
+        }
+    },
+    {
+        "model": "outlets.outletuser",
+        "pk": 2,
+        "fields":{
+           "outlet": 2,
+           "user": "aul5xrp74",
+           "is_active_outlet": true
+        }
+    },
+    {
+        "model": "outlets.outletuser",
+        "pk": 3,
+        "fields":{
+           "outlet": 1,
+           "user": "aul5xrp74"
+        }
+    },
+    {
+        "model": "outlets.outletuser",
+        "pk": 4,
+        "fields":{
+           "outlet": 1,
+           "user": "aul5xrp75"
         }
     },
     {

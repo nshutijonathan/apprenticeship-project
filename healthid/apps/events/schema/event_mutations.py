@@ -6,13 +6,14 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.events.models import Event
 from healthid.apps.events.models import EventType as EventTypeModel
-from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.events_utils.validate_role import ValidateAdmin
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
 
 
 class EventType(DjangoObjectType):
@@ -44,9 +45,7 @@ class CreateEvent(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
-        msg = EVENTS_ERROR_RESPONSES["calendar_restriction_error"]
-
-        outlet = get_model_object(Outlet, 'user', user, message=msg)
+        outlet = check_user_has_an_active_outlet(user)
         event_type = kwargs.get('event_type')
         event_type_id = kwargs.get('event_type_id')
         event_type = get_model_object(EventTypeModel, 'id', event_type_id)

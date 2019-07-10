@@ -3,6 +3,7 @@ from healthid.tests.test_fixtures.sales import (
     retrieve_promotions, retrieve_promotion_types,
     retrieve_promotions_pending_approval
 )
+from healthid.apps.outlets.models import OutletUser
 
 
 class TestRetrievePromotion(TestPromotion):
@@ -12,7 +13,8 @@ class TestRetrievePromotion(TestPromotion):
         self.assertIn(str(self.promotion.id), str(response['data']))
 
     def test_cannot_retrieve_promotion_for_outlet_you_dont_belong_to(self):
-        self.outlet.user.remove(self.master_admin_user)
+        OutletUser.objects.get(
+            user=self.master_admin_user, outlet=self.outlet).delete()
         response = self.query_with_token(self.access_token_master,
                                          retrieve_promotions(self.outlet.id))
         self.assertIsNotNone(response['errors'])
@@ -41,7 +43,8 @@ class TestRetrievePromotion(TestPromotion):
         )
 
     def test_cant_retrieve_unapproved_promotion_for_outlet_dont_belong(self):
-        self.outlet.user.remove(self.master_admin_user)
+        OutletUser.objects.get(
+            user=self.master_admin_user, outlet=self.outlet).delete()
         response = self.query_with_token(
             self.access_token_master,
             retrieve_promotions_pending_approval(self.outlet.id)

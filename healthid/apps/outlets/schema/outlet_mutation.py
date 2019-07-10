@@ -2,7 +2,7 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.outlets.models import City, Country, Outlet
+from healthid.apps.outlets.models import City, Country, Outlet, OutletUser
 from healthid.apps.outlets.schema.outlet_schema import (CityType, CountryType,
                                                         OutletType)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -11,6 +11,9 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.outlet_utils.validators import validate_fields
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.apps.authentication.schema.auth_queries import UserType
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_is_active_in_outlet
 
 
 class CreateOutlet(graphene.Mutation):
@@ -50,7 +53,8 @@ class CreateOutlet(graphene.Mutation):
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
         with SaveContextManager(outlet, model=Outlet) as outlet:
-            outlet.user.add(user)
+            OutletUser.objects.create(
+                user=user, outlet=outlet, is_active_outlet=True)
             return CreateOutlet(
                 outlet=outlet,
                 success=SUCCESS_RESPONSES["creation_success"].format("Outlet")
@@ -81,12 +85,8 @@ class UpdateOutlet(graphene.Mutation):
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
-        id = kwargs.get('id')
-        outlet = get_model_object(Outlet, 'id', id)
-        outlet_users = outlet.user.all()
-        if user not in outlet_users:
-            raise GraphQLError(
-                OUTLET_ERROR_RESPONSES["outlet_update_validation_error"])
+        outlet_id = kwargs.get('id')
+        outlet = check_user_is_active_in_outlet(user, outlet_id=outlet_id)
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
         with SaveContextManager(outlet, model=Outlet) as outlet:
@@ -236,6 +236,40 @@ class DeleteCountry(graphene.Mutation):
                        "deletion_success"].format("Country"))
 
 
+class ActivateDeactivateOutletUser(graphene.Mutation):
+    """
+    Mutataion to activate or deactivate user from an outlet
+
+    Attributes:
+        outlet_id(int): id for outlet whose user you want to activate or
+                        deactivate
+        user_id(string): id for user  to activate or deactivate in
+                         outlet
+        is_active(boolean): True if you want to activate a user
+                            otherwise False to deactivate
+
+    Returns:
+        message(string): indicating user has been activated or
+                         deactivated
+        user(obj): user who has been activated or deactivated
+    """
+    user = graphene.Field(UserType)
+    message = graphene.String()
+
+    class Arguments:
+        outlet_id = graphene.Int(required=True)
+        user_id = graphene.String(required=True)
+        is_active = graphene.Boolean(required=True)
+
+    @login_required
+    @user_permission()
+    def mutate(self, info, **kwargs):
+        outlet = get_model_object(Outlet, 'id', kwargs.get('outlet_id'))
+        outlet_user, message = outlet.activate_deactivate_user(
+            info.context.user, **kwargs)
+        return ActivateDeactivateOutletUser(message=message, user=outlet_user)
+
+
 class Mutation(graphene.ObjectType):
     create_outlet = CreateOutlet.Field()
     delete_outlet = DeleteOutlet.Field()
@@ -245,3 +279,4 @@ class Mutation(graphene.ObjectType):
     edit_country = EditCountry.Field()
     delete_country = DeleteCountry.Field()
     edit_city = EditCity.Field()
+    activate_deactivate_outlet_user = ActivateDeactivateOutletUser.Field()
