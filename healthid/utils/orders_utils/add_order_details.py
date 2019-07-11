@@ -1,4 +1,3 @@
-from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.products.models import Product
 from graphql.error import GraphQLError
 from healthid.apps.orders.models.orders import OrderDetails
@@ -44,53 +43,51 @@ class AddOrderDetails:
         return products
 
     @classmethod
-    def add_supplier(cls, kwargs, supplier):
+    def add_supplier(cls, kwargs, supplier, detail_objects):
         """
-        attaches a supplier to an order detail
+        attaches a user specified supplier to an order detail
 
         Arguments:
             kwargs(dict): contains products being ordered and order id
-            supplier: iterable of suppliers whose order details are
+            supplier(iter): iterable of suppliers whose order details are
                       being created
+            detail_objects(list): list of 'OrderDetail' model objects
+                                  to be saved
 
         Returns:
-            order_detail(obj): latest order detail created
+            created_order(obj): latest order detail created
         """
         products_list = kwargs.get('products')
-        products = cls.check_product_exists(products_list)
+        cls.check_product_exists(products_list)
         order_id = kwargs.get('order_id')
-        for product_id in products:
-            supplier_id = next(supplier)
-            order_detail = OrderDetails.objects.filter(
-                order__id=order_id, product__id=product_id).first()
-            get_model_object(Suppliers, 'id', supplier_id)
-            order_detail.supplier_id = supplier_id
-            order_detail.save()
-        return order_detail
+        created_order = OrderDetails.check_if_duplicate(
+            order_id,
+            detail_objects,
+            supplier
+        )
+        return created_order
 
     @classmethod
-    def supplier_autofill(cls, kwargs):
+    def supplier_autofill(cls, kwargs, detail_objects):
         """
-        attaches a preferred supplier of a product to an order detail
+        attaches a default preferred supplier to an order detail
 
         Arguments:
             kwargs(dict): contains products being ordered and order id
-            supplier: iterable of suppliers whose order details are
-                      being created
+            detail_objects(list): list of 'OrderDetail' model objects
+                                  to be saved
 
         Returns:
-            order_detail(obj): latest order detail created
+            created_order(obj): latest order detail created
         """
         products_list = kwargs.get('products')
-        products = cls.check_product_exists(products_list)
+        cls.check_product_exists(products_list)
         order_id = kwargs.get('order_id')
-        for product_id in products:
-            order_detail = OrderDetails.objects.filter(
-                order__id=order_id, product__id=product_id).first()
-            product = get_model_object(Product, 'id', product_id)
-            order_detail.supplier = product.preferred_supplier
-            order_detail.save()
-        return order_detail
+        created_order = OrderDetails.check_if_duplicate(
+            order_id,
+            detail_objects
+        )
+        return created_order
 
     @classmethod
     def get_order_details(cls, kwargs, order, quantity=None):

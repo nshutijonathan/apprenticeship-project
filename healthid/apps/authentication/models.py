@@ -120,7 +120,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return None
 
     @property
-    def outlets(self):
+    def user_outlets(self):
         """
         Method to return outlets user belongs in
 

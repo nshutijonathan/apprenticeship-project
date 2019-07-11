@@ -7,6 +7,7 @@ from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
+from healthid.utils.app_utils.database import get_model_object
 
 
 class Order(BaseModel):
@@ -40,6 +41,58 @@ class OrderDetails(BaseModel):
     price = models.DecimalField(blank=True, null=True,
                                 max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+
+    @classmethod
+    def check_if_duplicate(self, order_id, order_detail_object, supplier=None):
+        """
+        Adds a supplier value to the 'OrderDetail' object
+        Checks for duplicate order details records in the database
+        If not duplicated, bulk creates new 'OrderDetail' records
+
+        Arguments:
+            order_id(int): Id of the 'Order' that the
+                          'OrderDetail' object is for
+            order_detail_object(list): list of 'OrderDetail' model objects
+                                       to be saved
+            supplier(iter): iterable of suppliers whose order details are
+                      being created
+
+        Returns:
+            created_order(obj): latest order detail created
+        """
+        detail_object_list = []
+        for detail_object in order_detail_object:
+            if supplier is None:
+                product = get_model_object(
+                    Product,
+                    'id',
+                    detail_object.product_id
+                )
+                supplier_id = product.preferred_supplier.id
+            else:
+                supplier_id = next(supplier)
+            check_duplicate = self.objects.filter(
+                order__id=order_id,
+                product__id=detail_object.product_id,
+                supplier__id=supplier_id
+            ).exists()
+
+            if not check_duplicate:
+                detail_object.supplier_id = supplier_id
+                detail_object_list.append(detail_object)
+                created_order = detail_object
+            else:
+                current_order_detail = OrderDetails.objects.get(
+                    order__id=order_id,
+                    product__id=detail_object.product_id,
+                    supplier__id=supplier_id
+                )
+                current_order_detail.quantity = detail_object.quantity
+                current_order_detail.save()
+                created_order = current_order_detail
+
+        OrderDetails.objects.bulk_create(detail_object_list)
+        return created_order
 
 
 class SupplierOrderDetails(BaseModel):

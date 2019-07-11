@@ -84,6 +84,7 @@ mutation{{
   }}
 }}
 '''
+
 add_quantities = '''
 mutation{{
   addOrderDetails(
@@ -105,6 +106,41 @@ mutation{{
   }}
 }}
 '''
+
+modify_order_quantities = '''
+mutation{{
+  addOrderDetails(
+    orderId: {order_id},
+    products: [{product}]
+    quantities: [{quantity}]
+  ){{
+    message
+    orderDetails{{
+      id
+      product{{
+        id
+      }}
+    }}
+    suppliersOrderDetails{{
+      id
+      orderDetails {{
+        quantity
+      }}
+    }}
+  }}
+}}
+'''
+
+remove_order_detail = '''
+mutation{{
+  deleteOrderDetail(
+    orderDetailId:"{order_detail_id}",
+  ){{
+     message
+  }}
+}}
+'''
+
 products_query = '''
     query{
       productAutofill{

@@ -3,6 +3,7 @@ from graphql_jwt.decorators import login_required
 from graphql.error import GraphQLError
 
 from healthid.apps.orders.models.orders import Order, SupplierOrderDetails
+from healthid.apps.orders.models.orders import OrderDetails
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.orders_utils.add_order_details import add_order_details
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -13,6 +14,7 @@ from healthid.apps.orders.schema.order_query import \
     SupplierOrderDetailsType, OrderDetailsType, OrderType
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class InitiateOrder(graphene.Mutation):
@@ -88,6 +90,22 @@ class AddOrderDetails(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, **kwargs):
+        """
+        Mutation that creates a new record in the 'OrderDetails' model.
+        Validates the length of the input argument lists and
+        checks for duplicate model entries.
+
+        Arguments:
+            kwargs(dict): contains the 'orderId',product ids,
+                          quantity (optional) and supplier (optional)
+                          details of the product to be ordered
+
+        Returns:
+            order_details(obj): latest order detail created
+            message(str): success message
+            suppliers_order_details(list): suppliers order details for a given
+                                           order
+        """
         order_id = kwargs.get('order_id')
         products = kwargs.get('products')
         quantities = kwargs.get('quantities', None)
@@ -102,13 +120,10 @@ class AddOrderDetails(graphene.Mutation):
             quantity = iter(quantities)
             object_list = \
                 add_order_details.get_order_details(kwargs, order, quantity)
-            order_details = \
-                add_order_details.add_product_quantity(object_list)
         else:
             object_list = \
                 add_order_details.get_order_details(kwargs, order)
-            order_details = \
-                add_order_details.add_product_quantity(object_list)
+
         if suppliers:
             params = {
                 'name1': 'Suppliers',
@@ -116,12 +131,19 @@ class AddOrderDetails(graphene.Mutation):
             }
             add_order_details.check_list_length(products, suppliers, **params)
             supplier = iter(suppliers)
-            order_details = add_order_details.add_supplier(kwargs, supplier)
+            order_details = add_order_details.add_supplier(
+                kwargs,
+                supplier,
+                object_list
+            )
         else:
-            order_details = add_order_details.supplier_autofill(kwargs)
-        suppliers_order_details = create_suppliers_order_details(order)
+            order_details = add_order_details.supplier_autofill(
+                kwargs,
+                object_list
+            )
 
         message = ORDERS_SUCCESS_RESPONSES["order_addition_success"]
+        suppliers_order_details = create_suppliers_order_details(order)
         return cls(order_details=order_details,
                    message=message,
                    suppliers_order_details=suppliers_order_details)
@@ -190,8 +212,41 @@ class ApproveSupplierOrder(graphene.Mutation):
                                     supplier_order_details=supplier_orders)
 
 
+class DeleteOrderDetail(graphene.Mutation):
+    class Arguments:
+        order_detail_id = graphene.List(graphene.String, required=True)
+
+    message = graphene.Field(graphene.String)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        """
+        Mutation that deletes one or more records in the 'OrderDetails' model.
+
+        Arguments:
+            kwargs(dict): contains the id of the 'OrderDetails'
+                          record to be deleted.
+
+        Returns:
+            message(str): confirms successful record(s) deletion
+        """
+        order_detail_id = kwargs.get('order_detail_id')
+        success_message = SUCCESS_RESPONSES["deletion_success"].format(
+            "Product details"
+            )
+        for order_detail_id in order_detail_id:
+            removed_product = get_model_object(
+                OrderDetails,
+                'id',
+                order_detail_id
+            )
+            removed_product.hard_delete()
+        return DeleteOrderDetail(message=success_message)
+
+
 class Mutation(graphene.ObjectType):
     initiate_order = InitiateOrder.Field()
     add_order_details = AddOrderDetails.Field()
     approve_supplier_order = ApproveSupplierOrder.Field()
     edit_initiated_order = EditInitiateOrder.Field()
+    delete_order_detail = DeleteOrderDetail.Field()
