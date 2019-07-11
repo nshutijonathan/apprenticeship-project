@@ -2,7 +2,9 @@ SALES_SUCCESS_RESPONSES = {
     "promotion_approval_success": "Promotion has been approved",
     "sales_prompt_create_success": "Successfully created {sales_prompt_count} "
                                    "sales prompt",
-    "add_to_cart_success": "Product added to cart."
+    "add_to_cart_success": "Product added to cart.",
+    "calculated_velocity":  "Sales velocity calculated successfully."
+                            "Use calculated value"
 }
 
 SALES_ERROR_RESPONSES = {
@@ -15,5 +17,7 @@ SALES_ERROR_RESPONSES = {
     "in_stock_product_error": "There is only quantity "
                               "{} of {} available in stock.",
     "inexistent_promotion": "Promotion with id {} does not exist.",
-    "outlet_id_validation_error": "You don't belong to outlet with id {}."
+    "outlet_id_validation_error": "You don't belong to outlet with id {}.",
+    "default_velocity": "Not enough sales data to calculate sales velocity."
+                        "Please use default value"
 }

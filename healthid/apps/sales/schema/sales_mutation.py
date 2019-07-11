@@ -4,8 +4,9 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
-from healthid.apps.sales.models import Sale, SalesPrompt
-from healthid.apps.sales.schema.sales_schema import SalesPromptType, SaleType
+from healthid.apps.sales.models import (SalesPrompt, Sale)
+from healthid.apps.sales.schema.sales_schema import (
+    SalesPromptType, SaleType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission

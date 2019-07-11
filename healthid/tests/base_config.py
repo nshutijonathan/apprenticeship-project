@@ -215,6 +215,7 @@ class BaseConfiguration(TestCase):
             "emergency_contact_email": "saruman@lotr.world",
             "emergency_contact_number": "+234897090878 "
         })
+
         self.invoice_data = {
             "outlet_id": self.outlet.id,
             "order_id": self.order.id,

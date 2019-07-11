@@ -19,7 +19,7 @@ from healthid.apps.receipts.schema import receipt_mutation, receipt_schema
 from healthid.apps.register.schema import register_mutation, register_schema
 from healthid.apps.sales.schema import (sales_mutation, sales_schema,
                                         promotions_mutation, promotions_query,
-                                        cart_mutation, cart_query)
+                                        cart_mutation, cart_query, sales_query)
 from healthid.apps.events.schema import event_querys, event_mutations
 from healthid.apps.stock.schema import stock_mutation
 from healthid.apps.stock.schema import stock_query
@@ -40,6 +40,7 @@ class Query(
         event_querys.Query,
         consultation_query.Query,
         sales_schema.Query,
+        sales_query.Query,
         promotions_query.Query,
         stock_query.Query,
         notification_queries.Query,

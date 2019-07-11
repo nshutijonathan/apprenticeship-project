@@ -7,7 +7,8 @@ from healthid.apps.receipts.models import ReceiptTemplate
 
 class Register(BaseModel):
     name = models.CharField(max_length=244)
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE,
+                               related_name='outlet_register')
     receipt = models.ForeignKey(ReceiptTemplate, on_delete=models.CASCADE,
                                 related_name='receipttemplate')
 

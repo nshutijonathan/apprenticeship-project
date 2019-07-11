@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Sum
 from django.db.models.signals import pre_save
 
@@ -52,7 +53,6 @@ class SalesPrompt(BaseModel):
 class Cart(models.Model):
     '''
     defines cart model.
-
     args:
         user: owner of the cart.
         items: products along with the quantity and their total that
@@ -72,7 +72,6 @@ class Cart(models.Model):
 class CartItem(models.Model):
     '''
     defines cart item model
-
     args:
         product: product to be added to cart
         quantity: amount of product to be added to cart
@@ -105,7 +104,6 @@ pre_save.connect(update_item_total, sender=CartItem)
 class Sale(BaseModel):
     """
     Defines sale model
-
     Attributes:
             sales_person: Holds employee who made the transaction
             outlet: Holds outlet referencing id.
@@ -117,6 +115,7 @@ class Sale(BaseModel):
             payment_method: Holds payment method e.g. cash/cash
             notes: Holds note about the sale
     """
+
     sales_person = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='sold_by')
     customer = models.ForeignKey(
@@ -135,7 +134,6 @@ class Sale(BaseModel):
     def _validate_sales_details(self, **kwargs):
         """
         This method handles all validations related to sale fields
-
         Arguments:
             kwargs: information about sale
         """
@@ -148,11 +146,21 @@ class Sale(BaseModel):
         sold_product_instances = sales_validator.check_validity_quantity_sold()
         return sold_product_instances
 
+    @property
+    def get_default_register(self):
+        """
+        Returns a default register for each outlet
+        """
+        try:
+            register = self.outlet.outlet_register.all().first()
+            return register.id
+        except ObjectDoesNotExist:
+            return None
+
     def create_sale(self, info, **kwargs):
         """
         This method create a sale after it has been validated
         by _validate_sales_details()
-
         Arguments:
             kwargs: information about sale
             info: information about the logged in user
@@ -217,11 +225,13 @@ class Sale(BaseModel):
             sales = sales[:first]
         return sales
 
+    class Meta:
+        ordering = ['-created_at']
+
 
 class SaleDetail(BaseModel):
     """
     Defines sale detail model
-
     Attributes:
         product: Holds a reference to products to be sold
         sale:  Holds a sale reference to this product

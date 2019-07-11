@@ -247,3 +247,17 @@ def query_sale_history(sale_id):
                 }}
             }}
     ''')
+
+
+sales_velocity_query = '''
+    query{{
+      salesVelocity(
+        productId: {product_id},
+        outletId: {outlet_id}
+        ){{
+        defaultSalesVelocity
+        calculatedSalesVelocity
+        message
+        }}
+    }}
+'''
