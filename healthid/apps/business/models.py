@@ -22,7 +22,7 @@ class Business(BaseModel):
     twitter = models.CharField(max_length=344)
     instagram = models.CharField(max_length=244)
     logo = models.URLField()
-    user = models.ManyToManyField(User, related_name='employees')
+    user = models.ManyToManyField(User, related_name='businesses')
 
     def __str__(self):
         return self.legal_name

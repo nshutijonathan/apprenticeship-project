@@ -1,6 +1,7 @@
 import graphene
 from graphql import GraphQLError
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
 from graphql_jwt.utils import jwt_encode, jwt_payload
 
 from rest_framework.authtoken.models import Token
@@ -37,6 +38,7 @@ class LoginUser(graphene.Mutation):
             user_auth = authenticate(username=email, password=password)
             if user_auth is None:
                 raise GraphQLError(message)
+            update_last_login(sender=User, user=user)
             message = AUTH_SUCCESS_RESPONSES["login_success"]
             # Create token to access GraphQL-based views
             payload = jwt_payload(user_auth)
