@@ -222,6 +222,34 @@ mutation {{
     sale {{
       id
     }}
+    receipt {{
+      id
+    }}
+    message
+  }}
+}}
+'''
+
+
+create_anonymous_sale = '''
+mutation {{
+  createSale(
+      discountTotal: {discount_total},
+      amountToPay: {amount_to_pay},
+      paymentMethod:"{payment_method}",
+      outletId: {outlet_id}
+      subTotal: {sub_total},
+      changeDue: {change_due},
+      paidAmount: {paid_amount},
+      products: {products}
+      )
+      {{
+    sale {{
+      id
+    }}
+    receipt {{
+      id
+    }}
     message
   }}
 }}'''

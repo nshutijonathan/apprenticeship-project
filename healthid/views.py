@@ -52,7 +52,7 @@ class HandleCSV(APIView):
                     "noOfProductsAdded": quantity_added,
                 }
                 return Response(message, status.HTTP_201_CREATED)
-        except (ValueError, GraphQLError) as e:
+        except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({
                 "errors": str(e)

@@ -47,7 +47,7 @@ class Product(BaseModel):
         MeasurementUnit, on_delete=models.CASCADE)
     sku_number = models.CharField(max_length=100, null=True)
     is_approved = models.BooleanField(default=False)
-    description = models.CharField(max_length=150)
+    description = models.TextField()
     brand = models.CharField(max_length=50)
     manufacturer = models.CharField(max_length=50)
     vat_status = models.BooleanField(default=False)

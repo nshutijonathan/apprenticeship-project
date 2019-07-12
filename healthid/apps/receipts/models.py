@@ -4,9 +4,13 @@ from django.db.models.signals import pre_save
 from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
+from healthid.apps.products.models import Product
 from healthid.apps.sales.models import Sale
+from healthid.apps.sales.models import SaleDetail
+from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.receipts.barcode import \
     generate_barcode, generate_receipt_number
+from healthid.utils.messages.receipts_responses import RECEIPT_ERROR_RESPONSES
 from healthid.utils.app_utils.database import \
     SaveContextManager, get_model_object
 
@@ -178,7 +182,8 @@ class Receipt(BaseModel):
         """
         if self.receipt_template.purchase_total:
             sub_total = self.sale.sub_total
-            return sub_total - (sub_total * self.sale.discount_total/100)
+            return round(sub_total - (sub_total *
+                                      self.sale.discount_total / 100), 2)
         return None
 
     @property
@@ -226,6 +231,46 @@ class Receipt(BaseModel):
             if customer:
                 return customer.loyalty_points
         return None
+
+    @staticmethod
+    def mail_receipt(receipt_id):
+        """
+        Sends a digital copy of a sales receipt to the customer
+
+        Arguments:
+            receipt_id: ID of receipt to send
+
+        Returns:
+            None
+        """
+        receipt = get_model_object(Receipt, 'id', receipt_id)
+        sale_details = SaleDetail.objects.filter(sale_id=receipt.sale.id)
+        receipt_product_info = [
+            {'product_name': get_model_object(
+                Product, 'id', sold_item_detail.product_id).product_name,
+             'quantity_bought': sold_item_detail.quantity,
+             'price': sold_item_detail.price,
+             'discount': sold_item_detail.discount}
+            for sold_item_detail in sale_details
+        ]
+        if not receipt.sale.customer:
+            raise AttributeError(
+                RECEIPT_ERROR_RESPONSES['mailer_no_customer'])
+        if not receipt.sale.customer.email:
+            raise AttributeError(
+                RECEIPT_ERROR_RESPONSES['mailer_no_email'])
+        mail_context = {
+            'receipt': receipt,
+            'receipt_product_info': receipt_product_info,
+            'sale': receipt.sale
+        }
+        mail = SendMail(
+            to_email=[receipt.sale.customer.email],
+            subject=f"Purchase receipt from {receipt.sale.outlet.name}",
+            template='email_alerts/receipts/sale_receipt.html',
+            context=mail_context
+        )
+        mail.send()
 
 
 def generate_receipt_number_and_barcode(**kwargs):

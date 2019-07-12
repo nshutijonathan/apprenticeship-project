@@ -1,4 +1,9 @@
+RECEIPT_ERROR_RESPONSES = {
+    "mailer_no_customer": "Cannot mail receipt, "
+                          "sale not associated with a customer",
+    "mailer_no_email": "Cannot mail receipt to customer, email not provided"
+}
 
-RECEIPTS_ERROR_RESPONSES = {
-    "key_error": "{key} should be true or false"
+RECEIPT_SUCCESS_RESPONSES = {
+    "mailer_success": "Receipt successfully mailed to customer"
 }

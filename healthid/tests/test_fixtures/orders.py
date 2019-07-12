@@ -201,14 +201,17 @@ query {{
 
 approve_supplier_order = '''
 mutation{{
-  approveSupplierOrder(additionalNotes: "{additional_notes}",
-  orderId: {order_id}, supplierOrderIds: {supplier_order_ids}){{
-    message
-    supplierOrderDetails {{
-      id
-      approved
+  approveSupplierOrder(
+    additionalNotes: "{additional_notes}",
+    orderId: {order_id},
+    supplierOrderIds: {supplier_order_ids}
+    ){{
+      message
+      supplierOrderDetails {{
+        id
+        approved
+      }}
     }}
-  }}
   }}
 '''
 
