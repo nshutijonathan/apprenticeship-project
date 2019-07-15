@@ -1,14 +1,20 @@
 from decimal import Decimal
+from functools import reduce
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
+from django.forms.models import model_to_dict
 from taggit.managers import TaggableManager
 
 from healthid.apps.authentication.models import User
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.outlets.models import Outlet
-from healthid.manager import BaseManager
+from healthid.apps.products.managers import ProductManager, QuantityManager
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
+from healthid.utils.app_utils.validators import check_validity_of_ids
+from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
 class ProductCategory(BaseModel):
@@ -22,27 +28,25 @@ class ProductCategory(BaseModel):
         loyalty_weight: points attached to the purchase of products in
                         category
     """
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     amount_paid = models.PositiveIntegerField(default=100)
     loyalty_weight = models.PositiveIntegerField(default=0)
     markup = models.PositiveIntegerField(default=25)
     is_vat_applicable = models.BooleanField(default=False)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
 
+    class Meta:
+        unique_together = (("name", "outlet"))
+
 
 class MeasurementUnit(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
-class ProductManager(BaseManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_active=True)
-
-
 class Product(BaseModel):
     product_category = models.ForeignKey(
         ProductCategory, on_delete=models.CASCADE)
-    product_name = models.CharField(max_length=244, unique=True)
+    product_name = models.CharField(max_length=244, null=False)
     measurement_unit = models.ForeignKey(
         MeasurementUnit, on_delete=models.CASCADE)
     sku_number = models.CharField(max_length=100, null=True)
@@ -59,18 +63,16 @@ class Product(BaseModel):
         Suppliers, related_name='prefered', on_delete=models.CASCADE)
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
-    outlet = models.ManyToManyField(Outlet)
+    outlet = models.ForeignKey(
+        Outlet, related_name='outlet_products',
+        on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True,
-        related_name='product_creator')
+        related_name='created_products')
     admin_comment = models.TextField(null=True)
     tags = TaggableManager()
     markup = models.PositiveIntegerField(default=25)
-    pre_tax_retail_price = models.DecimalField(
-        max_digits=12, decimal_places=2, null=True)
-    unit_cost = models.DecimalField(
-        max_digits=12, decimal_places=2, null=True)
-    auto_price = models.BooleanField(default=False)
+    auto_price = models.BooleanField(default=True)
     loyalty_weight = models.IntegerField(default=0)
     parent = models.ForeignKey(
         "self",
@@ -84,17 +86,23 @@ class Product(BaseModel):
     is_active = models.BooleanField(default=True)
     reorder_point = models.IntegerField(default=0)
     reorder_max = models.IntegerField(default=0)
+    request_declined = models.BooleanField(default=False)
 
     '''all_products model manager returns both all products including
     deactivated products i.e Products.all_products.all() returns both
     active and deactivated products use it when you need deactivate
     products as well.'''
-    all_products = models.Manager()
+    all_products = ProductManager(
+        approved_only=False, active_only=False, original_only=False)
 
     '''objects model manager returns only activated products i.e
     Products.objects.all() returns only active products use it when
     you don't need deactivated products.'''
-    objects = ProductManager()
+    objects = ProductManager(approved_only=False)
+
+    class Meta:
+        unique_together = ((
+            "product_name", "manufacturer", "outlet", "measurement_unit"))
 
     @property
     def get_tags(self):
@@ -104,22 +112,101 @@ class Product(BaseModel):
         return self.product_name
 
     def __repr__(self):
-        return (f'''<{self.product_name}>
-        <Price: {self.sales_price}>
-        ''')
+        return (f"<{self.product_name}>")
 
     @property
     def quantity(self):
         """
         Get the total quantity of a given product.
         """
-        product_quantities = self.product_quantities.filter(
-            parent_id__isnull=True).aggregate(models.Sum('quantity_received'))
-        return product_quantities['quantity_received__sum']
+        return sum([batch.quantity for batch in self.batch_info.all()])
 
     @property
     def autofill_quantity(self):
         return self.reorder_max - self.quantity
+
+    @property
+    def avarage_unit_cost(self):
+        available_batches = self.batch_info.filter(sold_out=False)
+        if available_batches.exists():
+            result = available_batches.aggregate(models.Avg('unit_cost'))
+        else:
+            result = self.batch_info.all().aggregate(models.Avg('unit_cost'))
+        return result['unit_cost__avg'] or 0
+
+    @property
+    def pre_tax_retail_price(self):
+        selling_price = self.sales_price or 0
+        if self.batch_info.exists():
+            if self.auto_price:
+                selling_batch = self.batch_info.filter(
+                    expiry_date=self.nearest_expiry_date
+                ).order_by('date_received').first()
+                selling_price = selling_batch.unit_cost * \
+                    Decimal(1 + self.markup / 100)
+            if not self.auto_price and self.sales_price is None:
+                selling_price = Decimal(self.avarage_unit_cost) * \
+                    Decimal(1 + self.markup / 100)
+
+        return selling_price
+
+    @property
+    def get_sales_price(self):
+        selling_price = self.pre_tax_retail_price
+        preference = self.outlet.outletpreference
+        if self.vat_status:
+            vat_rate = selling_price * Decimal(preference.vat_rate.rate)
+            selling_price = selling_price + vat_rate
+        return selling_price
+
+    def get_proposed_edit(self, request_id):
+        proposed_edit = Product.all_products.filter(
+            id=request_id, parent=self,
+            is_approved=False, request_declined=False).first()
+        if not proposed_edit:
+            message = PRODUCTS_ERROR_RESPONSES[
+                'wrong_proposed_edit_id'].format(self.product_name, request_id)
+            raise ObjectDoesNotExist(message)
+        return proposed_edit
+
+    def approve_proposed_edit(self, request_id):
+        proposed_edit = self.get_proposed_edit(request_id)
+
+        product_dict = model_to_dict(proposed_edit)
+        exclude_list = [
+            'auto_price', 'parent', 'is_active', 'is_approved', 'sku_number',
+            'user', 'outlet'
+        ]
+        [product_dict.pop(item) for item in exclude_list]
+        product_dict['preferred_supplier_id'] = product_dict.pop(
+            'preferred_supplier')
+        product_dict['backup_supplier_id'] = product_dict.pop(
+            'backup_supplier')
+        product_dict['product_category_id'] = product_dict.pop(
+            'product_category')
+        product_dict['measurement_unit_id'] = product_dict.pop(
+            'measurement_unit')
+        product_dict.pop('id')
+        for key, value in product_dict.items():
+            if value is not None:
+                setattr(self, key, value)
+        proposed_edit.hard_delete()
+        self.save()
+
+    def decline_proposed_edit(self, request_id, comment):
+        edit_request = self.get_proposed_edit(request_id)
+        edit_request.admin_comment = comment
+        edit_request.request_declined = True
+        edit_request.save()
+        return edit_request
+
+    def get_batches(self, batch_ids):
+        query = reduce(lambda q, id: q | Q(id=id), batch_ids, Q())
+        product_batches = self.batch_info.filter(query)
+        product_batch_ids = product_batches.values_list('id', flat=True)
+        message = PRODUCTS_ERROR_RESPONSES['inexistent_batches']
+        check_validity_of_ids(batch_ids, product_batch_ids, message=message)
+        return product_batches
 
 
 class BatchInfo(BaseModel):
@@ -128,17 +215,18 @@ class BatchInfo(BaseModel):
     batch_no = models.CharField(
         max_length=100, null=True, blank=True, editable=False)
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
-    date_received = models.DateField(auto_now=False, null=True, blank=True)
+    date_received = models.DateField(auto_now=False)
     pack_size = models.CharField(max_length=100, null=True, blank=True)
-    expiry_date = models.DateField(auto_now=False, null=True, blank=True)
+    expiry_date = models.DateField(auto_now=False)
     unit_cost = models.DecimalField(
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
     commentary = models.TextField(blank=True, null=True)
-    product = models.ManyToManyField(Product, related_name='batch_info')
+    sold_out = models.BooleanField(default=False)
+    product = models.ForeignKey(
+        Product, related_name='batch_info',
+        on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_batches')
-    outlet = models.ForeignKey(
-        Outlet, on_delete=models.CASCADE, related_name='outlet_batches')
 
     def __str__(self):
         return self.batch_no
@@ -146,26 +234,43 @@ class BatchInfo(BaseModel):
     def __unicode__(self):
         return self.batch_no
 
+    def save(self, *args, **kwargs):
+        if Product.all_objects.filter(id=self.product_id).exists():
+            if not self.product.is_approved:
+                name = self.product.product_name
+                message = PRODUCTS_ERROR_RESPONSES[
+                    'unapproved_product_batch_error'].format(name)
+                raise ObjectDoesNotExist(message)
+        super(BatchInfo, self).save(*args, **kwargs)
+
     @property
     def quantity(self):
         """
         Property to return the total quantities of products
         in a batch.
         """
-        batch_quantities = self.batch_quantities.filter(
-            parent_id__isnull=True).aggregate(models.Sum('quantity_received'))
-        return batch_quantities['quantity_received__sum']
+        original_quantity = Quantity.get_original_quantities(batch=self)
+        return original_quantity.quantity_remaining
+
+    @property
+    def proposed_quantity(self):
+        """
+        Property to return the total quantities of products
+        in a batch.
+        """
+        proposed_quantity = Quantity.get_proposed_quantities(batch=self)
+        return proposed_quantity.quantity_remaining or None
 
 
 class Quantity(BaseModel):
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
-    product = models.ForeignKey(
-        Product, related_name='product_quantities', on_delete=models.CASCADE)
     batch = models.ForeignKey(
         BatchInfo, on_delete=models.CASCADE, related_name='batch_quantities')
     quantity_received = models.PositiveIntegerField(null=True, blank=True)
+    quantity_remaining = models.PositiveIntegerField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
+    request_declined = models.BooleanField(default=False)
     proposed_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='proposing_user',
         null=True, blank=True)
@@ -176,6 +281,24 @@ class Quantity(BaseModel):
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedQuantityChange",
                                null=True, blank=True)
+
+    objects = QuantityManager()
+    all_quantities = QuantityManager(original_only=False)
+
+    @staticmethod
+    def get_proposed_quantities(batch=None):
+        queryset = Quantity.all_quantities.filter(
+            parent_id__isnull=False, request_declined=False, is_approved=False)
+        if batch is not None:
+            queryset = queryset.filter(batch=batch).first()
+        return queryset
+
+    @staticmethod
+    def get_original_quantities(batch=None):
+        queryset = Quantity.objects.all()
+        if batch is not None:
+            queryset = queryset.filter(batch=batch).first()
+        return queryset
 
 
 class Survey(BaseModel):

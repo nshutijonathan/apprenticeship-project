@@ -2,14 +2,14 @@ from django.core.management import call_command
 
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import (
-    approved_product_query, backup_supplier, create_product, create_product_2,
-    delete_product, product_query, proposed_edits_query,
-    proposed_product_query, supplier_mutation, update_a_product_loyalty_weight,
-    update_loyalty_weight, update_product, decline_proposed_edits,
-    approve_proposed_edits)
-from healthid.utils.messages.products_responses import\
-     PRODUCTS_SUCCESS_RESPONSES
+    approve_proposed_edits, approved_product_query, backup_supplier,
+    create_product, create_product_2, decline_proposed_edits, delete_product,
+    product_query, proposed_edits_query, proposed_product_query,
+    supplier_mutation, update_a_product_loyalty_weight, update_loyalty_weight,
+    update_product)
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.products_responses import \
+    PRODUCTS_SUCCESS_RESPONSES
 
 
 class TestCreateProduct(BaseConfiguration):
@@ -24,8 +24,8 @@ class TestCreateProduct(BaseConfiguration):
             'id']
         self.backup_id = self.supplier2['data']['addSupplier']['supplier'][
             'id']
-        self.product = create_product_2(self.supplier_id, self.backup_id,
-                                        self.user)
+        self.product = create_product_2(
+            self.supplier_id, self.backup_id, self.user, self.outlet)
 
     def test_create_product(self):
         """method for creating a product"""
@@ -48,22 +48,23 @@ class TestCreateProduct(BaseConfiguration):
         self.assertIn('errors', response)
 
     def test_product_query(self):
-        response = self.query_with_token(self.access_token, product_query)
+        response = self.query_with_token(
+            self.access_token, product_query)
         self.assertIn('products', response['data'])
 
     def test_proposed_edits_query(self):
-        response = self.query_with_token(self.access_token,
-                                         proposed_edits_query)
+        response = self.query_with_token(
+            self.access_token, proposed_edits_query)
         self.assertIn('proposedEdits', response['data'])
 
     def test_proposed_product_query(self):
-        response = self.query_with_token(self.access_token,
-                                         proposed_product_query)
+        response = self.query_with_token(
+            self.access_token, proposed_product_query)
         self.assertIn('proposedProducts', response['data'])
 
     def test_approved_product_query(self):
-        response = self.query_with_token(self.access_token,
-                                         approved_product_query)
+        response = self.query_with_token(
+            self.access_token, approved_product_query)
         self.assertIn('approvedProducts', response['data'])
 
     def test_update_product(self):
@@ -114,51 +115,52 @@ class TestCreateProduct(BaseConfiguration):
     def test_update_approved_product(self):
         update_name = 'Cold cap'
         message = PRODUCTS_SUCCESS_RESPONSES["approval_pending"]
-        product = self.product
-        product.is_approved = True
-        product.save()
         response = self.query_with_token(
             self.access_token, update_product(self.product.id, update_name))
         self.assertIn(message, response['data']['updateProduct']['message'])
         self.assertNotEqual(
-            str(product.id),
+            str(self.product.id),
             response['data']['updateProduct']['product']['id'])
 
-    def test_delete_product(self):
+    def test_delete_approved_product(self):
+        response = self.query_with_token(self.access_token,
+                                         delete_product(self.product.id))
+        self.assertEqual("Approved product can't be deleted.",
+                         response["errors"][0]["message"])
+
+    def test_delete_proposed_product(self):
+        self.product.is_approved = False
+        self.product.save()
         response = self.query_with_token(self.access_token,
                                          delete_product(self.product.id))
         self.assertIn("success", response["data"]["deleteProduct"])
 
     def test_approve_edit_request(self):
         update_name = 'Cold cap'
-        product = self.product
-        product.is_approved = True
-        product.save()
         edit_request = self.query_with_token(
             self.access_token, update_product(self.product.id, update_name))
         edit_request_id = edit_request['data']['updateProduct']['product'][
             'id']
         response = self.query_with_token(
             self.access_token_master,
-            approve_proposed_edits.format(edit_request_id=edit_request_id))
+            approve_proposed_edits.format(
+                product_id=self.product.id, edit_request_id=edit_request_id))
         self.assertIn(SUCCESS_RESPONSES[
                       "approval_success"].format(
-                                          "Edit request"), response['data'][
-                                       'approveProposedEdits']['message'])
+            "Edit request"), response['data'][
+            'approveProposedEdits']['message'])
         self.assertIn('data', response)
 
     def test_decline_edit_request(self):
         update_name = 'Cold cap'
-        product = self.product
-        product.is_approved = True
-        product.save()
         edit_request = self.query_with_token(
             self.access_token, update_product(self.product.id, update_name))
         edit_request_id = edit_request['data']['updateProduct']['product'][
             'id']
         response = self.query_with_token(
             self.access_token_master,
-            decline_proposed_edits.format(edit_request_id=edit_request_id))
+            decline_proposed_edits.format(
+                product_id=self.product.id, edit_request_id=edit_request_id))
         self.assertIn(PRODUCTS_SUCCESS_RESPONSES[
                       "edit_request_decline"].format("Cold cap"),
                       response['data']['declineProposedEdits']['message'])

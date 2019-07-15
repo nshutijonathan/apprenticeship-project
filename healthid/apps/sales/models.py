@@ -95,7 +95,7 @@ def update_item_total(**kwargs):
     """
     cart_item = kwargs.get('instance')
     cart_item.item_total = \
-        cart_item.product.pre_tax_retail_price * cart_item.quantity
+        cart_item.product.get_sales_price * cart_item.quantity
 
 
 pre_save.connect(update_item_total, sender=CartItem)

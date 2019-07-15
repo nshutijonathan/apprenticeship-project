@@ -97,8 +97,9 @@ def get_model_object(model, column_name, column_value, **kwargs):
         model_instance: If the value exists.
         error: Else expection is raised with appropriate message.
     """
+    manager_query = kwargs.get('manager_query', model.objects)
     try:
-        model_instance = model.objects.get(**{column_name: column_value})
+        model_instance = manager_query.get(**{column_name: column_value})
         return model_instance
     except ObjectDoesNotExist:
         message = kwargs.get('message', None)

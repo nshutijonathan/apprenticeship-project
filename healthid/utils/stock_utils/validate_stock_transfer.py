@@ -8,9 +8,7 @@ class ValidateStockTransfer():
         """Method to ensure that the stock transfer gets the
         appropriate validated fields to feed into the database
         """
-        if not fields['batch_number'] or fields['batch_number'].isspace():
-            raise GraphQLError('Please enter a valid batch number')
-        if len(fields['products']) != len(fields['quantities']):
+        if len(fields['batch_ids']) != len(fields['quantities']):
             raise GraphQLError(
                 'An equal number of products and quantities must be provided!')
 

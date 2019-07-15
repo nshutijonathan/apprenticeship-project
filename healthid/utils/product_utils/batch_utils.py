@@ -4,10 +4,6 @@ from itertools import compress
 
 from graphql import GraphQLError
 
-from healthid.apps.orders.models import Suppliers
-from healthid.apps.products.models import BatchInfo, Product
-from healthid.utils.app_utils.database import get_model_object
-
 
 class ProductBatchInfo:
     """
@@ -37,16 +33,6 @@ class ProductBatchInfo:
             for field, field_value in kwargs.items():
                 if field in date_fields:
                     self.validate_date_field(field_value, field)
-                if field == 'batch_id':
-                    get_model_object(BatchInfo, 'id', field_value)
-                if field == 'supplier_id':
-                    get_model_object(Suppliers, 'supplier_id', field_value)
-                if field == 'product':
-                    if len(field_value) < 1:
-                        raise GraphQLError('This batch must be have '
-                                           'to at least 1 (one) Product')
-                    for product_id in field_value:
-                        get_model_object(Product, 'id', product_id)
                 if field in int_fields:
                     self.validate_positive_integers(field_value, field)
             return func(*args, **kwargs)
@@ -67,7 +53,7 @@ def check_validity_of_ids(user_inputs, db_ids, message=None):
         raise GraphQLError(message)
 
 
-def check_validity_of_quantity(user_inputs, db_quantities, product_ids):
+def check_validity_of_quantity(user_inputs, db_quantities, batch_ids):
 
     is_valid = [user_input < db_quantity for user_input,
                 db_quantity in zip(user_inputs, db_quantities)]
@@ -76,8 +62,8 @@ def check_validity_of_quantity(user_inputs, db_quantities, product_ids):
         invalid_quantities = list(
             compress(user_inputs, [not item for item in is_valid]))
         invalid_product_ids = list(
-            compress(product_ids, [not item for item in is_valid]))
-        message = f"Can't transfer products with ids {invalid_product_ids} \
+            compress(batch_ids, [not item for item in is_valid]))
+        message = f"Can't transfer batches with ids {invalid_product_ids} \
 since quantities {invalid_quantities} are above the available quantity!"
 
         raise GraphQLError(message)

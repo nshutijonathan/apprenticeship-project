@@ -142,13 +142,13 @@ mutation{{
 '''
 
 products_query = '''
-    query{
-      productAutofill{
-        id
-        productName
-        autofillQuantity
-      }
-    }
+query{
+  productAutofill {
+    id
+    productName
+    autofillQuantity
+  }
+}
 '''
 
 suppliers_order_details = '''

@@ -21,18 +21,18 @@ def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
         loyalty_points = (product_detail.price / product_category.amount_paid) * sold_product.loyalty_weight  # noqa
         sold_products_loyalty_points.append(math.floor(loyalty_points))
         batches = sold_product.batch_info.filter(
-            batch_quantities__quantity_received__gt=0).order_by('expiry_date')
+            batch_quantities__quantity_remaining__gt=0).order_by('expiry_date')
         product_quantity = product_detail.quantity
         for batch in batches:
             batch_quantity = batch.quantity
             quantity = batch.batch_quantities.filter(is_approved=True).first()
             if product_quantity <= batch_quantity:
-                quantity.quantity_received = batch_quantity \
+                quantity.quantity_remaining = batch_quantity \
                     - product_quantity
                 quantity.save()
                 break
             else:
-                quantity.quantity_received = 0
+                quantity.quantity_remaining = 0
                 quantity.save()
                 product_quantity -= batch_quantity
 

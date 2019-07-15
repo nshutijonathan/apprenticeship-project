@@ -2,10 +2,10 @@ batch_info_query = '''
 mutation createBatchInfo {{
 createBatchInfo (
     supplierId:"{supplier_id}",
-     product: [{product_id}],
+    productId: {product_id},
     dateReceived:"2019-12-03",
     packSize:"10",
-    quantities: [10],
+    quantity: 10,
     expiryDate:"{expiry_date}",
     unitCost:100,
     commentary:"5 packs pending"
@@ -30,7 +30,6 @@ update_batch_info = '''
 mutation updateBatchInfo {{
 updateBatchInfo (
     batchId: "{batch_id}",
-    product: [{product_id}],
     supplierId: "{supplier_id}",
     dateReceived: "2019-04-12",
     packSize:"56",

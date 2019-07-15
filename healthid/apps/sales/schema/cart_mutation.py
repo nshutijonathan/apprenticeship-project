@@ -32,14 +32,16 @@ class AddCartItem(graphene.Mutation):
 
     @login_required
     def mutate(self, info, **kwargs):
-        cart, _ = Cart.objects.get_or_create(user=info.context.user)
+        quantity = kwargs.get('quantity')
         product_id = kwargs.get('product_id')
+
+        cart, _ = Cart.objects.get_or_create(user=info.context.user)
         product = get_model_object(Product, 'id', product_id)
+
         if not product.is_approved:
             raise GraphQLError(
                   SALES_ERROR_RESPONSES[
                       "unapproved_product_error"].format(product.product_name))
-        quantity = kwargs.get('quantity')
         if quantity > product.quantity:
             raise GraphQLError(
                 SALES_ERROR_RESPONSES[

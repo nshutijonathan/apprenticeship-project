@@ -48,9 +48,9 @@ class StockCountRecord(BaseModel):
 class StockTransferRecord(BaseModel):
     """Model to handle stock transfer records
     """
-    product = models.ForeignKey(
-        Product, related_name='stock_transfer_product',
-        on_delete=models.CASCADE)
+    batch = models.ForeignKey(
+        BatchInfo, related_name='stock_transfer_records',
+        on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField()
 
 
@@ -59,9 +59,9 @@ class StockTransfer(BaseModel):
     """
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)
-    batch = models.ForeignKey(
-        BatchInfo, on_delete=models.CASCADE,
-        related_name='stock_transfer_batch')
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE,
+        related_name='stock_transfers', null=True)
     stock_transfer_record = models.ManyToManyField(
         StockTransferRecord, related_name='stock_transfer_record')
     sending_outlet = models.ForeignKey(

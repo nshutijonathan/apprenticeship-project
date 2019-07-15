@@ -1,8 +1,8 @@
 propose_quantity = '''
 mutation proposeQuantity {{
    proposedQuantity (
-    batchId: "{batch_id}"
-    product: [{product_id}],
+    batchIds: ["{batch_id}"]
+    productId: {product_id},
     proposedQuantities: [11],
 
   ) {{
@@ -27,8 +27,8 @@ mutation proposeQuantity {{
 propose_quantity2 = '''
 mutation proposeQuantity {{
    proposedQuantity (
-    batchId: "{batch_id}"
-    product: [{product_id}],
+    batchIds: ["{batch_id}"]
+    productId: {product_id},
     proposedQuantities: [11, 90],
 
   ) {{
@@ -53,8 +53,8 @@ mutation proposeQuantity {{
 approve_quantity = '''
 mutation approveProposedQuantity {{
    approveQuantity (
-    batchId: "{batch_id}" ,
-    product: {product_id},
+    batchIds: ["{batch_id}"],
+    productId: {product_id},
     isApproved: {value},
     comment: "Reject"
 
@@ -65,11 +65,6 @@ mutation approveProposedQuantity {{
     id
     isApproved
     quantityReceived
-    product{{
-      productName
-      id
-     productQuantity
-    }}
     authorizedBy{{
       id
       email

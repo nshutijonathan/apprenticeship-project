@@ -30,6 +30,7 @@ class HandleCsvValidations(object):
 
             product_instance = Product(
                 product_category_id=product_category.id,
+                outlet=product_category.outlet,
                 product_name=row[1],
                 measurement_unit_id=measurement_unit.id,
                 description=row[3],
@@ -38,7 +39,6 @@ class HandleCsvValidations(object):
                 vat_status=True if row[6].lower() == 'vat' else False,
                 preferred_supplier_id=supplier.id,
                 backup_supplier_id=backup_supplier.id,
-                unit_cost=10.34,
                 tags=row[9])
             with SaveContextManager(product_instance, **params):
                 pass

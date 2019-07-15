@@ -16,7 +16,6 @@ class ProductsSerializer(serializers.ModelSerializer):
             'id', 'product_name', 'product_category', 'measurement_unit',
             'sku_number', 'description', 'brand', 'manufacturer', 'vat_status',
             'sales_price', 'created_at', 'nearest_expiry_date',
-            'preferred_supplier', 'backup_supplier', 'pre_tax_retail_price',
-            'unit_cost', 'tags', 'reorder_point', 'reorder_max',
-            'loyalty_weight', 'quantity'
+            'preferred_supplier', 'backup_supplier', 'tags', 'reorder_point',
+            'reorder_max', 'loyalty_weight', 'quantity'
         ]

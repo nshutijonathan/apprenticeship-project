@@ -16,7 +16,7 @@ class TestBatchInfo(BaseConfiguration):
         super().setUp()
         self.batch_data = {
             'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
+            'supplier_id': self.supplier.id,
             'expiry_date': '2020-02-10'
         }
 
@@ -71,30 +71,6 @@ class TestBatchInfo(BaseConfiguration):
         self.assertIn('data', resp)
         self.assertEqual(resp['data']['allBatchInfo'][0]['batchNo'],
                          self.batch_info.batch_no)
-
-    def test_invalid_suppler_id(self):
-        """
-        test wrong supplier id
-        """
-        supplier_id = 'S-UNI2021'
-        self.batch_data['supplier_id'] = supplier_id
-        resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**self.batch_data))
-        self.assertIn("Suppliers with supplier_id "
-                      "S-UNI2021 does not exist.",
-                      resp['errors'][0]['message'])
-
-    def test_invalid_product_id(self):
-        """
-        test wrong product id
-        """
-        product_id = 0
-        self.batch_data['product_id'] = product_id
-        resp = self.query_with_token(
-            self.access_token, batch_info_query.format(**self.batch_data))
-        self.assertIn(PRODUCTS_ERROR_RESPONSES[
-                      "inexistent_product"].format(product_id),
-                      resp['errors'][0]['message'])
 
     def test_invalid_date_format(self):
         """

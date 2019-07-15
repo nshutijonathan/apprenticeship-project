@@ -20,7 +20,7 @@ STOCK_ERROR_RESPONSES = {
                                   "to your own outlet!",
     "close_transfer_error": "You don't have transfers to close!",
     "product_template_error": "Product must belong to this stock template",
-    "product_batch_id_error": "Product {} does not have a batch with id {}",
+    "product_batch_id_error": "does not have batches with id {}",
     "batch_count_error": "Stock must contain at least (one) 1 batch",
     "zero_stock_transfers": "No stock transfers yet!",
     "variance_error": "There is a variance, Kindly state the variance reason",

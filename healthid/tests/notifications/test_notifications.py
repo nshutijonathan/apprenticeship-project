@@ -14,7 +14,7 @@ class NotificationTests(BaseConfiguration):
         super().setUp()
         self.batch_data = {
             'product_id': self.product.id,
-            'supplier_id': self.supplier.supplier_id,
+            'supplier_id': self.supplier.id,
             'expiry_date': '2020-02-10',
         }
         # create a batch with low quantity product to

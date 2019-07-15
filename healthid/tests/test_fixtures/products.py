@@ -115,25 +115,25 @@ backup_supplier = '''
 '''
 
 approved_product_query = '''
-        query{
-            approvedProducts{
-                skuNumber
-                productName
-            }
-        }
+query{
+    approvedProducts {
+        skuNumber
+        productName
+    }
+}
 '''
 
 proposed_product_query = '''
-        query{
-            proposedProducts{
-                skuNumber
-                productName
-            }
-        }
+query{
+    proposedProducts {
+        skuNumber
+        productName
+    }
+}
 '''
 
 
-def create_product_2(supplier_id, backup_id, user):
+def create_product_2(supplier_id, backup_id, user, outlet):
     return Product.objects.create(
         product_category_id=1,
         product_name='Panadol',
@@ -146,7 +146,8 @@ def create_product_2(supplier_id, backup_id, user):
         preferred_supplier_id=supplier_id,
         backup_supplier_id=backup_id,
         tags="painkillers",
-        unit_cost=10.65,
+        is_approved=True,
+        outlet=outlet,
         user=user)
 
 
@@ -218,18 +219,19 @@ set_price_string = '''
     }}
 '''
 product_search_query = '''
-
-    query{{
-        filterProducts(productName_Istartswith: "{search_term}"){{
-            edges {{
-                node {{
-                id
-                productName
-                tags
-                }}
+query{{
+    filterProducts(
+        productName_Istartswith: "{search_term}"
+        ){{
+        edges {{
+            node {{
+            id
+            productName
+            tags
             }}
         }}
     }}
+}}
 '''
 
 update_loyalty_weight = '''
@@ -269,23 +271,23 @@ mutation{{
 '''
 
 proposed_edits_query = '''
-        query{
-            proposedEdits{
-                id
-                productName
-            }
-        }
-
+query{
+    proposedEdits {
+        id
+        productName
+    }
+}
 '''
 
 product_query = '''
-        query{
-            products{
-                id
-                productName
-            }
-        }
-        '''
+query{
+    products {
+        id
+        productName
+    }
+}
+'''
+
 create_product_category = '''
     mutation {{
     createProductCategory(
@@ -381,7 +383,7 @@ def deactivate_product(product_ids):
     ''')
 
 
-def retrieve_deactivated_products():
+def retrieve_deactivated_products(outlet_id):
     return (f'''
             query {{
                 deactivatedProducts {{
@@ -405,6 +407,7 @@ def activate_product(product_ids):
 approve_proposed_edits = '''
     mutation {{
         approveProposedEdits(
+        productId:{product_id}
         editRequestId:{edit_request_id}
         ){{
         product{{
@@ -420,19 +423,20 @@ approve_proposed_edits = '''
 '''
 
 decline_proposed_edits = '''
-    mutation {{
-        declineProposedEdits(
-        id:{edit_request_id},
+mutation {{
+    declineProposedEdits(
+        productId:{product_id}
+        editRequestId:{edit_request_id},
         comment:"Your edit request has not been accepted"
-        ){{
-        editRequest{{
-        productName
-        parent{{
-            id
-        }}
-            isApproved
-        }}
-                message
-        }}
+    ){{
+    editRequest{{
+    productName
+    parent{{
+        id
     }}
+        isApproved
+    }}
+            message
+    }}
+}}
 '''

@@ -63,8 +63,9 @@ class TestDeactivateProducts(TestCreateProduct):
         Tests master admin can retrieve deactivated products
         '''
         self.deactivate_another_product()
-        response = self.query_with_token(self.access_token_master,
-                                         retrieve_deactivated_products())
+        response = self.query_with_token(
+            self.access_token_master,
+            retrieve_deactivated_products(self.outlet.id))
         self.assertEqual(response['data']['deactivatedProducts'][0]['id'],
                          str(self.product.id))
 
@@ -73,16 +74,17 @@ class TestDeactivateProducts(TestCreateProduct):
         Tests managers and other users cannot retrieve deactivated
         products
         '''
-        response = self.query_with_token(self.access_token,
-                                         retrieve_deactivated_products())
+        response = self.query_with_token(
+            self.access_token,
+            retrieve_deactivated_products(self.outlet.id))
         self.assertIsNotNone(response['errors'])
 
     def test_cannot_retrieve_deactivated_products_when_unauthenticated(self):
         '''
         Tests unauthenticated user cannot retrieve deactivated products
         '''
-        response = self.query_with_token('',
-                                         retrieve_deactivated_products())
+        response = self.query_with_token(
+            '', retrieve_deactivated_products(self.outlet.id))
         self.assertIsNotNone(response['errors'])
 
     def test_master_admin_can_activate_product(self):

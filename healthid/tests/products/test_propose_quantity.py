@@ -45,7 +45,7 @@ class TestProposeQuantity(BaseConfiguration):
             self.access_token_master, propose_quantity.format(**self.data))
         response = self.query_with_token(
             self.access_token_master, propose_quantity.format(**self.data))
-        self.assertIn("Pending request", response['errors'][0]['message'])
+        self.assertIn("pending request", response['errors'][0]['message'])
 
     def test_lists_do_not_match(self):
         """"

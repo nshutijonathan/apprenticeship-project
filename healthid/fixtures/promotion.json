@@ -236,9 +236,8 @@
             "nearest_expiry_date": "2020-12-12",
             "preferred_supplier": 1,
             "backup_supplier": 1,
-            "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00,
-            "loyalty_weight": 1
+            "loyalty_weight": 1,
+            "outlet": 1
         }
     },
     {
@@ -258,9 +257,8 @@
             "nearest_expiry_date": "2020-12-12",
             "preferred_supplier": 1,
             "backup_supplier": 1,
-            "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00,
-            "loyalty_weight": 2
+            "loyalty_weight": 2,
+            "outlet": 1
         }
     },
     {
@@ -280,9 +278,8 @@
             "nearest_expiry_date": "2020-12-12",
             "preferred_supplier": 1,
             "backup_supplier": 1,
-            "pre_tax_retail_price": 10.00,
-            "unit_cost": 10.00,
-            "loyalty_weight": 3
+            "loyalty_weight": 3,
+            "outlet": 1
         }
     },
     {
@@ -290,10 +287,10 @@
         "pk": "123456789",
         "fields": {
             "supplier": 1,
-            "product": [1],
+            "product": 1,
+            "date_received": "2019-06-20",
             "expiry_date": "2019-05-20",
-            "user_id": "aul5xrp73",
-            "outlet_id": 1
+            "user_id": "aul5xrp73"
         }
     },
     {
@@ -301,10 +298,10 @@
         "pk": "098765432",
         "fields": {
             "supplier": 1,
-            "product": [2],
-            "expiry_date": "2019-05-20",
-            "user_id": "aul5xrp73",
-            "outlet_id": 1
+            "product": 2,
+            "date_received": "2019-07-20",
+            "expiry_date": "2019-06-20",
+            "user_id": "aul5xrp73"
         }
     },
     {
@@ -312,42 +309,42 @@
         "pk": "345678912",
         "fields": {
             "supplier": 1,
-            "product": [3],
-            "expiry_date": "2019-05-20",
-            "user_id": "aul5xrp73",
-            "outlet_id": 1
+            "product": 3,
+            "date_received": "2019-06-20",
+            "expiry_date": "2019-08-20",
+            "user_id": "aul5xrp73"
         }
     },
     {
         "model": "products.Quantity",
         "pk": "123456789",
         "fields": {
-            "product": 1,
             "batch": "123456789",
             "proposed_by": "aul5xrp73",
             "quantity_received": 10,
-            "is_approved": true
+            "is_approved": true,
+            "quantity_remaining": 10
         }
     },
     {
         "model": "products.Quantity",
         "pk": "098765432",
         "fields": {
-            "product": 2,
             "batch": "098765432",
             "proposed_by": "aul5xrp73",
             "quantity_received": 15,
-            "is_approved": true
+            "is_approved": true,
+            "quantity_remaining": 15
         }
     },
     {
         "model": "products.Quantity",
         "pk": "345678912",
         "fields": {
-            "product": 3,
             "batch": "345678912",
             "proposed_by": "aul5xrp73",
             "quantity_received": 20,
+            "quantity_remaining": 20,
             "is_approved": true
         }
     },

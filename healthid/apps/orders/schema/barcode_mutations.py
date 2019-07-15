@@ -74,8 +74,6 @@ class RecordScan(graphene.Mutation):
             order_id=cleaned_data['order_id'],
             batch_info_id=cleaned_data['batch_id'],
             count=cleaned_data['count'],
-            outlet_id=cleaned_data['outlet_id'],
-            product_id=cleaned_data['product_id'],
         )
 
         with SaveContextManager(barcode_scan) as barcode_scan:

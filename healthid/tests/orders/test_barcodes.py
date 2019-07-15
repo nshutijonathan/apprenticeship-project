@@ -35,6 +35,8 @@ class TestBarcodeScans(BaseConfiguration):
     def test_barcode_scan_string_representation(self):
         """Test the representing our model as a string."""
         self.barcode_object_data['order'] = self.create_order(closed=True)
+        self.barcode_object_data.pop('product')
+        self.barcode_object_data.pop('outlet')
         scan = BarcodeScan.objects.create(**self.barcode_object_data)
         self.assertTrue(str(scan).startswith('Order NO:'))
 

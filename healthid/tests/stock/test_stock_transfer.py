@@ -13,7 +13,7 @@ class TestStockTransfer(BaseConfiguration):
         super().setUp()
 
         self.stock_transfer_params = {
-            "batch_number": self.batch_info.batch_no,
+            "batch_ids": self.batch_info.id,
             "outlet_id": self.outlet.id,
             "product_id": self.product.id,
             "quantity": 4
@@ -28,8 +28,9 @@ class TestStockTransfer(BaseConfiguration):
         response = self.query_with_token(
             self.second_master_admin_token,
             open_stock_transfer.format(**self.stock_transfer_params))
-        self.assertEqual(response['errors'][0]['message'],
-                         f"Can't transfer products with ids [{self.product.id}] \
+        self.assertEqual(
+            response['errors'][0]['message'],
+            f"Can't transfer batches with ids ['{self.batch_info.id}'] \
 since quantities [{wrong_quantity}] are above the available quantity!")
 
     def test_open_stock_transfer(self):
@@ -50,7 +51,8 @@ since quantities [{wrong_quantity}] are above the available quantity!")
             open_stock_transfer.format(**self.stock_transfer_params))
         close_transer_params = {
             'transfer_number': response['data'][
-                'openStockTransfer']['stockTransfer']['id']
+                'openStockTransfer']['stockTransfer']['id'],
+            'outlet_id': self.outlet.id
         }
         response = self.query_with_token(
             self.access_token, close_stock_transfer.format(

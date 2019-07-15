@@ -36,6 +36,6 @@ ORDERS_ERROR_RESPONSES = {
     "scan_batch_rejection": "Scan rejected: BatchInfo does"
                             " not match the provided outlet",
     "scan_product_rejection": "Scan rejected: Product does"
-                              " not match the provided BatchInfo"
-
+                              " not match the provided BatchInfo",
+    "scan_disabled": "Barcode scanning is disabled"
 }

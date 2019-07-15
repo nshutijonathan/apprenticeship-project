@@ -4,7 +4,7 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.products.models import BatchInfo, Product, Quantity
+from healthid.apps.products.models import Product, Quantity
 from healthid.apps.stock.models import (StockCount, StockCountRecord,
                                         StockCountTemplate)
 from healthid.apps.stock.schema.stock_query import (StockCountTemplateType,
@@ -179,20 +179,20 @@ class InitiateStockCount(graphene.Mutation):
         validate_stock.stock_validate(kwargs)
         batch_info = kwargs.get('batch_info')
         quantity_counted = kwargs.get('quantity_counted')
-        product = kwargs.get('product')
-        product_instance = get_model_object(Product, 'id', product)
-        all_batches = product_instance.batch_info.all()
+        product_id = kwargs.get('product')
+        product = get_model_object(Product, 'id', product_id)
+        product_batches = product.batch_info.all().values_list('id', flat=True)
         stock_template = get_model_object(
             StockCountTemplate, 'id', kwargs.get('stock_template_id'))
         stock_template_products = stock_template.products.all()
-        if product_instance not in stock_template_products:
+        if product not in stock_template_products:
             errors.custom_message(
                 STOCK_ERROR_RESPONSES["product_template_error"])
-        for batch in batch_info:
-            batch_instance = get_model_object(BatchInfo, 'id', batch)
-            if batch_instance not in all_batches:
-                errors.custom_message(
-                   STOCK_ERROR_RESPONSES["product_batch_id_error"])
+
+        message = f'Product {product.product_name} ' + \
+            STOCK_ERROR_RESPONSES["product_batch_id_error"]
+        check_validity_of_ids(batch_info, product_batches, message=message)
+
         stock_count = StockCount()
         validate_stock.add_stock(kwargs, stock_count)
         with SaveContextManager(stock_count) as stock_count:
@@ -379,8 +379,8 @@ class ReconcileStock(graphene.Mutation):
                 batch_info_id=batch_id)
             stock_record_quantity = stock_record.quantity_counted
             quantity = Quantity.objects.get(
-                batch_id=batch_id, product__id=stock_count.product_id)
-            quantity.quantity_received = stock_record_quantity
+                batch_id=batch_id, parent_id__isnull=True)
+            quantity.quantity_remaining = stock_record_quantity
             quantity.save()
         stock_count.is_approved = True
         stock_count.save()

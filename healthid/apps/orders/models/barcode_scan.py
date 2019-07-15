@@ -2,8 +2,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from healthid.models import BaseModel
-from healthid.apps.products.models import BatchInfo, Product
-from healthid.apps.outlets.models import Outlet
+from healthid.apps.products.models import BatchInfo
 from healthid.apps.orders.models.orders import Order
 
 
@@ -23,10 +22,6 @@ class BarcodeScan(BaseModel):
                               on_delete=models.CASCADE)
     batch_info = models.ForeignKey(BatchInfo, related_name='barcode_scans',
                                    on_delete=models.CASCADE)
-    outlet = models.ForeignKey(Outlet, related_name='barcode_scans',
-                               on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name='barcode_scans',
-                                on_delete=models.CASCADE)
 
     def __str__(self):
         """Return a string version of the model."""

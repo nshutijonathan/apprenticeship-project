@@ -1,6 +1,5 @@
 import graphene
 
-from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.receipts.models import ReceiptTemplate, Receipt

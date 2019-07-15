@@ -2,9 +2,8 @@ from django import forms
 
 from graphql.error import GraphQLError
 
-from healthid.apps.outlets.models import Outlet
 from healthid.apps.orders.models import Order
-from healthid.apps.products.models import BatchInfo, Product
+from healthid.apps.products.models import Product
 from healthid.apps.preference.models import OutletPreference
 
 from healthid.utils.app_utils.database import get_model_object
@@ -78,22 +77,21 @@ class BarcodeScanForm(forms.Form):
         order = get_model_object(Order, 'id',
                                  cleaned_data['order_id'])
         product = get_model_object(Product, 'id', cleaned_data['product_id'])
-        batch_info = get_model_object(BatchInfo, 'id',
-                                      cleaned_data['batch_id'])
-        outlet = get_model_object(Outlet, 'id', cleaned_data['outlet_id'])
+        outlet = product.outlet
         preference = get_model_object(OutletPreference, 'outlet_id', outlet.id)
 
         if not preference.barcode_preference:
-            raise GraphQLError("Barcode scanning is disabled")
+            raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_disabled"])
 
         if not order.closed:
             raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_order_rejection"])
 
-        if batch_info not in outlet.outlet_batches.all():
+        if cleaned_data['outlet_id'] != product.outlet.id:
             raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_batch_rejection"])
 
-        if product not in batch_info.product.all():
+        product_batch_ids = product.batch_info.values_list('id', flat=True)
+        if cleaned_data['batch_id'] not in product_batch_ids:
             raise GraphQLError(
-                  ORDERS_ERROR_RESPONSES["scan_product_rejection"])
+                ORDERS_ERROR_RESPONSES["scan_product_rejection"])
 
         return cleaned_data

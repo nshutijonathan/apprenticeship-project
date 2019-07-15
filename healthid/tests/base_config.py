@@ -347,18 +347,20 @@ class BaseConfiguration(TestCase):
             measurement_unit=self.measurement_unit,
             preferred_supplier=self.supplier,
             backup_supplier=self.supplier,
-            unit_cost=20.3, pre_tax_retail_price=25.0)
+            outlet=self.outlet,
+            is_approved=True)
 
     def create_batch_info(self):
         batch_info = BatchInfo.objects.create(
             supplier=self.supplier,
-            outlet=self.outlet,
-            user=self.user
+            product=self.product,
+            user=self.user,
+            date_received='2019-01-03',
+            expiry_date='2019-03-03'
         )
-        batch_info.product.add(self.product)
         Quantity.objects.create(
-            batch=batch_info, quantity_received=8, is_approved=True,
-            product=self.product)
+            batch=batch_info, quantity_received=8, quantity_remaining=8,
+            is_approved=True)
         batch_info.save()
         return batch_info
 
@@ -382,7 +384,6 @@ class BaseConfiguration(TestCase):
             end_time=datetime.now(),
         )
         event.user.add(self.user)
-        event.outlet.add(self.outlet)
         return event
 
     def create_stock_template(self):

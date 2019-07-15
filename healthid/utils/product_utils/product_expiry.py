@@ -10,9 +10,9 @@ def check_for_expiry_products():
     '''
     Check for products about to expiry
     '''
-    batches = BatchInfo.objects.all()
+    batches = BatchInfo.objects.filter(sold_out=False)
     batches_by_outlets = [list(result) for key, result in groupby(
-        batches, key=lambda batch: batch.outlet)]
+        batches, key=lambda batch: batch.product.outlet)]
     today = datetime.today().date()
     for batches_per_outlet in batches_by_outlets:
         expire_in_six_months = []
@@ -21,14 +21,13 @@ def check_for_expiry_products():
         for batch in batches_per_outlet:
             expiry_date = batch.expiry_date
             days_to_expiry = (expiry_date - today).days
-            outlet = batch.outlet
-            products = batch.product.all()
+            outlet = batch.product.outlet
             if days_to_expiry <= 182 and days_to_expiry > 91:
-                expire_in_six_months.extend(products)
+                expire_in_six_months.append(batch.product)
             elif days_to_expiry <= 91 and days_to_expiry > 30:
-                expire_in_three_months.extend(products)
+                expire_in_three_months.append(batch.product)
             elif days_to_expiry <= 30 and days_to_expiry > 0:
-                expire_in_one_month.extend(products)
+                expire_in_one_month.append(batch.product)
         if expire_in_six_months:
             title = f'Expire in 6 months {outlet.id}'
             create_promotion(expire_in_six_months, title, 20, outlet)

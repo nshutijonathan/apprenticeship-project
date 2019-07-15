@@ -18,7 +18,6 @@ from healthid.utils.constants.product_constants import \
     PRODUCT_INCLUDE_CSV_FIELDS
 from healthid.utils.csv_export.generate_csv import generate_csv_response
 from rest_framework.exceptions import APIException
-from graphql import GraphQLError
 
 
 class HandleCSV(APIView):

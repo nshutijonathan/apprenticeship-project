@@ -5,14 +5,14 @@ from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 class TestCreateCart(BaseConfiguration):
     def test_user_can_add_product_to_cart(self):
-        self.product.is_approved = True
-        self.product.save()
         response = self.query_with_token(self.access_token_master,
                                          add_to_cart(self.product.id, 1))
         self.assertIn('success', response['data']['addToCart'])
         self.assertNotIn('errors', response)
 
     def test_user_cannot_add_unapproved_product_to_cart(self):
+        self.product.is_approved = False
+        self.product.save()
         response = self.query_with_token(self.access_token_master,
                                          add_to_cart(self.product.id, 1))
         self.assertEqual(response['errors'][0]['message'],
@@ -21,8 +21,6 @@ class TestCreateCart(BaseConfiguration):
                                                     self.product.product_name))
 
     def test_user_cant_add_product_to_cart_with_quantity_than_available(self):
-        self.product.is_approved = True
-        self.product.save()
         product = self.product
         response = self.query_with_token(self.access_token_master,
                                          add_to_cart(product.id,

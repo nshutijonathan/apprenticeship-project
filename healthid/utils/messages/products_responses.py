@@ -18,14 +18,18 @@ PRODUCTS_SUCCESS_RESPONSES = {
 }
 
 PRODUCTS_ERROR_RESPONSES = {
-    "request_approval_error": "Pending request has not yet been approved",
+    "request_approval_error": "Batches with ids {} have pending requests.",
+    "unapproved_product_batch_error": "{} is not approved thus cannot "
+                                      "create a batch.",
+    "wrong_proposed_edit_id": "Product {} has no proposed edit with id {}",
     "inexistent_proposal_error": "Proposal for this product "
                                  "doesn't exist",
     "invalid_input_error": "This name field can't be empty",
     "survey_update_error": "This survey has already been closed. "
                            "It cannot be updated!",
-    "product_match_error": "The number of products and quantities "
+    "batch_match_error": "The number of batches and quantities "
                            "provided do not match",
+    "inexistent_batches": "Batches with ids {} do not exist in this product",
     "product_prompt": "Please specify at least one product.",
     "supplier_prompt": "Please specify at least one supplier.",
     "approve_deletion_error": "Approved product can't be deleted.",
@@ -43,6 +47,6 @@ PRODUCTS_ERROR_RESPONSES = {
     "inexistent_supplier": "Suppliers with id {} does not exist.",
     "inexistent_product": "Product with id {} does not exist.",
     "inexistent_batchinfo": "BatchInfo with id {} does not exist.",
-    "closed_survey_error": "This survey has already been closed"
-
+    "closed_survey_error": "This survey has already been closed",
+    "product_category_no_edits": "Product category unchanged, nothing to edit."
 }

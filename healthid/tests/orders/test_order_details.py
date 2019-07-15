@@ -39,5 +39,6 @@ class OrderDetailsTestCase(BaseConfiguration):
                       response['data']['addOrderDetails']['message'])
 
     def test_query_products_with_low_quantity(self):
-        response = self.query_with_token(self.access_token, products_query)
+        response = self.query_with_token(
+            self.access_token, products_query)
         self.assertIsNotNone(response['data']['productAutofill'])

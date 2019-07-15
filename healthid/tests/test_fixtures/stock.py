@@ -372,39 +372,33 @@ mutation reconcileStock{{
 '''
 
 open_stock_transfer = """
-            mutation{{
-        openStockTransfer(
-            batchNumber: "{batch_number}",
-            destinationOutletId: {outlet_id},
-            products: [{product_id}],
-            quantities: [{quantity}]
-        ){{
-            stockTransfer{{
-            id,
-            batch{{
-                batchNo
-            }},
-            sendingOutlet{{
-                name
-            }},
-            destinationOutlet{{
-                name
-            }},
-            createdAt,
-            completeStatus
-            }}
-            success
-        }}
-        }}
+  mutation{{
+    openStockTransfer(
+      batchIds: ["{batch_ids}"],
+      destinationOutletId: {outlet_id},
+      productId: {product_id},
+      quantities: [{quantity}]
+  ){{
+      stockTransfer{{
+      id,
+      sendingOutlet{{
+          name
+      }},
+      destinationOutlet{{
+          name
+      }},
+      createdAt,
+      completeStatus
+      }}
+      success
+  }}
+}}
 """
 
 view_stock_transfers = """
             query{
         stockTransfers{
             id,
-            batch{
-            batchNo
-            },
             sendingOutlet{
             name,
             id
@@ -433,9 +427,6 @@ view_stock_transfer = """
             query{{
             stockTransfer(transferNumber: "{transfer_number}"){{
                 id,
-                batch{{
-                batchNo
-                }},
                 sendingOutlet{{
                 name,
                 id

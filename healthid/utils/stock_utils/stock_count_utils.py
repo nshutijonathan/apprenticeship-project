@@ -26,11 +26,6 @@ class ValidateStockCount:
         if not valid_list or len(batch_info) < 1:
             raise GraphQLError('All list input must have the same length')
 
-    def calculate_variance(
-            self, quantity_counted, product_id, batch_instance):
-        product_quantity = batch_instance.product.get(id=product_id).quantity
-        return quantity_counted == product_quantity
-
     def check_empty_id(self, param, name):
         if param.strip() in ('', None):
             errors.custom_message(
@@ -58,7 +53,6 @@ class ValidateStockCount:
         batch_info_ids = kwargs.get('batch_info')
         quantity_counted = kwargs.get('quantity_counted')
         variance_reason = kwargs.get('variance_reason')
-        product = kwargs.get('product')
         data = {
             'batch_info': batch_info_ids,
             'quantity_counted': quantity_counted,
@@ -73,8 +67,7 @@ class ValidateStockCount:
                         f"Quantity Counted for batch {batch_instance} " \
                         f"cannot be less than Zero (0)"
                     errors.custom_message(message)
-                if not self.calculate_variance(
-                        quantity_counted[index], product, batch_instance) \
+                if not batch_instance.quantity == quantity_counted \
                         and variance_reason == 'No Variance':
                     message = "There is a variance, " \
                               "Kindly state the variance reason"

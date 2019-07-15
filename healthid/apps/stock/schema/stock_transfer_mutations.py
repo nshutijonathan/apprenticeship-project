@@ -4,7 +4,7 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.outlets.models import Outlet
-from healthid.apps.products.models import BatchInfo
+from healthid.apps.products.models import Product
 from healthid.apps.stock.models import StockTransfer, StockTransferRecord
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
@@ -31,8 +31,8 @@ class OpenStockTransfer(graphene.Mutation):
     success = graphene.List(graphene.String)
 
     class Arguments:
-        batch_number = graphene.String(required=True)
-        products = graphene.List(graphene.Int, required=True)
+        batch_ids = graphene.List(graphene.String, required=True)
+        product_id = graphene.Int(required=True)
         quantities = graphene.List(graphene.Int, required=True)
         destination_outlet_id = graphene.Int(required=True)
 
@@ -42,35 +42,38 @@ class OpenStockTransfer(graphene.Mutation):
         user = info.context.user
 
         validate.validate_fields(**kwargs)
-        products = kwargs['products']
+        product_id = kwargs['product_id']
+        batch_ids = kwargs['batch_ids']
         quantities = kwargs['quantities']
 
-        batch = get_model_object(BatchInfo, 'batch_no', kwargs['batch_number'])
+        product = get_model_object(Product, 'id', product_id)
         sending_outlet = check_user_has_an_active_outlet(user)
         destination_outlet = get_model_object(
             Outlet, 'id', kwargs['destination_outlet_id'])
         if str(sending_outlet) == str(destination_outlet):
             raise GraphQLError(
-                  STOCK_ERROR_RESPONSES["outlet_transfer_validation"])
-        batch_product_ids = batch.product.values_list("id", flat=True)
+                STOCK_ERROR_RESPONSES["outlet_transfer_validation"])
+        product_batch_ids = product.batch_info.values_list("id", flat=True)
 
-        check_validity_of_ids(kwargs['products'], batch_product_ids)
-        batch_product_quantities = [batch.batch_quantities.get(
-            product_id=id).quantity_received for id in products]
+        message = "Batch with ids {} do not exist in this product"
+        check_validity_of_ids(batch_ids, product_batch_ids, message=message)
+        product_batch_quantities = [product.batch_info.get(
+            id=id).quantity for id in batch_ids]
+
         check_validity_of_quantity(
-            quantities, batch_product_quantities, products)
+            quantities, product_batch_quantities, batch_ids)
 
         stock_transfer = StockTransfer(
-            batch=batch,
+            product=product,
             sending_outlet=sending_outlet,
             destination_outlet=destination_outlet
         )
 
         with SaveContextManager(stock_transfer) as stock_transfer:
-            for index, value in enumerate(products):
+            for index, value in enumerate(batch_ids):
                 stock_transfer_record = StockTransferRecord.objects.create(
                     quantity=quantities[index],
-                    product_id=value
+                    batch_id=value
                 )
                 stock_transfer.stock_transfer_record.add(stock_transfer_record)
 
@@ -91,7 +94,6 @@ class CloseStockTransfer(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
-
         destination_outlet = check_user_has_an_active_outlet(user)
         transfer = StockTransfer.objects.filter(
             id=kwargs['transfer_number'],
