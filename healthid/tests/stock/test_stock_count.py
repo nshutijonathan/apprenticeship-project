@@ -6,7 +6,7 @@ from healthid.tests.test_fixtures.stock import (
     single_stock_count, update_stock_count_query)
 
 from healthid.utils.messages.stock_responses import\
-     STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
+    STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
 
 
 class TestStockCount(BaseConfiguration):
@@ -191,3 +191,33 @@ class TestStockCount(BaseConfiguration):
         self.assertEqual(
             STOCK_ERROR_RESPONSES["inexistent_batch_id"],
             response['errors'][0]['message'])
+
+    def test_close_template(self):
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        self.assertEqual(response['data']['reconcileStock']['stockCount']
+                         ['stockTemplate']['isClosed'], True)
+        self.assertNotIn('errors', response)
+
+    def test_approve_closed_stock(self):
+        self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        response = self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        self.assertIn('errors', response)
+        self.assertIn(response['errors'][0]['message'],
+                      STOCK_ERROR_RESPONSES["stock_count_closed"])
+
+    def test_closed_initiate_count(self):
+        self.query_with_token(
+            self.access_token_master,
+            approve_stock_count.format(**self.approve_data))
+        response = self.query_with_token(
+            self.access_token,
+            initate_stock_count_query.format(**self.stock_data))
+        self.assertIn('errors', response)
+        self.assertIn(response['errors'][0]['message'],
+                      STOCK_ERROR_RESPONSES["stock_count_closed"])

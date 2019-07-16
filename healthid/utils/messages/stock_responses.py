@@ -24,5 +24,6 @@ STOCK_ERROR_RESPONSES = {
     "batch_count_error": "Stock must contain at least (one) 1 batch",
     "zero_stock_transfers": "No stock transfers yet!",
     "variance_error": "There is a variance, Kindly state the variance reason",
-    "inexistent_batch_id": "Please provide atleast one batch id."
+    "inexistent_batch_id": "Please provide atleast one batch id.",
+    "stock_count_closed": "Stock count has been closed"
 }

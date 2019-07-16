@@ -8,11 +8,19 @@ from healthid.apps.products.models import Product, BatchInfo
 from healthid.utils.app_utils.id_generator import id_gen
 
 
+APPROVAL_WAITING = "Waiting for approval"
+COMPLETE = "Complete"
+IN_PROGRESS = "In progress"
+SCHEDULED_IN_ADVANCE = "Scheduled in advance"
+
+
 class StockCountTemplate(BaseModel):
     products = models.ManyToManyField(
         Product, related_name='products_to_count')
     schedule_time = models.ForeignKey(
         Event, on_delete=models.CASCADE, null=True)
+    status = models.CharField(max_length=50, default=SCHEDULED_IN_ADVANCE)
+    is_closed = models.BooleanField(default=False)
     assigned_users = models.ManyToManyField(
         User, related_name='assigned_to')
     designated_users = models.ManyToManyField(
@@ -35,6 +43,20 @@ class StockCount(BaseModel):
     is_completed = models.BooleanField(default=False)
     stock_count_record = models.ManyToManyField(
         "StockCountRecord", related_name='stock_count_record')
+
+    @property
+    def update_template_status(self):
+        """This method update the status of the stock count template"""
+        if not self.is_completed:
+            self.stock_template.status = IN_PROGRESS
+
+        if self.is_completed:
+            self.stock_template.status = APPROVAL_WAITING
+
+        if self.is_approved:
+            self.stock_template.status = COMPLETE
+            self.stock_template.is_closed = True
+        self.stock_template.save()
 
 
 class StockCountRecord(BaseModel):

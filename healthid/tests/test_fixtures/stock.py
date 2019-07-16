@@ -342,6 +342,9 @@ mutation reconcileStock{{
         stockCount{{
             isApproved
             varianceReason
+            stockTemplate{{
+                      isClosed
+                    }}
             product{{
                 productQuantity
                 id

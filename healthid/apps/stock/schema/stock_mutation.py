@@ -7,6 +7,7 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.products.models import Product, Quantity
 from healthid.apps.stock.models import (StockCount, StockCountRecord,
                                         StockCountTemplate)
+
 from healthid.apps.stock.schema.stock_query import (StockCountTemplateType,
                                                     StockCountType)
 from healthid.apps.stock.schema.stock_transfer_mutations import (
@@ -17,12 +18,12 @@ from healthid.utils.app_utils.error_handler import errors
 from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.app_utils.validators import check_validity_of_ids
 from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.stock_responses import (STOCK_ERROR_RESPONSES,
+                                                     STOCK_SUCCESS_RESPONSES)
 from healthid.utils.notifications_utils.handle_notifications import notify
 from healthid.utils.stock_utils.stock_count_utils import validate_stock
 from healthid.utils.stock_utils.stock_counts import stock_counts
-from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
-from healthid.utils.messages.stock_responses import\
-    STOCK_SUCCESS_RESPONSES, STOCK_ERROR_RESPONSES
 
 
 class CreateStockCountTemplate(graphene.Mutation):
@@ -170,6 +171,7 @@ class InitiateStockCount(graphene.Mutation):
         remarks = graphene.String()
         specify_reason = graphene.String()
         is_completed = graphene.Boolean(required=True)
+        is_closed = graphene.Boolean()
 
     errors = graphene.List(graphene.String)
     message = graphene.List(graphene.String)
@@ -180,10 +182,14 @@ class InitiateStockCount(graphene.Mutation):
         batch_info = kwargs.get('batch_info')
         quantity_counted = kwargs.get('quantity_counted')
         product_id = kwargs.get('product')
+        is_closed = kwargs.get('is_closed', False)
         product = get_model_object(Product, 'id', product_id)
         product_batches = product.batch_info.all().values_list('id', flat=True)
         stock_template = get_model_object(
             StockCountTemplate, 'id', kwargs.get('stock_template_id'))
+        if stock_template.is_closed:
+            errors.custom_message(
+                STOCK_ERROR_RESPONSES["stock_count_closed"])
         stock_template_products = stock_template.products.all()
         if product not in stock_template_products:
             errors.custom_message(
@@ -225,6 +231,9 @@ class InitiateStockCount(graphene.Mutation):
                     subject=context, html_body=email_stock_count,
                 )
                 message = [STOCK_SUCCESS_RESPONSES["stock_approval_success"]]
+            stock_template.is_closed = is_closed
+            stock_template.save()
+            stock_count.update_template_status
         return InitiateStockCount(message=message, stock_count=stock_count)
 
 
@@ -371,6 +380,9 @@ class ReconcileStock(graphene.Mutation):
         stock_count_batch_ids = stock_count.stock_count_record.values_list(
             'batch_info_id', flat=True)
         message = STOCK_ERROR_RESPONSES["inexistent_batch_error"]
+        if stock_count.stock_template.is_closed:
+            errors.custom_message(
+                STOCK_ERROR_RESPONSES["stock_count_closed"])
         check_validity_of_ids(batch_info_ids, stock_count_batch_ids, message)
         if stock_count.is_approved:
             raise GraphQLError(STOCK_ERROR_RESPONSES["duplication_approval"])
@@ -384,6 +396,7 @@ class ReconcileStock(graphene.Mutation):
             quantity.save()
         stock_count.is_approved = True
         stock_count.save()
+        stock_count.update_template_status
         message = SUCCESS_RESPONSES["approval_success"].format("Stock Count")
         return ReconcileStock(message=message, stock_count=stock_count)
 
