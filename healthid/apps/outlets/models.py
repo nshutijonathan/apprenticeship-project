@@ -1,12 +1,10 @@
 from django.db import models
-from django.forms import ValidationError
 
 from healthid.apps.authentication.models import User
 from healthid.apps.business.models import Business
 from healthid.models import BaseModel
 from healthid.utils.outlet_utils.validators import \
     check_user_can_be_activated_deactivated
-from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class Country(BaseModel):
@@ -108,21 +106,3 @@ class OutletUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
     is_active_outlet = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        """
-        method to save OutletUser instance to database
-
-        Returns:
-            error: if user is already active in another outlet and
-                   trying to make them active in another outlet else
-                   performs save
-        """
-        if self.is_active_outlet:
-            outlet_user = OutletUser.objects.filter(
-                user=self.user, is_active_outlet=True).exclude(
-                    outlet=self.outlet)
-            if outlet_user.exists():
-                raise ValidationError(
-                    OUTLET_ERROR_RESPONSES["user_active_in_another_outlet"])
-        return super().save(*args, **kwargs)

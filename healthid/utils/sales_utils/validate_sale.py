@@ -2,7 +2,9 @@ from itertools import compress
 
 from graphql import GraphQLError
 
+from healthid.apps.preference.models import OutletPreference
 from healthid.apps.products.models import Product
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.app_utils.query_objects import GetObjectList
 
 
@@ -101,3 +103,18 @@ class SalesValidator:
         if paid_amount < 1:
             raise GraphQLError(
                 "The paid amount should be greater than 1")
+
+    def check_payment_method(self, **kwargs):
+        payment_method = kwargs.get('payment_method').lower()
+        outlet_id = kwargs.get('outlet_id')
+        preferences = get_model_object(
+            OutletPreference, 'outlet_id', outlet_id)
+        if preferences.payment_method == 'both' and \
+                payment_method not in ['cash', 'card']:
+            raise GraphQLError(
+                "The payment method is not valid in this outlet")
+        if preferences.payment_method != 'both' and \
+                payment_method != 'others':
+            if preferences.payment_method != payment_method:
+                raise GraphQLError(
+                    "The payment method is not valid in this outlet")

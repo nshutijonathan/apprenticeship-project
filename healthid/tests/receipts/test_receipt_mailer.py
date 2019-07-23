@@ -22,7 +22,7 @@ class TestReceiptMailer(ReceiptBaseCase):
             "amount_to_pay": 20,
             "change_due": 399,
             "paid_amount": 590,
-            "payment_method": "card",
+            "payment_method": "cash",
             "outlet_id": self.outlet.id,
             "sub_total": 33,
             "products": '[{}]'.format(remove_quotes(self.product_details))

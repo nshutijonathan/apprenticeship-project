@@ -143,6 +143,7 @@ class Sale(BaseModel):
         sales_validator.check_validity_of_ids()
         sales_validator.check_product_discount()
         sales_validator.check_product_price()
+        sales_validator.check_payment_method(**kwargs)
         sold_product_instances = sales_validator.check_validity_quantity_sold()
         return sold_product_instances
 

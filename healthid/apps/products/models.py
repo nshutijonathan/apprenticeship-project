@@ -102,7 +102,11 @@ class Product(BaseModel):
 
     class Meta:
         unique_together = ((
-            "product_name", "manufacturer", "outlet", "measurement_unit"))
+            "product_name",
+            "manufacturer",
+            "outlet",
+            "description",
+            "measurement_unit"))
 
     @property
     def get_tags(self):

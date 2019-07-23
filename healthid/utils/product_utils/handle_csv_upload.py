@@ -14,6 +14,8 @@ class HandleCsvValidations(object):
         params = {'model': Product, 'error_type': ValidationError}
         product_count = 0
 
+        product_names = Product.objects.values_list('product_name', flat=True)
+
         for row in csv.reader(io_string):
             if len(row) != 10:
                 message = {"error": "csv file missing column(s)"}
@@ -27,22 +29,22 @@ class HandleCsvValidations(object):
                 Suppliers, 'name', row[8], error_type=NotFound)
             measurement_unit = get_model_object(
                 MeasurementUnit, 'name', row[2], error_type=NotFound)
+            if row[1] not in product_names:
+                product_instance = Product(
+                    product_category_id=product_category.id,
+                    outlet=product_category.outlet,
+                    product_name=row[1],
+                    measurement_unit_id=measurement_unit.id,
+                    description=row[3],
+                    brand=row[4],
+                    manufacturer=row[5],
+                    vat_status=True if row[6].lower() == 'vat' else False,
+                    preferred_supplier_id=supplier.id,
+                    backup_supplier_id=backup_supplier.id,
+                    tags=row[9])
+                with SaveContextManager(product_instance, **params):
+                    pass
 
-            product_instance = Product(
-                product_category_id=product_category.id,
-                outlet=product_category.outlet,
-                product_name=row[1],
-                measurement_unit_id=measurement_unit.id,
-                description=row[3],
-                brand=row[4],
-                manufacturer=row[5],
-                vat_status=True if row[6].lower() == 'vat' else False,
-                preferred_supplier_id=supplier.id,
-                backup_supplier_id=backup_supplier.id,
-                tags=row[9])
-            with SaveContextManager(product_instance, **params):
-                pass
-
-            product_count += 1
+                product_count += 1
 
         return product_count
