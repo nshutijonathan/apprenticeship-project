@@ -14,6 +14,21 @@ from healthid.utils.messages.authentication_responses import\
 
 
 class LoginUser(graphene.Mutation):
+    """
+    Login a user with their credentials
+
+    args:
+        mobile_number(str): user's registered mobile number
+        password(str): user's registered password
+        email(str): user's registered email
+
+    returns:
+        message(str): success messsage confirming login
+        token(str): JWT authorization token used to validate the login
+        rest_token(str): JWT token used to validate REST endpoint access
+        user(obj): 'User' object containing details of the logged in user
+    """
+
     message = graphene.String()
     token = graphene.String()
     rest_token = graphene.String()

@@ -24,6 +24,13 @@ class EventTypeType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    """
+    Queries events for the outlet a user belongs to
+
+    returns:
+        list of event of objects: if 'events' is queried
+        a single 'EventsType' object: if 'event' is queried
+    """
     events = graphene.List(EventsType)
     event = graphene.Field(
         EventsType,

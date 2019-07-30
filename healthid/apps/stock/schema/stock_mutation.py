@@ -27,6 +27,22 @@ from healthid.utils.stock_utils.stock_counts import stock_counts
 
 
 class CreateStockCountTemplate(graphene.Mutation):
+    """
+    Create a stock count template.
+
+    args:
+        product_ids(list): list of product ids
+        event_id(int): id of an event
+        assigned_user_ids(list): list of assigned user ids
+        designated_user_ids(list): list of designated user ids
+        outlet_id(int): id of the outlet whose stock is being counted
+
+    returns:
+        success(str): success message confirming template creation
+        stock_template(obj): 'StockCountTemplate' object containing the
+                             template details
+    """
+
     stock_template = graphene.Field(StockCountTemplateType)
     success = graphene.String()
 
@@ -69,6 +85,23 @@ class CreateStockCountTemplate(graphene.Mutation):
 
 
 class EditStockCountTemplate(graphene.Mutation):
+    """
+    Edit a stock count template.
+
+    args:
+        template_id(int): id of the template to be edited
+        product_ids(list): list of product ids
+        event_id(int): id of an event
+        assigned_user_ids(list): list of assigned user ids
+        designated_user_ids(list): list of designated user ids
+        outlet_id(int): id of the outlet whose stock is being counted
+
+    returns:
+        success(str): success message confirming template edit
+        stock_template(obj): 'StockCountTemplate' object containing the
+                             template details
+    """
+
     stock_template = graphene.Field(StockCountTemplateType)
     success = graphene.String()
 
@@ -114,6 +147,16 @@ class EditStockCountTemplate(graphene.Mutation):
 
 
 class DeleteStockCountTemplate(graphene.Mutation):
+    """
+    Delete a stock count template.
+
+    args:
+    template_id(int): id of the template to be deleted
+
+    returns:
+    success(str): success message confirming template delete
+    """
+
     stock_template = graphene.Field(StockCountTemplateType)
     success = graphene.String()
     errors = graphene.String()
@@ -158,8 +201,26 @@ class VarianceEnum(graphene.Enum):
 
 class InitiateStockCount(graphene.Mutation):
     """
-        Mutation to create a Stock Count Information
+    Mutation to initialize Stock Count Information
+
+    args:
+        batch_info(list): batch information of the current product stock
+        stock_count_id(str): id of the stock count to be updated
+        stock_template_id(int): id of the stock template used for the update
+        product(int): id of the product in stock
+        quantity_counted(list): quantiy of product per batch
+        variance_reason(str): describes source of stock amount variance
+        remarks(str): batch notes
+        specify_reason(str): provides justification for stock initiation
+        is_completed(boolean): toggle update completion
+        is_closed(boolean): toggle stock template access
+
+    returns:
+        success(str): success message confirming stock update completion
+        stock_count(obj): 'StockCount' object containing the
+                          stock count details
     """
+
     stock_count = graphene.Field(StockCountType)
 
     class Arguments:
@@ -238,6 +299,26 @@ class InitiateStockCount(graphene.Mutation):
 
 
 class UpdateStockCount(graphene.Mutation):
+    """
+    Update stock count.
+
+    args:
+        batch_info(list): batch information of the current product stock
+        stock_count_id(str): id of the stock count to be updated
+        stock_template_id(int): id of the stock template used for the update
+        product(int): id of the product in stock
+        quantity_counted(list): amount of counted product stock
+        variance_reason(str): describes source of stock variance
+        remarks(str): batch notes
+        specify_reason(str): provide justification for stock update
+        is_completed(boolean): toggle update completion
+
+    returns:
+        success(str): success message confirming stock update completion
+        stock_count(obj): 'StockCount' object containing the
+                          stock count details
+    """
+
     stock_count = graphene.Field(StockCountType)
 
     class Arguments:
@@ -299,6 +380,20 @@ class UpdateStockCount(graphene.Mutation):
 
 
 class RemoveBatchStock(graphene.Mutation):
+    """
+    Delete a product batch
+
+    args:
+        batch_info(list): batch information of the current product stock
+        stock_count_id(str): id of the batch stock count
+
+    returns:
+        message(str): success message confirming batch deletion
+        stock_count(obj): 'StockCount' object containing the
+                          stock count details
+
+    """
+
     stock_count = graphene.Field(StockCountType)
 
     class Arguments:
@@ -332,7 +427,16 @@ class RemoveBatchStock(graphene.Mutation):
 
 class DeleteStockCount(graphene.Mutation):
     """
-        Delete a Product batch Info Mutation
+    Delete a product's batch info
+
+    args:
+        stock_count_id(str): id of the batch stock count to be deleted
+
+    returns:
+        message(str): success message confirming stock deletion
+        stock_count(obj): 'StockCount' object containing the
+                          stock count details
+
     """
 
     stock_count = graphene.Field(StockCountType)

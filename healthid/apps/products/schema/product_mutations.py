@@ -35,6 +35,36 @@ class ProductInput(graphene.InputObjectType):
 
 
 class CreateEditProduct(graphene.Mutation):
+    '''
+    Class template for mutations that edit or create products.
+
+    args:
+        product_name(str): Name of the product to be edited
+        description(str): Description of the product
+        product_category_id(int): The product category id
+        brand(str): The brand associated with the product
+        manufacturer(str): The product manufacturer
+        measurement_unit_id(int): The id of the measurement units the product
+                                  is to be served in
+        preferred_supplier_id(str): The id of the preferred supplier of the
+                                    product
+        backup_supplier_id(str): The id of the backup supplier of the product
+        vat_status(bool): toggles VAT for product
+        loyalty_weight(int): The value of loyalty points the product awards
+                             upon purchase
+        image(str): An image URL for the product display icon
+        tags(str): Description tags associated with the product
+        markup(int): The markup value for the product sales price
+        sku_number(int): The unique product identifier
+        auto_price(bool): toogles automatic or manual settin gof the product
+                          sales price.
+        sales_price(int): The product sales price
+
+    returns:
+        message(str): success message confirming mutation completion
+        product(obj): 'Product' object containing details of
+                      the product to be edited.
+    '''
 
     product = graphene.Field(ProductType)
     message = graphene.String()
@@ -63,7 +93,8 @@ class CreateEditProduct(graphene.Mutation):
 
 class CreateProduct(CreateEditProduct):
     """
-        Mutation to create a product.
+    Mutation to create a product. Inherits from the
+    'CreateEditProduct' class.
     """
     @login_required
     def mutate(self, info, **kwargs):
@@ -80,7 +111,8 @@ class CreateProduct(CreateEditProduct):
 
 class UpdateProduct(CreateEditProduct):
     """
-    update product
+    Mutation to update an exitsing product. Inherits from the
+    'CreateEditProduct' class.
     """
     class Arguments(CreateEditProduct.Arguments):
         id = graphene.Int(required=True)
@@ -115,8 +147,16 @@ class UpdateProduct(CreateEditProduct):
 
 class DeleteProduct(graphene.Mutation):
     """
-    Deletes product from database
+    Delete a single existing product from the database.
+
+    args:
+        id(int): id of the product to be deleted
+
+    returns:
+        success(str): success message confirming product deletion
+        id(int): id of the newly deleted product
     """
+
     id = graphene.Int()
     success = graphene.String()
 
@@ -138,7 +178,15 @@ class DeleteProduct(graphene.Mutation):
 
 class ApproveProduct(graphene.Mutation):
     """
-      Mutation to approve proposed products.
+    Approve a proposed product.
+
+    args:
+        product_id(int): id of the product to be approved.
+
+    returns:
+        success(str): success message confirming product approval
+        product(obj): 'Product' object containing details of
+                      the newly approved product.
     """
 
     class Arguments:
@@ -166,6 +214,19 @@ class ApproveProduct(graphene.Mutation):
 
 
 class ApproveProposedEdits(graphene.Mutation):
+    """
+    Approve a proposed edit to a product's details.
+
+    args:
+        product_id(int): id of the product whose details are to be edited
+        edit_request_id(int): id of the proposed edit request
+
+    returns:
+        success(str): success message confirming edit approval
+        product(obj): 'Product' object containing details of
+                      the product to be edited.
+    """
+
     class Arguments:
         product_id = graphene.Int(required=True)
         edit_request_id = graphene.Int(required=True)
@@ -189,6 +250,22 @@ class ApproveProposedEdits(graphene.Mutation):
 
 
 class DeclineProposedEdits(graphene.Mutation):
+    """
+    Decline a proposed product detail edit. The proposed edit is NOT deleted
+    when declined.
+
+    args:
+        product_id(int): id of the product whose details are
+                         to be edited
+        edit_request_id(int): id of the proposed edit request
+        comment(str): comment detailing why the edit was declined.
+
+    returns:
+        message(str): success message confirming edit decline
+        edit_request(obj): 'Product' object containing details of
+        the newly approved product.
+    """
+
     class Arguments:
         product_id = graphene.Int(required=True)
         edit_request_id = graphene.Int(required=True)
@@ -212,6 +289,21 @@ class DeclineProposedEdits(graphene.Mutation):
 
 
 class UpdatePrice(graphene.Mutation):
+    """
+    Update the markup, sales tax and sales price of a product.
+
+    args:
+        product_ids(list): list of ids for the products to be updated
+        markup(int): markup value for the product sales price
+        sales_tax(float): id of the proposed edit request
+        sales_price(float): product sales price
+
+    returns:
+        message(str): success message confirming price update
+        error(list): list of error messages for failed product updates
+        products(list): list of updated 'Product' objects
+    """
+
     products = graphene.List(ProductType)
     errors = graphene.List(graphene.String)
     message = graphene.String()
@@ -241,6 +333,19 @@ class UpdatePrice(graphene.Mutation):
 
 
 class UpdateLoyaltyWeight(graphene.Mutation):
+    """
+    Update the loyalty point weight for a product category.
+
+    args:
+        product_category_id(int): id of the product's relevant category
+        loyalty_value(int): updated loyalty point value
+
+    returns:
+        message(str): success message confirming point update
+        category(obj): 'ProductCategory' object containing the product
+                       category details.
+    """
+
     category = graphene.Field(ProductCategoryType)
 
     class Arguments:
@@ -269,6 +374,18 @@ class UpdateLoyaltyWeight(graphene.Mutation):
 
 
 class UpdateAProductLoyaltyWeight(graphene.Mutation):
+    """
+    Update the loyalty point weight of a product.
+
+    args:
+    id(int): id of the product whose loyalty points are to be updated
+    loyalty_value(int): updated loyalty point value
+
+    returns:
+    message(str): success message confirming loyalty point update
+    product(obj): 'Product' object containing the product details
+    """
+
     product = graphene.Field(ProductType)
 
     class Arguments:
@@ -294,6 +411,17 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
 
 
 class ActivateDeactivateProducts(graphene.Mutation):
+    """
+    Class template for mutations that activate or deactivate products.
+
+    args:
+        product_ids(int): id of the product
+
+    returns:
+        message(str): success message confirming mutation completion
+        products(obj): 'Product' objects containing the product details
+    """
+
     class Arguments:
         product_ids = graphene.List(graphene.Int, required=True)
 
@@ -306,7 +434,8 @@ class ActivateDeactivateProducts(graphene.Mutation):
 
 class ActivateProduct(ActivateDeactivateProducts):
     """
-    Mutation class to activate a product
+    Mutation class to activate a product. Inherits from the
+    'ActivateDeactivateProducts' class.
     """
 
     @login_required
@@ -323,7 +452,8 @@ class ActivateProduct(ActivateDeactivateProducts):
 
 class DeativateProduct(ActivateDeactivateProducts):
     """
-    Mutation class to deactivate a product
+    Mutation class to deactivate a product. Inherits from the
+    'ActivateDeactivateProducts' class.
     """
 
     @login_required

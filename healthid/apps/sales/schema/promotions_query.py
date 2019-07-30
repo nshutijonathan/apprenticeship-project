@@ -20,6 +20,18 @@ class PromotionType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
+    """
+    Query the promotion details for an outlet.
+
+    args:
+        outlet_id(str): id of the outlet whose promotions are to be queried
+
+    returns:
+        'Promotion' object: on 'outletPromotion' query
+        'PromotionType' object list: on 'promotionTypes' query
+        'Promotion' object list: on 'promotionsPendingApproval' query
+    """
+
     outlet_promotions = graphene.List(PromotionType,
                                       outlet_id=graphene.Int(required=True))
     promotion_types = graphene.List(PromotionTypeModelType)

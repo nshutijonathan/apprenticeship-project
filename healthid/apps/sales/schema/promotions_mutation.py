@@ -21,6 +21,18 @@ from healthid.utils.messages.sales_responses import\
 
 
 class CreatePromotionType(graphene.Mutation):
+    """
+    Create a new promotion type
+
+    args:
+        name(str): name of the promotion type to be created
+
+    returns:
+        success(str): success message confirming promotion type creation
+        promotion_type(obj): 'PromotionType' object containing details of
+                             the newly created promotion type.
+    """
+
     class Arguments:
         name = graphene.String(required=True)
 
@@ -43,6 +55,26 @@ class CreatePromotionType(graphene.Mutation):
 
 
 class CreatePromotion(graphene.Mutation):
+    """
+    Create a new promotion for an outlet.
+
+    args:
+        title(str): Title of the promotion you to be created
+        promotion_type_id(str): id of the related promotion type that the
+                                promotion will fall under
+        description(str): description of the promotion to be created
+        product_ids(list): list of ids for the products that the promotion will
+                           be applied to
+        discount(float): the value of the discount for the promotion
+        outlet_id(int): the id of the outlets that will apply the promotion
+                        and discounts
+
+    returns:
+        success(str): success message confirming promotion creation
+        promotion(obj): 'Promotion' object containing details of
+                        the newly created promotion.
+    """
+
     class Arguments:
         title = graphene.String(required=True)
         promotion_type_id = graphene.String(required=True)
@@ -71,6 +103,26 @@ class CreatePromotion(graphene.Mutation):
 
 
 class UpdatePromotion(graphene.Mutation):
+    """
+    Create a new promotion for an outlet.
+
+    args:
+        title(str): title of the promotion to be created
+        promotion_type_id(str): id of the related promotion type that the
+                                promotion will fall under
+        description(str): description of the promotion to be created
+        product_ids(list): list of ids for the products that the promotion will
+                           be applied to
+        discount(float): the value of the discount for the promotion
+        outlet_id(int): the id of the outlets that will apply the promotion
+                        and discounts
+
+    returns:
+        success(str): success message confirming promotion update
+        promotion(obj): 'Promotion' object containing details of
+                        the newly created promotion.
+    """
+
     class Arguments:
         promotion_id = graphene.String(required=True)
         title = graphene.String()
@@ -102,6 +154,18 @@ class UpdatePromotion(graphene.Mutation):
 
 
 class DeletePromotion(graphene.Mutation):
+    """
+    Delete a promotion for an outlet.
+
+    args:
+        promotion_id(str): id of the promotion to be deleted
+
+    returns:
+        success(str): success message confirming promotion deletion
+        promotion(obj): 'Promotion' object containing details of
+                        the newly deleted promotion.
+    """
+
     class Arguments:
         promotion_id = graphene.String(required=True)
 
@@ -121,6 +185,18 @@ class DeletePromotion(graphene.Mutation):
 
 
 class ApprovePromotion(graphene.Mutation):
+    """
+    Approve a promotion for an outlet.
+
+    args:
+        promotion_id(str): id of the promotion to be deleted
+
+    returns:
+        success(str): success message confirming promotion approval
+        promotion(obj): 'Promotion' object containing details of
+                        the newly approved promotion.
+    """
+
     class Arguments:
         promotion_id = graphene.String(required=True)
 

@@ -13,6 +13,12 @@ class NotificationType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    """
+    Queries notification messages where the user is a recipient
+
+    returns:
+            list of 'Notification' objects
+    """
     notifications = graphene.List(NotificationType)
 
     @login_required

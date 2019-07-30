@@ -18,6 +18,23 @@ from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
 class InitiateOrder(graphene.Mutation):
+    """
+    Mutation to initiate an order in the database
+
+    args:
+        name(str): name of the order to initiate
+        delivery_date(date): expected delivery date
+        product_autofill(bool): toggles automatic filling in of the order's
+                                products
+        supplier_autofill(bool): toggles automatic filling in of the order's
+                                 suppliers
+        destination_outlet(int): id of the outlet destination
+
+    returns:
+        order(obj): 'Order' object detailing the created order
+        success(str): success message confirming the initiated order
+    """
+
     order = graphene.Field(OrderType)
     success = graphene.List(graphene.String)
     error = graphene.List(graphene.String)
@@ -31,8 +48,6 @@ class InitiateOrder(graphene.Mutation):
 
     @login_required
     def mutate(self, info, **kwargs):
-        '''Mutation to initiate an order in the database
-        '''
         outlet = get_model_object(
             Outlet, 'id', kwargs.get('destination_outlet'))
         order = Order(
@@ -48,6 +63,24 @@ class InitiateOrder(graphene.Mutation):
 
 
 class EditInitiateOrder(graphene.Mutation):
+    """
+    Mutation to edit an initiated order
+
+    args:
+        order_id(int): id of the initiated order to be edited
+        name(str): name of the order to edit
+        delivery_date(date): expected delivery date
+        product_autofill(bool): toggles automatic filling in of the order's
+                                products
+        supplier_autofill(bool): toggles automatic filling in of the order's
+                                 suppliers
+        destination_outlet(int): id of the outlet destination
+
+    returns:
+        order(obj): 'Order' object detailing the edited order
+        success(str): success message confirming edit of the order
+    """
+
     order = graphene.Field(OrderType)
     success = graphene.List(graphene.String)
     error = graphene.List(graphene.String)
@@ -62,9 +95,6 @@ class EditInitiateOrder(graphene.Mutation):
 
     @login_required
     def mutate(self, info, **kwargs):
-        """
-        Mutation to edit initiated order
-        """
         order_id = kwargs['order_id']
         order = get_model_object(Order, 'id', order_id)
 
@@ -77,6 +107,27 @@ class EditInitiateOrder(graphene.Mutation):
 
 
 class AddOrderDetails(graphene.Mutation):
+    """
+    Mutation that creates a new record in the 'OrderDetails' model.
+    Validates the length of the input argument lists and
+    checks for duplicate model entries.
+
+    Arguments:
+        order_id(int): id of the initiated order to be updated
+        products(list): products to be added
+        quantities(list): quantities for each product
+        suppliers(list): suppliers of each product
+        supplier_autofill(bool): toggles automatic filling in of the order's
+                                 suppliers
+        destination_outlet(int): id of the outlet destination
+
+    Returns:
+        order_details(obj): latest order detail created
+        message(str): success message
+        suppliers_order_details(list): suppliers order details for a given
+                                        order
+    """
+
     class Arguments:
         order_id = graphene.Int(required=True)
         products = graphene.List(graphene.Int, required=True)
@@ -90,22 +141,6 @@ class AddOrderDetails(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, **kwargs):
-        """
-        Mutation that creates a new record in the 'OrderDetails' model.
-        Validates the length of the input argument lists and
-        checks for duplicate model entries.
-
-        Arguments:
-            kwargs(dict): contains the 'orderId',product ids,
-                          quantity (optional) and supplier (optional)
-                          details of the product to be ordered
-
-        Returns:
-            order_details(obj): latest order detail created
-            message(str): success message
-            suppliers_order_details(list): suppliers order details for a given
-                                           order
-        """
         order_id = kwargs.get('order_id')
         products = kwargs.get('products')
         quantities = kwargs.get('quantities', None)
@@ -150,7 +185,26 @@ class AddOrderDetails(graphene.Mutation):
 
 
 class ApproveSupplierOrder(graphene.Mutation):
-    """Mutation to approve one or multiple supplier order details."""
+    """Approve one or multple supplier orders
+
+    Receive a list of supplier order ids and order id.
+    Make sure the supplier order details are valid and are linked to the
+    recieved order.
+    Approve the supplier by supplying the approver.
+
+    Args:
+        order_id (str): The id for the order
+        supplier_order_ids (list: str): A list if supplier order ids
+        addtional_notes (str): Additional notes
+
+    Raises:
+        GraphQLError: if supplier orders ids do not suppliers ids in the
+            database
+
+    Returns:
+        supplier_order_details: A list of supplier order details
+    """
+
     message = graphene.Field(graphene.String)
     supplier_order_details = graphene.List(SupplierOrderDetailsType)
 
@@ -162,25 +216,6 @@ class ApproveSupplierOrder(graphene.Mutation):
     @login_required
     @user_permission('Manager', 'Admin')
     def mutate(self, info, **kwargs):
-        """Approve one or multple supplier orders
-
-        Receive a list of supplier order ids and order id.
-        Make sure the supplier order details are valid and are linked to the
-        recieved order.
-        Approve the supplier by supplying the approver.
-
-        Args:
-            order_id (str): The id for the order
-            supplier_order_ids (list: str): A list if supplier order ids
-            addtional_notes (str): Additional notes
-
-        Raises:
-            GraphQLError: if supplier orders ids do not suppliers ids in the
-                database
-
-        Returns:
-            supplier_order_details: A list of supplier order details
-        """
         order_id = kwargs.get('order_id')
         additional_notes = kwargs.get('additional_notes')
         supplier_order_ids = kwargs.get('supplier_order_ids')
@@ -213,6 +248,17 @@ class ApproveSupplierOrder(graphene.Mutation):
 
 
 class DeleteOrderDetail(graphene.Mutation):
+    """
+    Mutation that deletes one or more records in the 'OrderDetails' model.
+
+    Arguments:
+        kwargs(dict): contains the id of the 'OrderDetails'
+                        record to be deleted.
+
+    Returns:
+        message(str): confirms successful record(s) deletion
+    """
+
     class Arguments:
         order_detail_id = graphene.List(graphene.String, required=True)
 
@@ -220,16 +266,6 @@ class DeleteOrderDetail(graphene.Mutation):
 
     @login_required
     def mutate(self, info, **kwargs):
-        """
-        Mutation that deletes one or more records in the 'OrderDetails' model.
-
-        Arguments:
-            kwargs(dict): contains the id of the 'OrderDetails'
-                          record to be deleted.
-
-        Returns:
-            message(str): confirms successful record(s) deletion
-        """
         order_detail_id = kwargs.get('order_detail_id')
         success_message = SUCCESS_RESPONSES["deletion_success"].format(
             "Product details"

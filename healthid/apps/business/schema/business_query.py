@@ -13,6 +13,18 @@ class BusinessType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    """
+    Returns details of all businesses in the 'Business' model,
+    or returns all the details for a specific business
+
+    Args:
+        id(string): id of the business whose details are to be queried
+
+    Returns:
+        list of 'Business' objects: when querying 'businesses'
+        single 'Business' object" when querying 'busniess'
+    """
+
     businesses = graphene.List(BusinessType)
     business = graphene.Field(
         BusinessType,

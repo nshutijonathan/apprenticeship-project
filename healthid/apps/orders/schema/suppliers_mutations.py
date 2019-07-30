@@ -33,6 +33,29 @@ class SuppliersInput(graphene.InputObjectType):
 
 
 class AddSupplier(graphene.Mutation):
+    """
+    Add a new supplier to the database
+
+    args:
+        name(str): supplier name
+        email(str): supplier contact email
+        mobile_number(str): contact number
+        address_line_1(str): first address line
+        address_line_2(str): second address line
+        lga(str): name of the supplier's local goverment area
+        city_id(int): id of the supplier city location
+        tier_id(int): id of the supplier's category
+        rating(int): supplier rating
+        credit_days(int): average number of days expected to settle outstanding
+                          payments to the supplier
+        logo(str): image URL for the supplier logo
+        payment_terms_id(int): id of the preferred payment method
+        commentary(str): additional comments
+
+    returns:
+        supplier(obj): 'Suppliers' model object detailing the created supplier.
+    """
+
     class Arguments:
         input = SuppliersInput(required=True)
 
@@ -51,6 +74,18 @@ class AddSupplier(graphene.Mutation):
 
 
 class ApproveSupplier(graphene.Mutation):
+    """
+    Approve a new supplier
+
+    args:
+        id(str): id of the supplier to be approved
+
+    returns:
+        supplier(obj): 'Suppliers' model object detailing the approved
+                       supplier.
+        success(str): success message confirming approved supplier
+    """
+
     class Arguments:
         id = graphene.String(required=True)
     success = graphene.Field(graphene.String)
@@ -69,6 +104,16 @@ class ApproveSupplier(graphene.Mutation):
 
 
 class DeleteSupplier(graphene.Mutation):
+    """
+    Delete a supplier
+
+    args:
+        id(str): id of the supplier to be deleted
+
+    returns:
+        success(str): success message confirming deleted supplier
+    """
+
     class Arguments:
         id = graphene.String(required=True)
     success = graphene.Field(graphene.String)
@@ -85,6 +130,31 @@ class DeleteSupplier(graphene.Mutation):
 
 
 class EditSupplier(graphene.Mutation):
+    """
+    Edit a supplier's details
+
+    args:
+        id(str): id of the supplier to be edited
+        name(str): supplier name
+        email(str): supplier contact email
+        mobile_number(str): contact number
+        address_line_1(str): first address line
+        address_line_2(str): second address line
+        lga(str): name of the supplier's local goverment area
+        city_id(int): id of the supplier city location
+        tier_id(int): id of the supplier's category
+        rating(int): supplier rating
+        credit_days(int): average number of days expected to settle outstanding
+                          payments to the supplier
+        logo(str): image URL for the supplier logo
+        payment_terms_id(int): id of the preferred payment method
+        commentary(str): additional comments
+
+    returns:
+        edit_request(obj): 'Suppliers' model object detailing the edit request
+        message(str): success message confirming supplier edit
+    """
+
     class Arguments:
         id = graphene.String(required=True)
         name = graphene.String()
@@ -136,6 +206,31 @@ class EditSupplier(graphene.Mutation):
 
 
 class EditProposal(graphene.Mutation):
+    """
+    Edit a proposed supplier's details
+
+    args:
+        id(str): id of the supplier to be edited
+        name(str): supplier name
+        email(str): supplier contact email
+        mobile_number(str): contact number
+        address_line_1(str): first address line
+        address_line_2(str): second address line
+        lga(str): name of the supplier's local goverment area
+        city_id(int): id of the supplier city location
+        tier_id(int): id of the supplier's category
+        rating(int): supplier rating
+        credit_days(int): average number of days expected to settle outstanding
+                          payments to the supplier
+        logo(str): image URL for the supplier logo
+        payment_terms_id(int): id of the preferred payment method
+        commentary(str): additional comments
+
+    returns:
+        edit_request(obj): 'Suppliers' model object detailing the edit request
+        message(str): success message confirming supplier edit
+    """
+
     class Arguments:
         id = graphene.String(required=True)
         name = graphene.String()
@@ -174,6 +269,17 @@ class EditProposal(graphene.Mutation):
 
 
 class ApproveEditRequest(graphene.Mutation):
+    """
+    Approve an edit to a supplier's details
+
+    args:
+        id(str): id of the supplier to be edited
+
+    returns:
+        supplier(obj): 'Suppliers' model object detailing the edit request
+        message(str): success message confirming supplier edit approval
+    """
+
     class Arguments:
         id = graphene.String(required=True)
     message = graphene.Field(graphene.String)
@@ -205,6 +311,17 @@ class ApproveEditRequest(graphene.Mutation):
 
 
 class DeclineEditRequest(graphene.Mutation):
+    """
+    Decline an edit to a supplier's details
+
+    args:
+        id(str): id of the supplier to be edited
+
+    returns:
+        supplier(obj): 'Suppliers' model object detailing the edit request
+        message(str): success message confirming supplier edit decline
+    """
+
     class Arguments:
         id = graphene.String(required=True)
         comment = graphene.String(required=True)
@@ -227,7 +344,20 @@ class DeclineEditRequest(graphene.Mutation):
 
 
 class CreateSupplierNote(graphene.Mutation):
-    """ This creates a Supplier's note"""
+    """
+    Create a note for a particular supplier
+
+    args:
+        supplier_id(str): id of the supplier of note
+        outlet_ids(list): outlets that source products from the supplier
+        note(str): note to create for the supplier
+
+    returns:
+        message(str): success message confirming note creation
+        supplier_note(obj): 'SupplierNote' model object detailing the
+                            created note
+        supplier(obj): 'Suppliers' model object detailing the noted supplier
+    """
 
     class Arguments:
         supplier_id = graphene.String(required=True)
@@ -265,8 +395,19 @@ class CreateSupplierNote(graphene.Mutation):
 
 class UpdateSupplierNote(graphene.Mutation):
     """
-         This Updates a Supplier Note
+    Update a supplier note
+
+    args:
+        supplier_id(str): id of the supplier of note
+        outlet_ids(list): outlets that source products from the supplier
+        note(str): text to update supplier note with
+
+    returns:
+        success(str): success message confirming note update
+        supplier_note(obj): 'SupplierNote' model object detailing the
+                            updated note
     """
+
     class Arguments:
         id = graphene.Int(required=True)
         supplier_id = graphene.String()
@@ -306,8 +447,16 @@ class UpdateSupplierNote(graphene.Mutation):
 
 class DeleteSupplierNote(graphene.Mutation):
     """
-    This deletes a Supplier Note
+    Delete a supplier note
+
+    args:
+        id(int): id of the note to delete
+
+    returns:
+        success(str): success message confirming note delete
+        id(int)): id of the deleted note
     """
+
     id = graphene.Int()
     success = graphene.String()
 

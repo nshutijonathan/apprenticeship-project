@@ -40,6 +40,25 @@ class SupplierNoteType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
+    """
+    Query data related to the 'Suppliers' model
+
+    args:
+        id(str): supplier note id used to make the 'suppliersNote' query.
+                 Returns a single supplier's note
+
+    returns:
+        all_suppliers(list): returns all suppliers in the database with a null
+                             'parent' field
+        edit_request(list): returns all suppliers that have a non-null
+                            'parent' field
+        approved_suppliers(list): returns all approved suppliers
+        user_requests(list): returns suppliers created by the current user
+        filter_suppliers(list): returns suppliers based on filter parameters
+        all_suppliers_note(list): returns all suppliers notes
+        suppliers_note(list): returns a supplier's note
+    """
+
     all_suppliers = graphene.List(SuppliersType)
     edit_requests = graphene.List(SuppliersType)
     approved_suppliers = graphene.List(SuppliersType)
