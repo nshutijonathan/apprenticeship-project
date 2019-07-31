@@ -1,0 +1,5 @@
+healthid_db/
+.vscode
+.env.sample
+.circleci
+healthid/tests/

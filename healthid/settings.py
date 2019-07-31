@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv("SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False)
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'healthid'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('HOST', 'localhost'),
+        'HOST': os.environ.get('DB_HOST', 'database'),
         'PORT': os.environ.get('PORT', '5432'),
     }
 }
