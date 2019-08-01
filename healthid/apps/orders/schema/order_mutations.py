@@ -1,9 +1,8 @@
 import graphene
 from graphql_jwt.decorators import login_required
-from graphql.error import GraphQLError
 
-from healthid.apps.orders.models.orders import Order, SupplierOrderDetails
-from healthid.apps.orders.models.orders import OrderDetails
+from healthid.apps.orders.models.orders import (Order, SupplierOrderDetails,
+                                                OrderDetails)
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.orders_utils.add_order_details import add_order_details
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -15,6 +14,9 @@ from healthid.apps.orders.schema.order_query import \
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.apps.orders.services import (SupplierOrderDetailsFetcher,
+                                           SupplierOrderEmailSender,
+                                           SupplierOrderDetailsApprovalService)
 
 
 class InitiateOrder(graphene.Mutation):
@@ -217,34 +219,88 @@ class ApproveSupplierOrder(graphene.Mutation):
     @user_permission('Manager', 'Admin')
     def mutate(self, info, **kwargs):
         order_id = kwargs.get('order_id')
-        additional_notes = kwargs.get('additional_notes')
+        additional_notes = kwargs.get('additional_notes', None)
         supplier_order_ids = kwargs.get('supplier_order_ids')
 
-        order = get_model_object(Order, 'id', order_id)
-
-        supplier_orders = SupplierOrderDetails.objects.filter(
-            id__in=supplier_order_ids,
-            order=order)
-
-        if not supplier_orders:
-            raise GraphQLError("No Supplier Order Details found matching"
-                               " provided ids and order")
-
         user = info.context.user
-        no_of_orders = len(supplier_orders)
+        orders_fetcher = SupplierOrderDetailsFetcher(order_id,
+                                                     supplier_order_ids)
+        supplier_orders = orders_fetcher.fetch()
+        approval_service = SupplierOrderDetailsApprovalService(
+            supplier_orders, user, additional_notes)
+        message = approval_service.approve()
+        return ApproveSupplierOrder(message=message,
+                                    supplier_order_details=supplier_orders)
 
+
+class SendSupplierOrderEmails(graphene.Mutation):
+    """Send Supplier Order Emails to suppliers
+
+    Send a PDF supplier order form to the supplier listing
+    all ordered items.
+
+    Args:
+        supplier_order_ids: A list of supplier order ids
+
+    Returns:
+        message: a return message
+    """
+    message = graphene.String()
+
+    class Arguments:
+        order_id = graphene.Int(required=True)
+        supplier_order_ids = graphene.List(graphene.String,
+                                           required=True)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        order_id = kwargs.get('order_id')
+        supplier_order_ids = kwargs.get('supplier_order_ids')
+
+        details_fetcher = SupplierOrderDetailsFetcher(order_id,
+                                                      supplier_order_ids)
+        email_sender = SupplierOrderEmailSender(details_fetcher.fetch())
+        message = email_sender.send()
+        return SendSupplierOrderEmails(message=message)
+
+
+class MarkSupplierOrderAsSent(graphene.Mutation):
+    """Mark Supplier Order Details as sent
+
+    Mark BooleanField marked_as_sent
+
+    Args:
+        supplier_order_ids: A list of supplier order ids
+
+    Returns:
+        message: a return messae.
+    """
+    message = graphene.String()
+
+    class Arguments:
+        order_id = graphene.Int(required=True)
+        supplier_order_ids = graphene.List(graphene.String,
+                                           required=True)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        order_id = kwargs.get('order_id')
+        supplier_order_ids = kwargs.get('supplier_order_ids')
+        details_fetcher = SupplierOrderDetailsFetcher(order_id,
+                                                      supplier_order_ids)
+        supplier_orders = details_fetcher.fetch()
+        ids = list()
         for supplier_order in supplier_orders:
-            supplier_order.approve(user)
-            if no_of_orders == 1:
-                supplier_order.additional_notes = additional_notes
-
+            supplier_order.marked_as_sent = True
+            ids.append(supplier_order.id)
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):
                 pass
 
-        message = "Successfully approved supplier orders"
-        return ApproveSupplierOrder(message=message,
-                                    supplier_order_details=supplier_orders)
+        message = ORDERS_SUCCESS_RESPONSES[
+            "supplier_order_marked_closed"].format(
+                ",".join(id for id in ids))
+        return MarkSupplierOrderAsSent(message=message)
 
 
 class DeleteOrderDetail(graphene.Mutation):
@@ -286,3 +342,5 @@ class Mutation(graphene.ObjectType):
     approve_supplier_order = ApproveSupplierOrder.Field()
     edit_initiated_order = EditInitiateOrder.Field()
     delete_order_detail = DeleteOrderDetail.Field()
+    send_supplier_order_emails = SendSupplierOrderEmails.Field()
+    mark_supplier_order_as_sent = MarkSupplierOrderAsSent.Field()

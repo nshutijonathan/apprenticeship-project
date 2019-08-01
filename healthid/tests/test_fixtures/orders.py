@@ -215,6 +215,28 @@ mutation{{
   }}
 '''
 
+send_supplier_order_emails = '''
+mutation{{
+  sendSupplierOrderEmails(
+    orderId: {order_id},
+    supplierOrderIds: {supplier_order_ids}
+    ){{
+      message
+    }}
+  }}
+'''
+
+mark_supplier_order_as_sent = '''
+mutation{{
+  markSupplierOrderAsSent(
+    orderId: {order_id},
+    supplierOrderIds: {supplier_order_ids}
+    ){{
+      message
+    }}
+  }}
+'''
+
 retrieve_orders = '''
 query {
   orders {

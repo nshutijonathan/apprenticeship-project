@@ -88,3 +88,5 @@ whitenoise==4.1.2
 wrapt==1.11.1
 yapf==0.26.0
 python-barcode==0.10.0
+WeasyPrint==47
+factory-boy==2.12.0

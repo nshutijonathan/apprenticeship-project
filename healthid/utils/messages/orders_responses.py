@@ -10,7 +10,12 @@ ORDERS_SUCCESS_RESPONSES = {
     "supplier_edit_request_update_success": "Edit request for Supplier {} "
                                             "has been updated!",
     "supplier_update_success": "Supplier {} has been successfully updated!",
-
+    "supplier_order_email_success": "Supplier Order Forms of id"
+                                    " {} successfully sent.",
+    "supplier_order_approval_success": "Supplier Order Details"
+                                       " of id {} successfully approved.",
+    "supplier_order_marked_closed": "Supplier Order Details"
+                                    " of id {} succefully closed."
 }
 
 ORDERS_ERROR_RESPONSES = {

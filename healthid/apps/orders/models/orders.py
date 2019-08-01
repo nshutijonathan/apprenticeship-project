@@ -105,6 +105,16 @@ class SupplierOrderDetails(BaseModel):
         order: order the order details of a supplier belong to
         supplier: supplier of order details
     """
+    PENDING = "pending"
+    OPEN = "open"
+    CLOSED = "closed"
+
+    ORDER_STATUSES = (
+        (PENDING, "Pending Approval"),
+        (OPEN, "Open"),
+        (CLOSED, "Closed"),
+    )
+
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False
     )
@@ -117,6 +127,9 @@ class SupplierOrderDetails(BaseModel):
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
                                     related_name="approved_supplier_orders",
                                     on_delete=models.CASCADE)
+    marked_as_sent = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=ORDER_STATUSES,
+                              default=PENDING)
 
     @property
     def get_order_details(self):
@@ -181,15 +194,11 @@ class SupplierOrderDetails(BaseModel):
         return self.delivery_due_date + \
             timedelta(days=self.supplier.credit_days)
 
-    def approve(self, user):
-        """Approve the Supplier Order Details
-
-        Args:
-            user (:obj) : user instance
+    @property
+    def order_status(self):
+        """Returns the status of the supplier order form.
 
         Returns:
-            self (:obj) : The supplier order details instance
+            status: displayable version of the status.
         """
-        self.approved_by = user
-        self.approved = True
-        return self
+        return self.get_status_display()

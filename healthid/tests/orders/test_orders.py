@@ -1,6 +1,8 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.orders import (order, approve_supplier_order,
-                                                 edit_order)
+                                                 edit_order,
+                                                 send_supplier_order_emails,
+                                                 mark_supplier_order_as_sent)
 
 from healthid.apps.orders.models.orders import SupplierOrderDetails
 
@@ -55,3 +57,43 @@ class TestOrders(BaseConfiguration):
                 additional_notes=" ",
                 supplier_order_ids=supplier_order_ids))
         self.assertIn('errors', response)
+
+    def test_admin_supplier_orders_emails(self):
+        """Test an admin can send supplier order emails"""
+        id1 = SupplierOrderDetails.objects.create(
+            order=self.order,
+            supplier=self.supplier,
+        ).id
+
+        id2 = SupplierOrderDetails.objects.create(
+            order=self.order,
+            supplier=self.supplier,
+        ).id
+
+        supplier_order_ids = """["{}", "{}"]""".format(id1, id2)
+        response = self.query_with_token(
+            self.access_token_master,
+            send_supplier_order_emails.format(
+                order_id=self.order.id,
+                supplier_order_ids=supplier_order_ids))
+        self.assertNotIn('errors', response)
+
+    def test_marking_supplier_orders_as_sent(self):
+        """Test an admin can send supplier order emails"""
+        id1 = SupplierOrderDetails.objects.create(
+            order=self.order,
+            supplier=self.supplier,
+        )
+
+        id2 = SupplierOrderDetails.objects.create(
+            order=self.order,
+            supplier=self.supplier,
+        )
+
+        supplier_order_ids = """["{}", "{}"]""".format(id1.id, id2.id)
+        response = self.query_with_token(
+            self.access_token_master,
+            mark_supplier_order_as_sent.format(
+                order_id=self.order.id,
+                supplier_order_ids=supplier_order_ids))
+        self.assertNotIn('errors', response)

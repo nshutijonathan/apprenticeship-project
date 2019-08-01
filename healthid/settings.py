@@ -215,3 +215,6 @@ MOCK_AVERAGE_WEEKLY_SALES = int(
     os.environ.get('MOCK_AVERAGE_WEEKLY_SALES', '2'))
 
 django_heroku.settings(locals())
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

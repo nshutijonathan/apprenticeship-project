@@ -19,7 +19,9 @@ from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 
 from .apps.authentication.views import activate, PasswordResetView
+from .apps.orders.views import SupplierOrderFormPDFView
 from .views import HandleCSV, HandleCsvExport, EmptyProductCsvExport
+
 
 admin.site.site_header = "HealthID Admin"
 admin.site.site_title = "HealthID Admin"
@@ -35,5 +37,8 @@ urlpatterns = [
     path('healthid/sample_product_csv', EmptyProductCsvExport.as_view(),
          name='export_product_csv'),
     path('healthid/password_reset/<uidb64>/<token>',
-         csrf_exempt(PasswordResetView.as_view()), name='password_reset')
+         csrf_exempt(PasswordResetView.as_view()), name='password_reset'),
+    path('healthid/supplier-order-pdf/<supplier_order_detail_id>',
+         SupplierOrderFormPDFView.as_view(),
+         name='supplier-order-form'),
 ]
