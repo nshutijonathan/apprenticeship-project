@@ -18,6 +18,8 @@ from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.app_utils.pagination import pagination_query
+from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 @convert_django_field.register(TaggableManager)
@@ -103,14 +105,17 @@ class SurveyType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
-    products = graphene.List(ProductType)
-    proposed_products = graphene.List(ProductType)
+    products = graphene.List(ProductType, page_count=graphene.Int(),
+                             page_number=graphene.Int())
+    proposed_products = graphene.List(ProductType, page_count=graphene.Int(),
+                                      page_number=graphene.Int())
     all_batch_info = graphene.List(BatchInfoType)
     batch_info = graphene.Field(
         BatchInfoType, id=graphene.String(required=True))
     product_batch_info = graphene.List(
         BatchInfoType, id=graphene.Int(required=True))
-    approved_products = graphene.List(ProductType)
+    approved_products = graphene.List(ProductType, page_count=graphene.Int(),
+                                      page_number=graphene.Int())
     filter_products = DjangoFilterConnectionField(ProductType)
     proposed_edits = graphene.List(ProductType)
     price_check_surveys = graphene.List(SurveyType)
@@ -145,10 +150,19 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_products(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
-        return Product.all_products.for_outlet(
+        products_set = Product.all_products.for_outlet(
             outlet.id).filter(parent_id__isnull=True)
+        if page_count or page_number:
+            products = pagination_query(
+                products_set, page_count, page_number)
+            return products
+        return pagination_query(products_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_filter_products(self, info, **kwargs):
@@ -169,16 +183,36 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_proposed_products(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
-        return Product.all_products.for_outlet(outlet.id).filter(
+        proposed_products_set = Product.all_products.for_outlet(
+            outlet.id).filter(
             is_approved=False, parent_id__isnull=True)
+        if page_count or page_number:
+            proposed_products = pagination_query(
+                proposed_products_set, page_count, page_number)
+            return proposed_products
+        return pagination_query(proposed_products_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_approved_products(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
-        return Product.objects.for_outlet(outlet.id).filter(is_approved=True)
+        approved_products_set = Product.objects.for_outlet(
+            outlet.id).filter(is_approved=True)
+        if page_count or page_number:
+            approved_products = pagination_query(
+                approved_products_set, page_count, page_number)
+            return approved_products
+        return pagination_query(approved_products_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_product(self, info, **kwargs):

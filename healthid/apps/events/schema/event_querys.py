@@ -10,6 +10,8 @@ from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.events_responses import EVENTS_ERROR_RESPONSES
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
+from healthid.utils.app_utils.pagination import pagination_query
+from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 class EventsType(DjangoObjectType):
@@ -31,7 +33,8 @@ class Query(graphene.ObjectType):
         list of event of objects: if 'events' is queried
         a single 'EventsType' object: if 'event' is queried
     """
-    events = graphene.List(EventsType)
+    events = graphene.List(EventsType, page_count=graphene.Int(),
+                           page_number=graphene.Int())
     event = graphene.Field(
         EventsType,
         id=graphene.String(),
@@ -47,12 +50,20 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_events(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
-        events = Event.objects.filter(Q(user=user) | Q(outlet=outlet))
-        if not events:
-            raise GraphQLError(EVENTS_ERROR_RESPONSES["no_events_error"])
-        return events
+        events_set = Event.objects.filter(Q(user=user) | Q(outlet=outlet))
+        if page_count or page_number:
+            events = pagination_query(
+                events_set, page_count, page_number)
+            return events
+        if events_set:
+            return pagination_query(events_set,
+                                    PAGINATION_DEFAULT["page_count"],
+                                    PAGINATION_DEFAULT["page_number"])
+        return GraphQLError(EVENTS_ERROR_RESPONSES["no_events_error"])
 
     @login_required
     def resolve_event(self, info, **kwargs):

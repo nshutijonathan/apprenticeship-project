@@ -11,6 +11,8 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.profiles.models import Profile
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
+from healthid.utils.app_utils.pagination import pagination_query
+from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 class CustomerCustomerType(DjangoObjectType):
@@ -58,7 +60,9 @@ class Query(graphene.AbstractType):
          otherwise a GraphqlError is raised
     """
 
-    customers = graphene.List(CustomerCustomerType)
+    customers = graphene.List(
+        CustomerCustomerType, page_count=graphene.Int(),
+        page_number=graphene.Int())
     customer = graphene.Field(
         lambda: graphene.List(
             CustomerCustomerType),
@@ -69,8 +73,16 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_customers(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         resolved_value = Profile.objects.all()
-        return resolved_value
+        if page_count or page_number:
+            customers = pagination_query(
+                resolved_value, page_count, page_number)
+            return customers
+        return pagination_query(resolved_value,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_customer(self, info, **kwargs):

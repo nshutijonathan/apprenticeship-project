@@ -6,6 +6,8 @@ from healthid.apps.orders.models.orders import (
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.outlets.schema.outlet_schema import OutletType
 from healthid.apps.orders.models.suppliers import Suppliers
+from healthid.utils.app_utils.pagination import pagination_query
+from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 class OrderType(DjangoObjectType):
@@ -94,10 +96,13 @@ class Query(graphene.AbstractType):
         SupplierOrderDetailsType, order_id=graphene.Int(required=True),
         supplier_id=graphene.String(required=True)
     )
-    orders = graphene.List(OrderType)
+    orders = graphene.List(OrderType, page_count=graphene.Int(),
+                           page_number=graphene.Int())
     order = graphene.Field(OrderType, order_id=graphene.Int(required=True))
-    open_orders = graphene.List(OrderType)
-    closed_orders = graphene.List(OrderType)
+    open_orders = graphene.List(OrderType, page_count=graphene.Int(),
+                                page_number=graphene.Int())
+    closed_orders = graphene.List(OrderType, page_count=graphene.Int(),
+                                  page_number=graphene.Int())
 
     @login_required
     def resolve_suppliers_order_details(self, info, **kwargs):
@@ -125,7 +130,16 @@ class Query(graphene.AbstractType):
         Returns:
             list: orders
         """
-        return Order.objects.all()
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        orders_set = Order.objects.all()
+        if page_count or page_number:
+            orders = pagination_query(
+                orders_set, page_count, page_number)
+            return orders
+        return pagination_query(orders_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_order(self, info, **kwargs):
@@ -145,7 +159,16 @@ class Query(graphene.AbstractType):
         Returns:
             list: open orders
         """
-        return Order.objects.filter(closed=False)
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        open_orders_set = Order.objects.filter(closed=False)
+        if page_count or page_number:
+            open_orders = pagination_query(
+                open_orders_set, page_count, page_number)
+            return open_orders
+        return pagination_query(open_orders_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_closed_orders(self, info, **kwargs):
@@ -155,4 +178,13 @@ class Query(graphene.AbstractType):
         Returns:
             list: closed orders
         """
-        return Order.objects.filter(closed=True)
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        closed_orders_set = Order.objects.filter(closed=True)
+        if page_count or page_number:
+            closed_orders = pagination_query(
+                closed_orders_set, page_count, page_number)
+            return closed_orders
+        return pagination_query(closed_orders_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])

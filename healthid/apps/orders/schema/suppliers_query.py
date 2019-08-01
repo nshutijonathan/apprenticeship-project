@@ -9,6 +9,8 @@ from healthid.apps.orders.models import Suppliers, SupplierNote
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
+from healthid.utils.app_utils.pagination import pagination_query
+from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 class SuppliersType(DjangoObjectType):
@@ -59,9 +61,12 @@ class Query(graphene.AbstractType):
         suppliers_note(list): returns a supplier's note
     """
 
-    all_suppliers = graphene.List(SuppliersType)
+    all_suppliers = graphene.List(SuppliersType, page_count=graphene.Int(),
+                                  page_number=graphene.Int())
     edit_requests = graphene.List(SuppliersType)
-    approved_suppliers = graphene.List(SuppliersType)
+    approved_suppliers = graphene.List(SuppliersType,
+                                       page_count=graphene.Int(),
+                                       page_number=graphene.Int())
     user_requests = graphene.List(SuppliersType)
     filter_suppliers = DjangoFilterConnectionField(SuppliersType)
     all_suppliers_note = graphene.List(SupplierNoteType)
@@ -69,16 +74,34 @@ class Query(graphene.AbstractType):
                                    id=graphene.String(required=True))
 
     @user_permission('Operations Admin')
-    def resolve_all_suppliers(self, info):
-        return Suppliers.objects.filter(parent=None)
+    def resolve_all_suppliers(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        suppliers_set = Suppliers.objects.filter(parent=None)
+        if page_count or page_number:
+            suppliers = pagination_query(
+                suppliers_set, page_count, page_number)
+            return suppliers
+        return pagination_query(suppliers_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @user_permission('Operations Admin')
     def resolve_edit_requests(self, info):
         return Suppliers.objects.exclude(parent=None)
 
     @login_required
-    def resolve_approved_suppliers(self, info):
-        return Suppliers.objects.filter(is_approved=True)
+    def resolve_approved_suppliers(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        approved_suppliers_set = Suppliers.objects.filter(is_approved=True)
+        if page_count or page_number:
+            approved_suppliers = pagination_query(
+                approved_suppliers_set, page_count, page_number)
+            return approved_suppliers
+        return pagination_query(approved_suppliers_set,
+                                PAGINATION_DEFAULT["page_count"],
+                                PAGINATION_DEFAULT["page_number"])
 
     @login_required
     def resolve_user_requests(self, info):
@@ -95,7 +118,7 @@ class Query(graphene.AbstractType):
         supplier = Suppliers.objects.filter(**kwargs, parent=None)
         if not supplier:
             message = ORDERS_ERROR_RESPONSES[
-                      "inexistent_supplier_search_error"]
+                "inexistent_supplier_search_error"]
             raise GraphQLError(message)
 
         return supplier
