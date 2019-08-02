@@ -13,6 +13,11 @@ class TestActivateDeactivateOutletUser(BaseConfiguration):
             'user_id': self.user.id,
             'is_active': json.dumps(True)
         }
+        self.outlet_user_data_two = {
+            'outlet_id': self.outlet.id,
+            'user_id': self.manager.id,
+            'is_active': json.dumps(True)
+        }
 
     def test_can_activate_user_in_outlet(self):
         response = self.query_with_token(
@@ -38,6 +43,11 @@ class TestActivateDeactivateOutletUser(BaseConfiguration):
 
     def test_cant_deactivate_when_only_one_user_is_active_in_outlet(self):
         self.outlet_user_data['is_active'] = json.dumps(False)
+        self.outlet_user_data_two['is_active'] = json.dumps(False)
+        self.query_with_token(
+            self.access_token_master,
+            activate_deactivate_outlet_user.format(
+                **self.outlet_user_data_two))
         self.query_with_token(
             self.access_token_master,
             activate_deactivate_outlet_user.format(**self.outlet_user_data))

@@ -75,6 +75,11 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256770777777",
             "password": "Password123"
         }
+        self.new_manager = {
+            "email": "ephraim@gmail.com",
+            "mobile_number": "+256770777000",
+            "password": "Password123"
+        }
         self.stock_count_user1 = {
             "email": "arkafuuma@gmail.com",
             "mobile_number": "+256470777777",
@@ -145,7 +150,11 @@ class BaseConfiguration(TestCase):
             'date_launched': "1995-10-20"
         }
 
+        self.role = self.create_role(role_name="Cashier")
+        self.manager_role = self.create_role(role_name="Manager")
+        self.master_admin_role = self.create_role('Master Admin')
         self.user = self.register_user(self.new_user)
+        self.manager = self.register_manager(self.new_manager)
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
         self.supplier = self.create_suppliers(self.user)
@@ -153,8 +162,6 @@ class BaseConfiguration(TestCase):
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
         self.outlet = self.create_outlet(self.outlet)
-        self.role = self.create_role(role_name="Cashier")
-        self.master_admin_role = self.create_role('Master Admin')
         self.measurement_unit = self.create_measurement_unit()
         self.product_category = self.create_product_category()
         self.product = self.create_product()
@@ -167,6 +174,8 @@ class BaseConfiguration(TestCase):
         # register and log in user
         OutletUser.objects.create(
             user=self.user, outlet=self.outlet, is_active_outlet=True)
+        OutletUser.objects.create(
+            user=self.manager, outlet=self.outlet, is_active_outlet=True)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin(self.master_admin)
         self.another_master_admin_user = self.register_master_admin(
@@ -238,6 +247,20 @@ class BaseConfiguration(TestCase):
         user = User.objects.create_user(
             email=email, mobile_number=mobile_number, password=password)
         user.is_active = True
+        user.save()
+        return user
+
+    def register_manager(self, user):
+        """
+        register a new user
+        """
+        email = user["email"]
+        mobile_number = user["mobile_number"]
+        password = user["password"]
+        user = User.objects.create_user(
+            email=email, mobile_number=mobile_number, password=password)
+        user.is_active = True
+        user.role = self.manager_role
         user.save()
         return user
 

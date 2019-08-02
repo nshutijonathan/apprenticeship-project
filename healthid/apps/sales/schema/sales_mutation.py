@@ -15,6 +15,7 @@ from healthid.apps.receipts.models import Receipt
 from healthid.apps.receipts.schema.receipt_schema import ReceiptType
 from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.sales_utils.inventory_notification import inventory_check
 
 
 class CreateSalesPrompts(graphene.Mutation):
@@ -159,10 +160,13 @@ class CreateSale(graphene.Mutation):
 
     @login_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         new_sale = Sale()
         new_receipt = Receipt()
+        products = kwargs.get('products')
         sale = new_sale.create_sale(info=info, **kwargs)
         receipt = new_receipt.create_receipt(sale, kwargs.get('outlet_id'))
+        inventory_check(user, products)
         return CreateSale(sale=sale,
                           receipt=receipt,
                           message='Sale was created successfully')

@@ -28,7 +28,9 @@ class UpdateOutletPreference(graphene.Mutation):
         reorder_max = graphene.Int()
         retain_user = graphene.Boolean()
         sales_hold = graphene.Int()
-        sell_inventory_notification = graphene.Boolean()
+        alert_low_inventory = graphene.Boolean()
+        alert_near_expiry = graphene.Boolean()
+        weeks_to_start_supply_alert = graphene.Int()
         payment_method = graphene.String()
         minimum_weeks_for_sales_velocity = graphene.Int()
         sales_velocity = graphene.Int()
@@ -41,9 +43,9 @@ class UpdateOutletPreference(graphene.Mutation):
                                                           OutletPreference,
                                                           **kwargs)
         return cls(
-                preference=preference,
-                success=SUCCESS_RESPONSES[
-                        "update_success"].format("Preference"))
+            preference=preference,
+            success=SUCCESS_RESPONSES[
+                "update_success"].format("Preference"))
 
 
 class Mutation(graphene.ObjectType):
