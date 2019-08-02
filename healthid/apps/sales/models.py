@@ -123,7 +123,8 @@ class Sale(BaseModel):
 
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
     amount_to_pay = models.DecimalField(max_digits=12, decimal_places=2)
-    discount_total = models.DecimalField(max_digits=12, decimal_places=2)
+    discount_total = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0.00)
     sub_total = models.DecimalField(max_digits=12, decimal_places=2)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2)
     change_due = models.DecimalField(max_digits=12, decimal_places=2)

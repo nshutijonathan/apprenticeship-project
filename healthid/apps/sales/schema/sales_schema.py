@@ -32,6 +32,12 @@ class SaleType(DjangoObjectType):
         return self.id
 
 
+class ConsultationPaymentType(DjangoObjectType):
+
+    class Meta:
+        model = Sale
+
+
 class Query(graphene.ObjectType):
     """
     Return a list of sales prompt.

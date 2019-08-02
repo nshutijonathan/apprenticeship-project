@@ -24,7 +24,7 @@ class Event(BaseModel):
     '''
     outlet = models.ManyToManyField(Outlet, blank=True)
     event_type = models.ForeignKey(EventType, null=True, blank=True,
-                                   on_delete=models.CASCADE)
+                                   on_delete=models.SET_NULL)
     start_date = models.DateField()
     end_date = models.DateField()
     start_time = models.TimeField()

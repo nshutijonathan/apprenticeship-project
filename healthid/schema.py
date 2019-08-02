@@ -4,7 +4,7 @@ import graphql_jwt
 from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
                                                  ObtainJSONWebToken)
 from healthid.apps.business.schema import business_mutation, business_query
-from healthid.apps.consultation.schema import (consultation_mutation,
+from healthid.apps.consultation.schema import (consultation_catalogue_mutation,
                                                consultation_query)
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
@@ -63,7 +63,7 @@ class Mutation(
         event_mutations.Mutation,
         notification_mutations.Mutation,
         sales_mutation.Mutation,
-        consultation_mutation.Mutation,
+        consultation_catalogue_mutation.Mutation,
         promotions_mutation.Mutation,
         stock_mutation.Mutation,
         order_mutations.Mutation,

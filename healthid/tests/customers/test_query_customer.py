@@ -2,6 +2,8 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import (
     create_customer, customer_query_all, customer_search_query,
     customer_name_query, customer_number_query, customer_id_query)
+from healthid.tests.factories import (
+    ConsultationItemFactory, CustomerFactory, CustomerConsultationFactory)
 
 
 class TestQueryCustomer(BaseConfiguration):
@@ -13,6 +15,11 @@ class TestQueryCustomer(BaseConfiguration):
             self.access_token,
             create_customer.format(
                 **self.create_customer_data))
+
+        self.consultation_item = ConsultationItemFactory()
+        self.customer_2 = CustomerFactory()
+        self.customer_consultation = CustomerConsultationFactory(
+            customer=self.customer_2)
 
     def test_fetch_all_customers(self):
         """

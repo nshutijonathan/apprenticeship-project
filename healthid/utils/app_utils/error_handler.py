@@ -18,6 +18,14 @@ class ErrorHandler():
             raise error_type({'error': message})
         raise GraphQLError(message)
 
+    def unique_constraint_violation(self, model, error_type=None):
+        # Database duplicate key error
+        message =\
+         f'An item with similar fields exists in the {model} table.'
+        if error_type:
+            raise error_type({'error': message})
+        raise GraphQLError(message)
+
     def custom_message(self, message, error_type=None):
         # custom message error
         if error_type is not None:

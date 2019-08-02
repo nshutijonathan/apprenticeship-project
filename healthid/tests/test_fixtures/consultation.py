@@ -1,5 +1,3 @@
-from healthid.apps.consultation.models import (Consultation,
-                                               ScheduleConsultation)
 
 consultations = '''
   query{{consultation(id:{id}){{
@@ -9,17 +7,15 @@ consultations = '''
   }}
 '''
 
-
-def add_consultation(outlet_id, consultationName):
-    return (f'''mutation {{
-                createConsultation(
-                    consultationName:"{consultationName}",
-                    description:"I would like to seek medical advise",
-                    approvedDeliveryFormatsId:2,
-                    expectedTimeId:1,
-                    consultantRoleId:1,
+create_consultation_item = '''mutation {{
+                createConsultationItem(
+                    consultationName:"{consultation_name}",
+                    description:"{description}",
+                    consultantRole:"{consultant_role}",
+                    approvedDeliveryFormats:["{approved_formats}"],
                     outletId:{outlet_id},
-                    pricePerSession:5
+                    minutesPerSession:{minutes_per_session}
+                    pricePerSession:{price_per_session}
                   ){{
                     consultation{{
                       id
@@ -32,53 +28,147 @@ def add_consultation(outlet_id, consultationName):
                   success
                   }}
                   }}
-                  ''')
+                  '''
 
 
-def create_consultation(outlet_id, consultation_name):
-    consultation = Consultation()
-    consultation.consultation_name = consultation_name
-    consultation.price_per_session = 34
-    consultation.approved_delivery_formats_id = 2
-    consultation.expected_time_id = 1
-    consultation.consultant_role_id = 1
-    consultation.outlet_id = outlet_id
-    consultation.save()
-    return consultation
+edit_consultation_item = '''mutation {{
+                editConsultationItem(
+                    consultationId:{consultation_id},
+                    description:"{description}"
+                  ){{
+                    consultation{{
+                      id
+                      description
+                      consultationName
+                    outlet{{
+                        name
+                      }}
+                  }}
+                  message
+                  }}
+                  }}
+                  '''
 
+delete_consultation_item = '''mutation{{
+                    deleteConsultationItem(
+                      id:{id}
+                      ){{
+                        message
+                        }}
+                        }}
+                        '''
 
-def post_consultation(consultation_type):
-    schedule_consultation = ScheduleConsultation()
-    schedule_consultation.customer_name = "Nangai"
-    schedule_consultation.consultation_type = consultation_type
-    schedule_consultation.save()
-    return schedule_consultation
-
-
-def schedule_mutation(consultation_type_id, user_id, start_date):
-    return f'''
-        mutation {{
-            schedule(
-                consultationTypeId: {consultation_type_id},
-                customerName: "Nangai",
-                email: "arthur.nangai@gmail.com",
-                paymentStatus: NOT_PAID,
-                consultants: [\"{user_id}\"],
-                startDate: \"{start_date}\",
-                endDate: "2019-04-06",
-                startTime: "12:30",
-                endTime: "01:30",
-                eventTypeId: "x7f36lbw1"
-            ) {{
-                scheduleConsultation {{
-                customerName
-                consultants{{
+book_consultation = '''mutation{{
+                bookConsultation(
+                  customerId: {customer_id},
+                  consultationTypeId: {consultation_type_id},
+                  status: "{status}"
+                ){{
+                  bookConsultation{{
                     id
+                    bookingDate
+                    status
+                    consultationType{{
+                      consultationName
+                      outlet{{
+                        id
+                        name
+                      }}
+                    }}
+                    customer{{
+                      id
+                      firstName
+                      lastName
+                    }}
+                    bookedBy{{
+                      email
+                    }}
+                    event{{
+                      eventType{{
+                        name
+                      }}
+                      startDate
+                      startTime
+                    }}
+                  }}
+                  success
                 }}
-                event{{
-                    startDate
+              }}
+              '''
+
+update_consultation = '''mutation{{
+                updateConsultation(
+                  consultationId: {consultation_id}
+                  status: "{status}"
+                ){{
+                  updateConsultation{{
+                    id
+                    bookingDate
+                    status
+                    consultationType{{
+                      consultationName
+                      outlet{{
+                        id
+                        name
+                      }}
+                    }}
+                    customer{{
+                      id
+                      firstName
+                      lastName
+                    }}
+                    bookedBy{{
+                      email
+                      username
+                    }}
+                    event{{
+                      eventType{{
+                        id
+                        name
+                      }}
+                      eventTitle
+                    }}
+                  }}
+                  success
                 }}
                 }}
+                '''
+
+delete_consultation = '''mutation {{
+            deleteBookedConsultation(
+              id: {consultation_id}
+            ){{
+            message
+          }}
+          }}
+          '''
+
+add_medical_notes = '''mutation{{
+            addMedicalNotes(
+              consultationId: {consultation_id},
+              author: "{consultant_name}"
+              medicalNotes: "{medical_notes}"
+            ){{addNotes{{
+              id
+              consultation{{
+                id,
+                customer{{
+                  id
+                  firstName
+                  lastName
+                }}
+                consultationType{{
+                  id,
+                  consultationName
+                }}
+                status
+                medicalhistorySet{{
+                  medicalNotes,
+                  author,
+                  createdAt
+                }}
+              }}
             }}
             }}
-        '''
+          }}
+'''

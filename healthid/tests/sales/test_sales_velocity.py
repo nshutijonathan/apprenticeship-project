@@ -6,6 +6,7 @@ from healthid.apps.preference.models import OutletPreference
 from healthid.apps.sales.sales_velocity import SalesVelocity
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.sales import sales_velocity_query
+from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.sales_responses import (
     SALES_ERROR_RESPONSES)
 
@@ -18,11 +19,9 @@ class TestSalesVelocity(BaseConfiguration):
             "product_id": self.product.id,
             "outlet_id": self.outlet.id
         }
-
-        sales_velocity = OutletPreference.objects.filter(
-            outlet_id=self.outlet.id).values_list(
-            'sales_velocity', flat=True)
-        self.sales_velocity = sales_velocity[0]
+        outlet_preference = get_model_object(
+            OutletPreference, 'outlet_id', self.outlet.id)
+        self.sales_velocity = outlet_preference.sales_velocity
 
     def test_weekly_sales_below_minimum(self):
         """

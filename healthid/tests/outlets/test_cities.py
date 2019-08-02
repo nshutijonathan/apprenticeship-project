@@ -103,7 +103,7 @@ class CityTestCase(CountryTestCase):
         self.create_city(country_name='Rwanda', city_name='Kigali')
         response = self.query_with_token(
             self.access_token_master, query_cities_string)
-        # there is a city created in base setup class i.e (3+1)
+        # there are cities created in base setup class i.e (3+1)
         self.assertEqual(4, len(response['data']['cities']))
 
     def test_fetch_single_city_with_name(self):

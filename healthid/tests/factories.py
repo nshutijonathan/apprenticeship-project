@@ -1,6 +1,7 @@
 import factory
 
 from datetime import datetime
+from faker import Faker
 
 from django.conf import settings
 
@@ -10,9 +11,15 @@ from healthid.apps.orders.models import (Order, SupplierOrderDetails,
 from healthid.apps.products.models import (ProductCategory, Product,
                                            MeasurementUnit)
 from healthid.apps.authentication.models import Role
+from healthid.apps.consultation.models import (
+    ConsultationCatalogue, CustomerConsultation, MedicalHistory)
 from healthid.apps.business.models import Business
 from healthid.apps.outlets.models import (Country, City, OutletKind, Outlet)
 from healthid.apps.preference.models import Timezone
+from healthid.apps.profiles.models import Profile
+
+
+fake = Faker()
 
 
 class UserFactory(factory.DjangoModelFactory):
@@ -243,3 +250,51 @@ class SupplierOrderDetailsFactory(factory.DjangoModelFactory):
     additional_notes = "blah blah blah"
     order = factory.SubFactory(OrderFactory)
     supplier = factory.SubFactory(SuppliersFactory)
+
+
+class CustomerFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Profile
+
+    email = fake.email()
+    first_name = fake.first_name()
+    last_name = fake.last_name()
+    primary_mobile_number = fake.phone_number()
+    city = factory.SubFactory(CityFactory)
+    country = factory.SubFactory(CountryFactory)
+
+
+class ConsultationItemFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = ConsultationCatalogue
+
+    consultation_name = fake.name()
+    description = fake.text()
+    outlet = factory.SubFactory(OutletFactory)
+    minutes_per_session = fake.random_int(min=1, max=60)
+    approved_delivery_formats = ["Telephonic"]
+    price_per_session = fake.random_int()
+
+
+class CustomerConsultationFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = CustomerConsultation
+
+    customer = factory.SubFactory(CustomerFactory)
+    consultation_type = factory.SubFactory(ConsultationItemFactory)
+    consultant = fake.name()
+    booked_by = factory.SubFactory(UserFactory)
+
+
+class MedicalHistoryFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = MedicalHistory
+
+    consultation = factory.SubFactory(CustomerConsultationFactory)
+    medical_notes = fake.text()
+    author = fake.name()
+    authorized_by = factory.SubFactory(UserFactory)

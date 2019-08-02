@@ -2,11 +2,12 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
+from healthid.apps.consultation.models import CustomerConsultation
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
 from healthid.apps.sales.models import (SalesPrompt, Sale)
 from healthid.apps.sales.schema.sales_schema import (
-    SalesPromptType, SaleType)
+    ConsultationPaymentType, SalesPromptType, SaleType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -167,8 +168,72 @@ class CreateSale(graphene.Mutation):
                           message='Sale was created successfully')
 
 
+class ConsultationPayment(graphene.Mutation):
+    """
+    Make payment for a consultation
+    Args:
+        customer_consultation_id (id) id of the consultation item
+        discount_total (float) discount given if any
+        sub_total (float) sale subtotal
+        paid_amount (float) amount client has given
+        change_due (float) change due to client
+        payment_method (str) payment option chosen
+        notes (str) Narrative for the sale
+    returns:
+         sale object for the consultation,
+         otherwise a GraphqlError is raised
+    """
+    sale = graphene.Field(ConsultationPaymentType)
+    message = graphene.String()
+    receipt = graphene.Field(ReceiptType)
+
+    class Arguments:
+        customer_consultation_id = graphene.Int(required=True)
+        discount_total = graphene.Float(graphene.Float, required=True)
+        sub_total = graphene.Float(graphene.Float, required=True)
+        paid_amount = graphene.Float(graphene.Float, required=True)
+        change_due = graphene.Float(graphene.Float, required=True)
+        payment_method = graphene.String(graphene.String, required=True)
+        notes = graphene.String()
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        user = info.context.user
+        customer_consultation_id = kwargs.get('customer_consultation_id')
+        customer_consultation = get_model_object(
+            CustomerConsultation, 'id', customer_consultation_id)
+        outlet = customer_consultation.consultation_type.outlet
+
+        if customer_consultation.paid:
+            raise GraphQLError('This consultation is already marked as paid')
+
+        price = customer_consultation.consultation_type.price_per_session
+        new_sale = Sale(
+            sales_person=user, customer=customer_consultation.customer,
+            outlet=outlet,
+            amount_to_pay=price)
+
+        del kwargs['customer_consultation_id']
+        for (key, value) in kwargs.items():
+            setattr(new_sale, key, value)
+
+        with SaveContextManager(new_sale, model=Sale) as new_sale:
+            pass
+
+        customer_consultation.paid = True
+        customer_consultation.sale_record = new_sale
+        customer_consultation.save()
+
+        new_receipt = Receipt()
+        receipt = new_receipt.create_receipt(new_sale, outlet.id)
+
+        return ConsultationPayment(
+            sale=new_sale, receipt=receipt, message='message')
+
+
 class Mutation(graphene.ObjectType):
     create_salesprompts = CreateSalesPrompts.Field()
     delete_salesprompt = DeleteSalesPrompt.Field()
     update_salesprompt = UpdateSalesPrompt.Field()
     create_sale = CreateSale.Field()
+    consultation_payment = ConsultationPayment.Field()

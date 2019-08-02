@@ -99,8 +99,10 @@ class CreateProduct(CreateEditProduct):
     @login_required
     def mutate(self, info, **kwargs):
         product_category_id = kwargs.pop('product_category_id')
+
         product_category = get_model_object(
             ProductCategory, 'id', product_category_id)
+
         product = Product(outlet=product_category.outlet,
                           product_category=product_category,
                           markup=product_category.markup)

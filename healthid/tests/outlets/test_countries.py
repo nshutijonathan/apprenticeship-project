@@ -148,7 +148,7 @@ class CountryTestCase(BaseConfiguration):
 
         response = self.query_with_token(
             self.access_token_master, query_countries_string)
-        # there is a country created in base setup class i.e (4+1)
+        # there are countries created in base setup class i.e (4+1)
         self.assertEqual(5, len(response['data']['countries']))
 
     def test_fetch_single_country_with_name(self):

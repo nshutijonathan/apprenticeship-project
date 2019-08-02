@@ -1,90 +1,175 @@
+from dateutil import parser
+
+from django.utils.timezone import make_aware
+
 import graphene
-from django.template.loader import render_to_string
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.authentication.models import User
-from healthid.apps.consultation.models import (Consultation,
-                                               ScheduleConsultation)
-from healthid.apps.consultation.schema.consultation_query import ScheduleType
-from healthid.apps.events.models import Event
+from healthid.apps.consultation.models import (CustomerConsultation)
+from healthid.apps.consultation.schema.consultation_schema import (
+    CustomerConsultationType)
+from healthid.apps.events.models import Event, EventType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.notifications_utils.handle_notifications import \
-    send_email_to
+from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.consultation_reponses import\
     CONSULTATION_SUCCESS_RESPONSES
 
 
-class PaymentStatusEnum(graphene.Enum):
-    PAID = 'Paid'
-    NOT_PAID = 'Not paid'
-
-
-class Schedule(graphene.Mutation):
-    """Schedule consultation with Pharmacy."""
-    schedule_consultation = graphene.Field(ScheduleType)
+class BookConsultation(graphene.Mutation):
+    """
+    Books consultation for a customer
+    Args:
+        customer_id (int) id of customer booking the consultation
+        consultation_type_id (int) id of consultation item
+        consultant (str) name of consultant
+        status (str) status of the consultation
+        booking_date (str) date set for the consultation
+    returns:
+         consultation object that was created and success message,
+         otherwise a GraphqlError is raised
+    """
+    book_consultation = graphene.Field(CustomerConsultationType)
     success = graphene.String()
 
     class Arguments:
+        customer_id = graphene.Int(required=True)
         consultation_type_id = graphene.Int(required=True)
-        customer_name = graphene.String(required=True)
-        payment_status = graphene.Argument(PaymentStatusEnum, required=True)
-        consultants = graphene.List(graphene.String)
-        start_date = graphene.Date(required=True)
-        end_date = graphene.Date(required=True)
-        start_time = graphene.Time(required=True)
-        end_time = graphene.Time(required=True)
-        email = graphene.String(required=True)
-        event_type_id = graphene.String(required=True)
+        consultant = graphene.String()
+        status = graphene.String()
+        booking_date = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
-        schedule_consultation = ScheduleConsultation()
-        consultant_ids = kwargs.pop('consultants')
-        start_date = kwargs.pop('start_date')
-        end_date = kwargs.pop('end_date')
-        start_time = kwargs.pop('start_time')
-        end_time = kwargs.pop('end_time')
-        email = kwargs.pop('email')
-        event_type_id = kwargs.pop('event_type_id')
-        valid_consultants = [get_model_object(
-            User, 'id', consultant_id) for consultant_id in consultant_ids]
+        user = info.context.user
+        book_consultation = CustomerConsultation(booked_by=user)
+
+        booking_date = kwargs.get('booking_date')
+
+        if booking_date:
+            booking_date = parser.parse(booking_date)
+            kwargs['booking_date'] = make_aware(booking_date)
 
         for (key, value) in kwargs.items():
-            if key in ('customer_name', 'payment_status') and \
-                    value.strip() == "":
-                raise GraphQLError("The {} field can't be empty".format(key))
-            setattr(schedule_consultation, key, value)
-        with SaveContextManager(schedule_consultation) as consultation:
-            consultation.consultants.add(*valid_consultants)
+            if key in ('customer_id', 'consultation_type_id') and \
+                    str(value).strip() == "":
+                raise GraphQLError(
+                    'The {} field cannot be empty'.format(key))
+            setattr(book_consultation, key, value)
+
+        success =\
+            CONSULTATION_SUCCESS_RESPONSES["consultation_schedule_success"]
+
+        with SaveContextManager(book_consultation, model=CustomerConsultation) as book_consultation:  # noqa
+            booking_date = book_consultation.booking_date
+            description = \
+                book_consultation.consultation_type.consultation_name
+            event_type = EventType.objects.get_or_create(
+                name='Consultation')
             event = Event(
-                start_date=start_date,
-                end_date=end_date,
-                start_time=start_time,
-                end_time=end_time,
-                event_title=f'Consultation for {consultation.customer_name}',
-                description=f'Consultation id: {consultation.id}',
-                event_type_id=event_type_id
-            )
-            with SaveContextManager(event) as event:
-                event.save()
-            consultation.event = event
-            consultation.save()
-            consultation_type = get_model_object(
-                Consultation, 'id', consultation.consultation_type_id)
-            success =\
-                CONSULTATION_SUCCESS_RESPONSES["consultation_schedule_success"]
-            context = {
-                'template_type': 'Schedule Consultation',
-                'small_text_detail': success,
-                'email': email,
-                'outlet_name': consultation_type.outlet.name,
-                'start_date': start_date,
-                'start_time': start_time,
-                'first_name': info.context.user.first_name}
-            html_body = render_to_string(
-                'email_alerts/schedule_consultation.html', context)
-            send_email_to('Consultation scheduled', email, html_body)
-            return Schedule(
-                success=success, schedule_consultation=consultation)
+                start_date=booking_date.date(),
+                end_date=booking_date.date(),
+                start_time=booking_date.time(),
+                end_time=book_consultation.end_time.time(),
+                event_title=f'Consultation for \
+                {book_consultation.customer.first_name}',
+                description=f'{description}',
+                event_type=event_type[0])
+            event.save()
+            book_consultation.event = event
+            book_consultation.save()
+
+        return BookConsultation(book_consultation=book_consultation,
+                                success=success)
+
+
+class UpdateConsultation(graphene.Mutation):
+    """
+    Edits booked consultation
+    Args:
+        consultation_id (int) id of the booked consultation
+        status (str) new status of the consultation
+        consultant (str) name of new consultant
+        booking_date (str) new booking date
+        paid (bool) payment status
+    returns:
+         consultation object that was updated and a message,
+         otherwise a GraphqlError is raised
+    """
+    update_consultation = graphene.Field(CustomerConsultationType)
+    success = graphene.String()
+
+    class Arguments:
+        consultation_id = graphene.Int(required=True)
+        status = graphene.String()
+        consultant = graphene.String()
+        booking_date = graphene.String()
+        paid = graphene.Boolean()
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        user = info.context.user
+        update_consultation = get_model_object(
+            CustomerConsultation, 'id', kwargs.get('consultation_id'))
+
+        update_consultation.updated_by = user
+
+        booking_date = kwargs.get('booking_date')
+
+        if booking_date:
+            booking_date = parser.parse(booking_date)
+            kwargs['booking_date'] = make_aware(booking_date)
+
+        for (key, value) in kwargs.items():
+            setattr(update_consultation, key, value)
+
+        with SaveContextManager(update_consultation, model=CustomerConsultation) as update_consultation:  # noqa
+            pass
+
+        if booking_date:
+            new_date = update_consultation.booking_date
+            event = get_model_object(Event, 'id', update_consultation.event_id)
+            event_data = {
+                'start_date': new_date.date(),
+                'end_date': new_date.date(),
+                'start_time': new_date.time(),
+                'end_time': update_consultation.end_time.time()}
+
+            for (key, value) in event_data.items():
+                setattr(event, key, value)
+
+            with SaveContextManager(event, model=Event) as event:
+                pass
+
+        success =\
+            CONSULTATION_SUCCESS_RESPONSES["consultation_schedule_success"]
+
+        return UpdateConsultation(
+            update_consultation=update_consultation, success=success)
+
+
+class DeleteBookedConsultation(graphene.Mutation):
+    """
+    Deletes a scheduled consultation
+    Args:
+        id (int) the id of the booked consultation
+    returns:
+         success message,
+         otherwise a GraphqlError is raised
+    """
+    booked_consultation = graphene.Field(CustomerConsultationType)
+    message = graphene.String()
+
+    class Arguments:
+        id = graphene.Int()
+
+    @login_required
+    @user_permission('Manager')
+    def mutate(self, info, id):
+        user = info.context.user
+        booked_consultation = get_model_object(CustomerConsultation, 'id', id)
+        booked_consultation.delete(user)
+        message = CONSULTATION_SUCCESS_RESPONSES['delete_booking'].format(
+            booked_consultation.customer)
+        return DeleteBookedConsultation(message=message)
