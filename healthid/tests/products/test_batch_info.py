@@ -27,7 +27,6 @@ class TestBatchInfo(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn('data', resp)
-        self.assertEqual(resp['data']['createBatchInfo']['errors'], None)
         self.assertEqual(
             resp['data']['createBatchInfo']['batchInfo']['supplier']['name'],
             self.supplier.name)
@@ -42,7 +41,6 @@ class TestBatchInfo(BaseConfiguration):
             update_batch_info.format(**self.batch_data))
 
         self.assertIn('data', resp)
-        self.assertEqual(resp['data']['updateBatchInfo']['errors'], None)
         self.assertEqual(
             resp['data']['updateBatchInfo']['batchInfo']['supplier']['name'],
             self.supplier.name)

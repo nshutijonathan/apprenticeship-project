@@ -3,7 +3,8 @@
 # the script to create data in the database
 # they are arranged according to dependency of models
 
-python manage.py loaddata healthid/fixtures/authenication.json
+python manage.py loaddata healthid/fixtures/role_data.json
+python manage.py loaddata healthid/fixtures/authentication.json
 python manage.py loaddata healthid/fixtures/business.json
 python manage.py loaddata healthid/fixtures/consultation_data.json
 python manage.py loaddata healthid/fixtures/countries.json
@@ -12,7 +13,6 @@ python manage.py loaddata healthid/fixtures/measurement_unit.json
 python manage.py loaddata healthid/fixtures/outlets.json
 python manage.py loaddata healthid/fixtures/product_category.json
 python manage.py loaddata healthid/fixtures/promotion.json
-python manage.py loaddata healthid/fixtures/role_data.json
 python manage.py loaddata healthid/fixtures/tiers.json
 python manage.py loaddata healthid/fixtures/timezones.json
 python manage.py loaddata healthid/fixtures/orders.json

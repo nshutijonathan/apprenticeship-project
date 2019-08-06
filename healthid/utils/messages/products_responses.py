@@ -28,7 +28,7 @@ PRODUCTS_ERROR_RESPONSES = {
     "survey_update_error": "This survey has already been closed. "
                            "It cannot be updated!",
     "batch_match_error": "The number of batches and quantities "
-                           "provided do not match",
+                         "provided do not match",
     "inexistent_batches": "Batches with ids {} do not exist in this product",
     "product_prompt": "Please specify at least one product.",
     "supplier_prompt": "Please specify at least one supplier.",
@@ -41,12 +41,15 @@ PRODUCTS_ERROR_RESPONSES = {
     "product_activation_error": "Product with id {} does not exist or "
                                 "is already activated.",
     "product_deactivation_error": "Product with id {} does not exist or "
-                                "is already deactivated.",
+                                  "is already deactivated.",
     "proposal_decline": "Proposal for change in quantity of {} received on {} "
                         "has been declined",
     "inexistent_supplier": "Suppliers with id {} does not exist.",
     "inexistent_product": "Product with id {} does not exist.",
     "inexistent_batchinfo": "BatchInfo with id {} does not exist.",
     "closed_survey_error": "This survey has already been closed",
-    "product_category_no_edits": "Product category unchanged, nothing to edit."
+    "product_category_no_edits": "Product category unchanged, "
+                                 "nothing to edit.",
+    "invalid_batch_quality": "Service quality must be an integer "
+                             "between 1 and 5"
 }

@@ -336,6 +336,28 @@ class DeleteOrderDetail(graphene.Mutation):
         return DeleteOrderDetail(message=success_message)
 
 
+class CloseOrder(graphene.Mutation):
+    """
+    Mutation to initiate an order in the database
+
+     arguments:
+         order_id(int): name of the order to initiate
+
+     returns:
+        message(str): message containing operation response
+    """
+    message = graphene.String()
+
+    class Arguments:
+        order_id = graphene.Int(required=True)
+
+    @login_required
+    def mutate(self, info, order_id):
+        order = get_model_object(Order, 'id', order_id)
+        message = order.close(info.context.user)
+        return CloseOrder(message=message)
+
+
 class Mutation(graphene.ObjectType):
     initiate_order = InitiateOrder.Field()
     add_order_details = AddOrderDetails.Field()
@@ -344,3 +366,4 @@ class Mutation(graphene.ObjectType):
     delete_order_detail = DeleteOrderDetail.Field()
     send_supplier_order_emails = SendSupplierOrderEmails.Field()
     mark_supplier_order_as_sent = MarkSupplierOrderAsSent.Field()
+    close_order = CloseOrder.Field()

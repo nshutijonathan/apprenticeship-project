@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 
 class TestBackgroundTasks(TestCase):
     def setUp(self):
-        call_command('loaddata', 'healthid/fixtures/authenication')
+        call_command('loaddata', 'healthid/fixtures/role_data')
+        call_command('loaddata', 'healthid/fixtures/authentication')
         call_command('loaddata', 'healthid/fixtures/promotion')
 
     def change_batch_expiry_date(self, days):

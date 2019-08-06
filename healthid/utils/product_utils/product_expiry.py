@@ -7,9 +7,10 @@ from healthid.utils.notifications_utils.handle_notifications import notify
 
 
 def check_for_expiry_products():
-    '''
-    Check for products about to expiry
-    '''
+    """
+    Check for products about to expire
+    """
+
     batches = BatchInfo.objects.filter(sold_out=False)
     batches_by_outlets = [list(result) for key, result in groupby(
         batches, key=lambda batch: batch.product.outlet)]
@@ -22,11 +23,11 @@ def check_for_expiry_products():
             expiry_date = batch.expiry_date
             days_to_expiry = (expiry_date - today).days
             outlet = batch.product.outlet
-            if days_to_expiry <= 182 and days_to_expiry > 91:
+            if 182 >= days_to_expiry > 91:
                 expire_in_six_months.append(batch.product)
-            elif days_to_expiry <= 91 and days_to_expiry > 30:
+            elif 91 >= days_to_expiry > 30:
                 expire_in_three_months.append(batch.product)
-            elif days_to_expiry <= 30 and days_to_expiry > 0:
+            elif 30 >= days_to_expiry > 0:
                 expire_in_one_month.append(batch.product)
         if expire_in_six_months:
             title = f'Expire in 6 months {outlet.id}'

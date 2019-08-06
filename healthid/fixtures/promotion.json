@@ -312,7 +312,9 @@
             "product": 3,
             "date_received": "2019-06-20",
             "expiry_date": "2019-08-20",
-            "user_id": "aul5xrp73"
+            "user_id": "aul5xrp73",
+            "service_quality": 5,
+            "delivery_promptness": false
         }
     },
     {

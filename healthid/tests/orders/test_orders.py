@@ -1,6 +1,6 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.orders import (order, approve_supplier_order,
-                                                 edit_order,
+                                                 edit_order, close_order,
                                                  send_supplier_order_emails,
                                                  mark_supplier_order_as_sent)
 
@@ -96,4 +96,19 @@ class TestOrders(BaseConfiguration):
             mark_supplier_order_as_sent.format(
                 order_id=self.order.id,
                 supplier_order_ids=supplier_order_ids))
+        self.assertNotIn('errors', response)
+
+    def test_close_open_order(self):
+        """ Test closing an open order """
+        self.order = self.create_order(closed=False)
+        response = self.query_with_token(
+            self.access_token,
+            close_order.format(order_id=self.order.id))
+        self.assertNotIn('errors', response)
+
+    def test_close_closed_order(self):
+        """ Test closing an already closed order """
+        response = self.query_with_token(
+            self.access_token,
+            close_order.format(order_id=self.order.id))
         self.assertNotIn('errors', response)

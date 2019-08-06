@@ -6,6 +6,8 @@ from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
 from healthid.models import BaseModel
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES, \
+    ORDERS_SUCCESS_RESPONSES
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.app_utils.database import get_model_object
 
@@ -28,6 +30,30 @@ class Order(BaseModel):
     delivery_date = models.DateField()
     sent_status = models.BooleanField(default=False)
     closed = models.BooleanField(default=False)
+
+    def close(self, user):
+        """
+        Close an open order
+
+        Arguments:
+            user(object): User initiating the close request
+
+        Returns:
+            str: response message
+        """
+
+        if self.destination_outlet.id != user.active_outlet.id:
+            raise ValueError(
+                ORDERS_ERROR_RESPONSES[
+                    'close_order_invalid_user'])
+        if self.closed:
+            return ORDERS_SUCCESS_RESPONSES[
+                'already_closed_order'].format(self.order_number)
+        else:
+            self.closed = True
+            self.save()
+            return ORDERS_SUCCESS_RESPONSES[
+                'order_close_success'].format(self.order_number)
 
 
 class OrderDetails(BaseModel):
@@ -191,8 +217,8 @@ class SupplierOrderDetails(BaseModel):
         Returns:
             date: when the supplier expects to be paid for thr order
         """
-        return self.delivery_due_date + \
-            timedelta(days=self.supplier.credit_days)
+        return self.delivery_due_date + timedelta(
+            days=self.supplier.credit_days)
 
     @property
     def order_status(self):

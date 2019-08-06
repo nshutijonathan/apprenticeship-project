@@ -268,3 +268,13 @@ query {
   }
 }
 '''
+
+close_order = '''
+mutation{{
+  closeOrder(
+    orderId:{order_id}
+  ){{
+    message
+  }}
+}}
+'''

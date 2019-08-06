@@ -351,8 +351,7 @@ mutation reconcileStock{{
                 batchInfo{{
                     id
                     quantity
-                    packSize
-                    commentary
+                    comment
                     dateReceived
                     batchNo
                 }}

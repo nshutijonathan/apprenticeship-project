@@ -116,7 +116,7 @@ class Product(BaseModel):
         return self.product_name
 
     def __repr__(self):
-        return (f"<{self.product_name}>")
+        return f"<{self.product_name}>"
 
     @property
     def quantity(self):
@@ -220,17 +220,18 @@ class BatchInfo(BaseModel):
         max_length=100, null=True, blank=True, editable=False)
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
     date_received = models.DateField(auto_now=False)
-    pack_size = models.CharField(max_length=100, null=True, blank=True)
     expiry_date = models.DateField(auto_now=False)
     unit_cost = models.DecimalField(
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
-    commentary = models.TextField(blank=True, null=True)
     sold_out = models.BooleanField(default=False)
     product = models.ForeignKey(
         Product, related_name='batch_info',
         on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_batches')
+    service_quality = models.PositiveIntegerField(default=3)
+    delivery_promptness = models.BooleanField(default=True)
+    comment = models.TextField(blank=True)
 
     def __str__(self):
         return self.batch_no
@@ -239,6 +240,8 @@ class BatchInfo(BaseModel):
         return self.batch_no
 
     def save(self, *args, **kwargs):
+        if not 1 <= self.service_quality <= 5:
+            raise ValueError(PRODUCTS_ERROR_RESPONSES['invalid_batch_quality'])
         if Product.all_objects.filter(id=self.product_id).exists():
             if not self.product.is_approved:
                 name = self.product.product_name

@@ -17,7 +17,7 @@ mutation proposeQuantity {{
       }}
       unitCost,
       quantity,
-      commentary,
+      comment,
       unitCost
     }}
   }}
@@ -43,7 +43,7 @@ mutation proposeQuantity {{
       }}
       unitCost,
       quantity,
-      commentary,
+      comment,
       unitCost
     }}
   }}

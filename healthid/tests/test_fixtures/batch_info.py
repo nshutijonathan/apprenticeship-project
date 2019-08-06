@@ -1,16 +1,16 @@
 batch_info_query = '''
 mutation createBatchInfo {{
 createBatchInfo (
-    supplierId:"{supplier_id}",
+    supplierId: "{supplier_id}",
     productId: {product_id},
-    dateReceived:"2019-12-03",
-    packSize:"10",
+    dateReceived: "2019-12-03",
     quantity: 10,
-    expiryDate:"{expiry_date}",
-    unitCost:100,
-    commentary:"5 packs pending"
+    expiryDate: "{expiry_date}",
+    unitCost: 100,
+    comment: "5 packs pending",
+    deliveryPromptness: true,
+    serviceQuality: 3
   ) {{
-    errors
     message
     batchInfo {{
       id
@@ -32,12 +32,12 @@ updateBatchInfo (
     batchId: "{batch_id}",
     supplierId: "{supplier_id}",
     dateReceived: "2019-04-12",
-    packSize:"56",
     expiryDate: "2020-04-02",
     unitCost: 50,
-    commentary:"Delivered on time"
+    comment:"Delivered on time",
+    deliveryPromptness: true,
+    serviceQuality: 5
   ) {{
-    errors
     message
     batchInfo {{
       batchNo
@@ -47,7 +47,7 @@ updateBatchInfo (
         name
       }}
       unitCost,
-      commentary
+      comment
       unitCost
     }}
   }}

@@ -15,7 +15,9 @@ ORDERS_SUCCESS_RESPONSES = {
     "supplier_order_approval_success": "Supplier Order Details"
                                        " of id {} successfully approved.",
     "supplier_order_marked_closed": "Supplier Order Details"
-                                    " of id {} succefully closed."
+                                    " of id {} succefully closed.",
+    "already_closed_order": "Order {} already closed",
+    "order_close_success": "Order {} closed successfully"
 }
 
 ORDERS_ERROR_RESPONSES = {
@@ -42,5 +44,7 @@ ORDERS_ERROR_RESPONSES = {
                             " not match the provided outlet",
     "scan_product_rejection": "Scan rejected: Product does"
                               " not match the provided BatchInfo",
-    "scan_disabled": "Barcode scanning is disabled"
+    "scan_disabled": "Barcode scanning is disabled",
+    "close_order_invalid_user": "Cannot close order in outlet you're "
+                                "not active in"
 }

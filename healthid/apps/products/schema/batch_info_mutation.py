@@ -3,6 +3,7 @@ from itertools import compress
 import graphene
 from django.utils.dateparse import parse_date
 from graphql import GraphQLError
+from graphql.language import ast
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.products.models import BatchInfo, Product, Quantity
@@ -15,30 +16,69 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.product import \
     generate_reorder_points_and_max
-from healthid.utils.messages.products_responses import\
+from healthid.utils.messages.products_responses import \
     PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
+class ServiceQuality(graphene.types.Scalar):
+    """
+    Custom type for service Quality rating (integer, range: 1 - 5)
+    """
+    @staticmethod
+    def enforce_int_range(value):
+        if isinstance(value, int) and 1 <= value <= 5:
+            return value
+        raise ValueError(PRODUCTS_ERROR_RESPONSES['invalid_batch_quality'])
+
+    parse_value = enforce_int_range
+    serialize = enforce_int_range
+
+    @staticmethod
+    def parse_literal(node):
+        try:
+            value = int(node.value)
+            if isinstance(node, ast.IntValue) and 1 <= value <= 5:
+                return value
+            raise ValueError(PRODUCTS_ERROR_RESPONSES['invalid_batch_quality'])
+        except ValueError:
+            raise ValueError(PRODUCTS_ERROR_RESPONSES['invalid_batch_quality'])
+
+
 class CreateBatchInfo(graphene.Mutation):
     """
-        Mutation to create a Product batch Information
+    Mutation to create a new product batch information
+
+    arguments:
+        supplier_id(str): id of product supplier
+        date_received(str): datte order was received
+        product_id(int): id of product to create batch for
+        unit_cost(float): id of the product in stock
+        quantity(int): quantiy of product received
+        expiry_date(str): product expiry date
+        service_quality(int): quality rating for supplier delivery (int, 1 - 5)
+        delivery_promptness(bool): promptness of product delivery
+            (true if delivery 'on time')
+        comment(str): extra notes to attach to batch
+
+    returns:
+        message(str): success message confirming batch update creation
+        batch_info(obj): newly created batch_info details
     """
+
     batch_info = graphene.Field(BatchInfoType)
+    message = graphene.String()
 
     class Arguments:
         supplier_id = graphene.String(required=True)
-        product_id = graphene.Int(required=True)
         date_received = graphene.String(required=True)
-        pack_size = graphene.String()
+        product_id = graphene.Int(required=True)
+        unit_cost = graphene.Float(required=True)
         quantity = graphene.Int(required=True)
         expiry_date = graphene.String(required=True)
-        unit_cost = graphene.Float(required=True)
-        commentary = graphene.String()
-        user_id = graphene.String()
-
-    errors = graphene.List(graphene.String)
-    message = graphene.String()
+        service_quality = graphene.Argument(ServiceQuality, required=True)
+        delivery_promptness = graphene.Boolean(required=True)
+        comment = graphene.String()
 
     @login_required
     @batch_info_instance
@@ -50,7 +90,7 @@ class CreateBatchInfo(graphene.Mutation):
 
         batch_info = BatchInfo(user=user)
         for key, value in kwargs.items():
-            setattr(batch_info, key,  value)
+            setattr(batch_info, key, value)
 
         with SaveContextManager(batch_info, model=BatchInfo) as batch_info:
             quantity = Quantity(
@@ -64,28 +104,40 @@ class CreateBatchInfo(graphene.Mutation):
 
 class UpdateBatchInfo(graphene.Mutation):
     """
-        Mutation to update a Product batch Information
+    Mutation to update a existing product batch information
+
+    arguments:
+        batch_id(str): id of batch to update
+        supplier_id(str): id of product supplier
+        date_received(str): datte order was received
+        unit_cost(float): id of the product in stock
+        expiry_date(str): product expiry date
+        service_quality(int): quality rating for supplier delivery (int, 1 - 5)
+        delivery_promptness(bool): promptness of product delivery
+            (true if delivery 'on time')
+        comment(str): extra notes to attach to batch
+
+    returns:
+        message(str): success message confirming batch update creation
+        batch_info(obj): newly created batch_info details
     """
     batch_info = graphene.Field(BatchInfoType)
+    message = graphene.String()
 
     class Arguments:
         batch_id = graphene.String(required=True)
         supplier_id = graphene.String()
         date_received = graphene.String()
-        pack_size = graphene.String()
-        expiry_date = graphene.String()
         unit_cost = graphene.Float()
-        commentary = graphene.String()
+        expiry_date = graphene.String()
+        service_quality = graphene.Argument(ServiceQuality)
+        delivery_promptness = graphene.Boolean()
+        comment = graphene.String()
 
-    errors = graphene.List(graphene.String)
-    message = graphene.String()
-
-    @classmethod
     @login_required
     @batch_info_instance
     @user_permission('Manager')
-    def mutate(cls, root, info, **kwargs):
-        batch_id = kwargs.pop('batch_id')
+    def mutate(self, info, batch_id, **kwargs):
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
         for (key, value) in kwargs.items():
             if key is not None:
@@ -95,7 +147,7 @@ class UpdateBatchInfo(graphene.Mutation):
         with SaveContextManager(batch_info, model=BatchInfo) as batch_info:
             message = SUCCESS_RESPONSES[
                 "update_success"].format(
-                    "Batch with number " + str(batch_info.batch_no))
+                "Batch with number " + str(batch_info.batch_no))
             return UpdateBatchInfo(message=message, batch_info=batch_info)
 
 
