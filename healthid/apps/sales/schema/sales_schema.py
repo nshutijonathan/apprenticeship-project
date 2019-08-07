@@ -3,7 +3,8 @@ from graphene_django import DjangoObjectType
 from graphene.utils.resolve_only_args import resolve_only_args
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.sales.models import (Sale, SaleDetail, SalesPrompt)
+from healthid.apps.sales.models import (
+    Sale, SaleDetail, SalesPrompt, SaleReturn)
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 
@@ -36,6 +37,12 @@ class ConsultationPaymentType(DjangoObjectType):
 
     class Meta:
         model = Sale
+
+
+class SaleReturnType(DjangoObjectType):
+
+    class Meta:
+        model = SaleReturn
 
 
 class Query(graphene.ObjectType):

@@ -7,6 +7,8 @@ from healthid.apps.products.models import Product
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.app_utils.query_objects import GetObjectList
 
+from datetime import datetime, timezone
+
 
 class SalesValidator:
 
@@ -18,7 +20,7 @@ class SalesValidator:
         for product in products:
             self.product_ids.append(product['product_id'])
             self.product_quantities.append(product['quantity'])
-            self.product_discounts.append(product['discount'])
+            self.product_discounts.append(product.get('discount'))
             self.product_prices.append(product['price'])
         self.product_queryset = self.get_products()
         self.products_db_ids = self.product_queryset.values_list(
@@ -118,3 +120,20 @@ class SalesValidator:
             if preferences.payment_method != payment_method:
                 raise GraphQLError(
                     "The payment method is not valid in this outlet")
+
+    def check_product_returnable(self):
+        is_valid = [product.is_returnable for product in self.product_queryset]
+        if not all(is_valid):
+            invalid_items = list(
+                compress(self.product_ids, [not item for item in is_valid]))
+            message = 'Products with ids {} are not returnable'.format(
+                ",".join(map(str, invalid_items)))
+            raise GraphQLError(message)
+
+    def check_product_dates_for_return(self, outlet, sales_instance):
+        message = "Product preferred returnable days are done"
+        date_of_purchase = sales_instance.created_at
+        date_difference = datetime.now(timezone.utc) - date_of_purchase
+        date_change = date_difference.days
+        if outlet.outletpreference.returnable_days < date_change:
+            raise GraphQLError(message)

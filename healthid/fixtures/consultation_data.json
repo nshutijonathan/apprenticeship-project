@@ -1,81 +1,15 @@
 [
   {
-    "model": "consultation.approveddeliveryformat",
+    "model": "consultation.consultationcatalogue",
     "pk": 1,
     "fields": {
-      "name": "In person"
-    }
-  },
-
-  {
-    "model": "consultation.approveddeliveryformat",
-    "pk": 2,
-    "fields": {
-      "name": "Telephonic"
-    }
-  },
-  {
-    "model": "consultation.approveddeliveryformat",
-    "pk": 3,
-    "fields": {
-      "name": "Vedio Conference"
-    }
-  },
-
-  {
-    "model": "consultation.expectedtimeduration",
-    "pk": 1,
-    "fields": {
-      "time": "15mins"
-    }
-  },
-  {
-    "model": "consultation.expectedtimeduration",
-    "pk": 2,
-    "fields": {
-      "time": "30mins"
-    }
-  },
-  {
-    "model": "consultation.expectedtimeduration",
-    "pk": 3,
-    "fields": {
-      "time": "45mins"
-    }
-  },
-  {
-    "model": "consultation.consultantrole",
-    "pk": 1,
-    "fields": {
-      "name": "Doctor"
-    }
-  },
-  {
-    "model": "consultation.consultantrole",
-    "pk": 2,
-    "fields": {
-      "name": "Nurse"
-    }
-  },
-  {
-    "model": "consultation.consultantrole",
-    "pk": 3,
-    "fields": {
-      "name": "Health Coach"
-    }
-  },
-  {
-    "model": "consultation.consultantrole",
-    "pk": 3,
-    "fields": {
-      "name": "Pharmacist"
-    }
-  },
-  {
-    "model": "consultation.consultantrole",
-    "pk": 3,
-    "fields": {
-      "name": "Sales Associate"
+      "consultation_name": "Inquiry for panadol",
+      "approved_delivery_formats": ["In_Person"],
+      "description": "You need to take two tablets of panadol every 8 hours",
+      "price_per_session": 5000,
+      "minutes_per_session": 300,
+      "consultant_role": "DOCTOR",
+      "outlet": 1
     }
   }
 ]

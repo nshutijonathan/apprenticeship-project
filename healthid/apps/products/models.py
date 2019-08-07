@@ -44,6 +44,22 @@ class MeasurementUnit(BaseModel):
 
 
 class Product(BaseModel):
+    """
+    model for products
+
+    Attributes:
+        is_returnable: boolean field makes all products initailly
+                      returnable. According to preferences, the user
+                      can change this for a particular product
+                      to make it false.
+        all_products: model manager returns both all products including
+                      deactivated products i.e Products.all_products.all()
+                      returns both active and deactivated products use it
+                      when you need deactivate products as well.
+        objects:  model manager returns only activated products i.e
+        Products.objects.all() returns only active products use it when
+        you don't need deactivated products.'''
+    """
     product_category = models.ForeignKey(
         ProductCategory, on_delete=models.CASCADE)
     product_name = models.CharField(max_length=244, null=False)
@@ -74,6 +90,7 @@ class Product(BaseModel):
     markup = models.PositiveIntegerField(default=25)
     auto_price = models.BooleanField(default=True)
     loyalty_weight = models.IntegerField(default=0)
+    is_returnable = models.BooleanField(default=True)
     parent = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
@@ -87,17 +104,8 @@ class Product(BaseModel):
     reorder_point = models.IntegerField(default=0)
     reorder_max = models.IntegerField(default=0)
     request_declined = models.BooleanField(default=False)
-
-    '''all_products model manager returns both all products including
-    deactivated products i.e Products.all_products.all() returns both
-    active and deactivated products use it when you need deactivate
-    products as well.'''
     all_products = ProductManager(
         approved_only=False, active_only=False, original_only=False)
-
-    '''objects model manager returns only activated products i.e
-    Products.objects.all() returns only active products use it when
-    you don't need deactivated products.'''
     objects = ProductManager(approved_only=False)
 
     class Meta:

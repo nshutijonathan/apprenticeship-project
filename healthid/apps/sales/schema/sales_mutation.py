@@ -5,9 +5,10 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.consultation.models import CustomerConsultation
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
-from healthid.apps.sales.models import (SalesPrompt, Sale)
+from healthid.apps.sales.models import (SalesPrompt, Sale, SaleReturn)
 from healthid.apps.sales.schema.sales_schema import (
-    ConsultationPaymentType, SalesPromptType, SaleType)
+    ConsultationPaymentType, SalesPromptType,
+    SaleType, SaleReturnType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -235,9 +236,63 @@ class ConsultationPayment(graphene.Mutation):
             sale=new_sale, receipt=receipt, message='message')
 
 
+class SalesReturnEnum(graphene.Enum):
+    CustomerError = 'wrong product bought'
+    RetailerError = 'Returned to Distributor'
+    DamagedProduct = 'Damaged Product'
+    ExpiredProduct = 'Expired Product'
+    Others = 'Others'
+
+
+class PayEnum(graphene.Enum):
+    """
+    This class defines choices for refund compensation type
+    """
+    Cash = 'cash'
+    StoreCredit = 'store credit'
+
+
+class ReturnedProducts(graphene.InputObjectType):
+    """
+    This class defines necessary fields of a product to be returned
+    """
+    product_id = graphene.Int(required=True)
+    quantity = graphene.Int(required=True)
+    price = graphene.Float(required=True)
+    resellable = graphene.Boolean(required=True)
+    return_reason = graphene.Argument(SalesReturnEnum, required=True)
+
+
+class InitiateSaleReturn(graphene.Mutation):
+    """
+    initiate a sales return by user(Cashier, manager or accountant)
+    """
+    message = graphene.String()
+    sales_return_initiated = graphene.Field(SaleReturnType)
+    error = graphene.String()
+
+    class Arguments:
+        sale_id = graphene.Int(required=True)
+        returned_products = graphene.List(ReturnedProducts, required=True)
+        outlet_id = graphene.Int(required=True)
+        return_amount = graphene.Float(required=True)
+        return_note = graphene.String()
+        refund_compensation_type = graphene.Argument(PayEnum, required=True)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        new_return = SaleReturn()
+        return_initiated = new_return.create_return(
+            user=info.context.user, **kwargs)
+        return InitiateSaleReturn(
+                          message='Return was initiated successfully',
+                          sales_return_initiated=return_initiated)
+
+
 class Mutation(graphene.ObjectType):
     create_salesprompts = CreateSalesPrompts.Field()
     delete_salesprompt = DeleteSalesPrompt.Field()
     update_salesprompt = UpdateSalesPrompt.Field()
     create_sale = CreateSale.Field()
     consultation_payment = ConsultationPayment.Field()
+    initiate_sales_return = InitiateSaleReturn.Field()

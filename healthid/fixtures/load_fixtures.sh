@@ -6,7 +6,6 @@
 python manage.py loaddata healthid/fixtures/role_data.json
 python manage.py loaddata healthid/fixtures/authentication.json
 python manage.py loaddata healthid/fixtures/business.json
-python manage.py loaddata healthid/fixtures/consultation_data.json
 python manage.py loaddata healthid/fixtures/countries.json
 python manage.py loaddata healthid/fixtures/event_types.json
 python manage.py loaddata healthid/fixtures/measurement_unit.json
@@ -21,3 +20,6 @@ python manage.py loaddata healthid/fixtures/outlet.json
 python manage.py loaddata healthid/fixtures/products.json
 python manage.py loaddata healthid/fixtures/stocks.json
 python manage.py loaddata healthid/fixtures/stock_count.json
+python manage.py loaddata healthid/fixtures/sales.json
+python manage.py loaddata healthid/fixtures/sales_return.json
+python manage.py loaddata healthid/fixtures/consultation_data.json

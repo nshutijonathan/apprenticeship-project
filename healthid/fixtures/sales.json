@@ -4,13 +4,15 @@
     "pk": "1",
     "fields": {
       "sales_person_id": "aul5xrp73",
+      "created_at": "2019-07-23 18:36:21.453791+03",
+      "updated_at": "2019-07-23 18:36:21.453823+03",
       "outlet_id": "1",
       "payment_method": "Cash",
-      "discount_total": 10,
-      "sub_total": 3000,
-      "amount_to_pay": 4000,
-      "paid_amount": 4500,
-      "change_due": 500,
+      "discount_total": 50,
+      "sub_total": 100,
+      "amount_to_pay": 1000,
+      "paid_amount": 2000,
+      "change_due": 1000,
       "notes": "sales notes"
     }
   },
@@ -18,51 +20,14 @@
     "model": "sales.saledetail",
     "pk": "1",
     "fields": {
+      "created_at": "2019-07-23 18:36:23.160615+03",
+      "updated_at": "2019-07-23 18:36:23.160645+03",
       "quantity": 5,
       "discount": 0,
-      "price": 200,
-      "note": "good product",
+      "price": 1000,
+      "note": "Note",
       "product_id": 1,
       "sale_id": 1
-    }
-  },
-  {
-    "model": "sales.saledetail",
-    "pk": "2",
-    "fields": {
-      "quantity": 7,
-      "discount": 0,
-      "price": 30,
-      "note": "good product",
-      "product_id": 2,
-      "sale_id": 1
-    }
-  },
-  {
-    "model": "sales.sale",
-    "pk": "2",
-    "fields": {
-      "sales_person_id": "aul5xrp73",
-      "outlet_id": "1",
-      "payment_method": "Cash",
-      "discount_total": 0,
-      "sub_total": 1000,
-      "amount_to_pay": 2000,
-      "paid_amount": 2000,
-      "change_due": 0,
-      "notes": "sales notes"
-    }
-  },
-  {
-    "model": "sales.saledetail",
-    "pk": "2",
-    "fields": {
-      "quantity": 3,
-      "discount": 0,
-      "price": 3000,
-      "note": "good product",
-      "product_id": 1,
-      "sale_id": 2
     }
   }
 ]

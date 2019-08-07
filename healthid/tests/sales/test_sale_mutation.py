@@ -77,24 +77,6 @@ class TestCreateSale(BaseConfiguration):
         self.assertEqual(response['errors'][0]['message'],
                          "The paid amount should be greater than 1")
 
-    def test_invalid_payment_method_both(self):
-        self.sales_data["payment_method"] = "both"
-        self.sales_data['products'] = remove_quotes(self.product_details)
-        response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
-        self.assertIsNotNone(response['errors'])
-        self.assertEqual(response['errors'][0]['message'],
-                         "The payment method is not valid in this outlet")
-
-    def test_invalid_payment_method_card(self):
-        self.sales_data["payment_method"] = "card"
-        self.sales_data['products'] = remove_quotes(self.product_details)
-        response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
-        self.assertIsNotNone(response['errors'])
-        self.assertEqual(response['errors'][0]['message'],
-                         "The payment method is not valid in this outlet")
-
     def test_non_existing_product(self):
         self.product_details["productId"] = 23
         self.sales_data['products'] = remove_quotes(self.product_details)

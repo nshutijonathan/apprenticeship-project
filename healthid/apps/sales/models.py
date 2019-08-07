@@ -247,3 +247,105 @@ class SaleDetail(BaseModel):
     discount = models.FloatField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     note = models.TextField(blank=True, null=True)
+
+
+class SaleReturn(BaseModel):
+    """
+    Defines sale return model
+    Attributes:
+        cashier(obj): Holds employee id who made the return initiation
+        customer(obj): Holds customer who earlier bought if provided
+        sale(obj): Holds id of sale reference to this product
+        outlet(int): Holds the outlet id
+        return_note(str): Holds note for return reason
+        return_amount(float): Holds the amount to return the customer
+        refund_compensation_type(str): Either cash or store credit.
+    """
+    cashier = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name='cashier', null=True)
+    customer = models.ForeignKey(
+        Profile,  on_delete=models.SET_NULL, null=True)
+    sale = models.ForeignKey(Sale, on_delete=models.SET_NULL, null=True)
+    outlet = models.ForeignKey(Outlet, on_delete=models.SET_NULL, null=True)
+    return_note = models.CharField(max_length=80, blank=True)
+    return_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    refund_compensation_type = models.CharField(max_length=80)
+
+    def create_return(self, user, **kwargs):
+        """This function initiates a return of products sold
+
+        Args:
+            user: the logged in user
+            sale_id(int): id referencing that sale we are returning from
+            outlet_id(int): outlet we are returning to to
+            sale_id(int): id referencing that sale we are returning from
+            return_amount(int): pay back amount to user for goods returned
+            return_note(str): Holds return reason about the product
+            returned_products(objs): Holds products being returned
+            refund_compensation_type(str): Either cash or store credit
+
+
+        Returns:
+            salereturn(obj): which is saved in the table sale.salereturn
+
+        """
+        cashier = user
+        sales_instance = get_model_object(
+            Sale, 'id', kwargs.get('sale_id'))
+        customer = sales_instance.customer
+        outlet_instance = get_model_object(
+            Outlet, 'id', kwargs.get('outlet_id'))
+        return_validator = SalesValidator(kwargs.get('returned_products'))
+        return_validator.check_product_returnable()
+        return_validator.check_product_dates_for_return(
+            outlet_instance, sales_instance)
+
+        sales_return = SaleReturn(
+            cashier=cashier, customer=customer, sale=sales_instance)
+
+        for (key, value) in kwargs.items():
+            setattr(sales_return, key, value)
+
+        with SaveContextManager(sales_return, model=SaleReturn)as sales_return:
+            pass
+
+        sale_return_detail_list = []
+        for product in kwargs.get('returned_products'):
+            product_instance = get_model_object(
+                Product, 'id', product.product_id)
+            sales_return_detail = SaleReturnDetail(
+                product=product_instance,
+                sales_return=sales_return,
+                quantity=product.quantity,
+                price=product.price,
+                resellable=product.resellable,
+                return_reason=product.return_reason
+            )
+            sale_return_detail_list.append(sales_return_detail)
+        SaleReturnDetail.objects.bulk_create(sale_return_detail_list)
+
+        return sales_return
+
+
+class SaleReturnDetail(BaseModel):
+    """
+    Defines return detail model
+    Attributes:
+        product(obj): Holds a reference to products to be returned
+        sales_return(obj): Holds a sale return reference to this product
+        quantity(int):  Holds the quantity to be sold of a product
+        price(float): Holds the price for each product
+        return_reason(str): Holds enum return reason about the product
+        is_approved(bool): Holds boolean for particular product return approved
+    """
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    sales_return = models.ForeignKey(
+        SaleReturn, on_delete=models.SET_NULL, null=True)
+    quantity = models.IntegerField()
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    return_reason = models.CharField(max_length=80)
+    is_approved = models.BooleanField(default=False)
+    resellable = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.return_reason

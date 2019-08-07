@@ -77,6 +77,8 @@ class Preference(BaseModel):
         payment_method = choice of payment method
         minimum_weeks_for_sales_velocity = how often velocity is calculated
         sales_velocity = sales velocity
+        returnable_days = Choice for how long after sale a manager wants
+        product to be returnable
     """
     email_preference = models.BooleanField(default=False)
     barcode_preference = models.BooleanField(default=False)
@@ -90,6 +92,7 @@ class Preference(BaseModel):
     payment_method = models.CharField(default="cash", max_length=50)
     minimum_weeks_for_sales_velocity = models.IntegerField(default=1)
     sales_velocity = models.IntegerField(default=1)
+    returnable_days = models.IntegerField(default=30)
 
     class Meta:
         abstract = True

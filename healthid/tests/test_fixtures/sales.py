@@ -221,6 +221,7 @@ mutation {{
       {{
     sale {{
       id
+      createdAt
     }}
     receipt {{
       id

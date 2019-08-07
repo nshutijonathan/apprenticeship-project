@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'healthid'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'database'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
 }
@@ -215,6 +215,3 @@ MOCK_AVERAGE_WEEKLY_SALES = int(
     os.environ.get('MOCK_AVERAGE_WEEKLY_SALES', '2'))
 
 django_heroku.settings(locals())
-
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
