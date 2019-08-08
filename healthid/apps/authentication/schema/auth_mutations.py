@@ -73,7 +73,7 @@ class RegisterUser(graphene.Mutation):
             # account verification
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(
-                user.pk)).decode()
+                user.pk))
             to_email = [
                 user.email
             ]
@@ -178,7 +178,7 @@ class AddUser(graphene.Mutation):
             # Email verification
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(
-                user.pk)).decode()
+                user.pk))
             to_email = [
                 user.email
             ]

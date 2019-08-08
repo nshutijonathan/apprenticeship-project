@@ -39,7 +39,7 @@ class ResetPassword(graphene.Mutation):
 
         token = account_activation_token.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(
-            user.pk)).decode()
+            user.pk))
         user_firstname = user.first_name
         if not user_firstname:
             user_firstname = "User"
