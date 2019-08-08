@@ -151,6 +151,25 @@ def create_product_2(supplier_id, backup_id, user, outlet):
         user=user)
 
 
+def create_new_product(name, description, brand, manufacturer,
+                       category, supplier_id, backup_id, user, outlet):
+    return Product.objects.create(
+        product_category=category,
+        product_name=name,
+        measurement_unit_id=1,
+        description=description,
+        brand=brand,
+        manufacturer=manufacturer,
+        vat_status=True,
+        sales_price=1000,
+        preferred_supplier_id=supplier_id,
+        backup_supplier_id=backup_id,
+        tags="painkillers",
+        is_approved=True,
+        outlet=outlet,
+        user=user)
+
+
 def update_product(product_id, product_name):
     return (f'''
             mutation {{
@@ -229,6 +248,27 @@ query{{
             productName
             tags
             }}
+        }}
+    }}
+}}
+'''
+
+generalised_product_search_query = '''
+query{{
+    products(search: "{search_term}"){{
+        id
+        productName
+        description
+        brand
+        skuNumber
+        manufacturer
+        productCategory{{
+        id
+        name
+        }}
+        preferredSupplier{{
+        id
+        name
         }}
     }}
 }}

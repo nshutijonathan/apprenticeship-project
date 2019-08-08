@@ -105,8 +105,11 @@ class SurveyType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
-    products = graphene.List(ProductType, page_count=graphene.Int(),
-                             page_number=graphene.Int())
+    products = graphene.List(ProductType,
+                             search=graphene.String(),
+                             page_count=graphene.Int(),
+                             page_number=graphene.Int()
+                             )
     proposed_products = graphene.List(ProductType, page_count=graphene.Int(),
                                       page_number=graphene.Int())
     all_batch_info = graphene.List(BatchInfoType)
@@ -152,10 +155,16 @@ class Query(graphene.AbstractType):
     def resolve_products(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
+        search = kwargs.get('search')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
         products_set = Product.all_products.for_outlet(
-            outlet.id).filter(parent_id__isnull=True)
+            outlet.id).filter(parent_id__isnull=True).order_by('id')
+
+        if search:
+            search_filter = Product.general_search(search)
+            products_set = products_set.filter(search_filter)
+
         if page_count or page_number:
             products = pagination_query(
                 products_set, page_count, page_number)

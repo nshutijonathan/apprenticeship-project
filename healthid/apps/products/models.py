@@ -220,6 +220,19 @@ class Product(BaseModel):
         check_validity_of_ids(batch_ids, product_batch_ids, message=message)
         return product_batches
 
+    @staticmethod
+    def general_search(search_term):
+        search_filter = (
+                Q(product_name__icontains=search_term) |
+                Q(description__icontains=search_term) |
+                Q(brand__icontains=search_term) |
+                Q(manufacturer__icontains=search_term) |
+                Q(product_category__name__icontains=search_term) |
+                Q(preferred_supplier__name__icontains=search_term) |
+                Q(sku_number__exact=search_term)
+            )
+        return search_filter
+
 
 class BatchInfo(BaseModel):
     id = models.CharField(

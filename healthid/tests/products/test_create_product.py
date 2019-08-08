@@ -6,7 +6,7 @@ from healthid.tests.test_fixtures.products import (
     create_product, create_product_2, decline_proposed_edits, delete_product,
     product_query, proposed_edits_query, proposed_product_query,
     supplier_mutation, update_a_product_loyalty_weight, update_loyalty_weight,
-    update_product)
+    update_product, create_new_product)
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.products_responses import \
     PRODUCTS_SUCCESS_RESPONSES
@@ -26,6 +26,28 @@ class TestCreateProduct(BaseConfiguration):
             'id']
         self.product = create_product_2(
             self.supplier_id, self.backup_id, self.user, self.outlet)
+        self.product_2 = create_new_product(
+            name="Cod Liver Oil",
+            description="Fish oil",
+            brand="Seaman's",
+            manufacturer="GSK",
+            category=self.product_category,
+            supplier_id=self.supplier_id,
+            backup_id=self.backup_id,
+            user=self.user,
+            outlet=self.outlet
+        )
+        self.product_3 = create_new_product(
+            name="Lozenge",
+            description="Sore throat relief",
+            brand="Mazeltov",
+            manufacturer="J&J",
+            category=self.product_category,
+            supplier_id=self.supplier_id,
+            backup_id=self.backup_id,
+            user=self.user,
+            outlet=self.outlet
+        )
 
     def test_create_product(self):
         """method for creating a product"""
