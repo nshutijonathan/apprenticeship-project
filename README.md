@@ -13,10 +13,19 @@ Health ID is an inventory management and customer engagement software platform d
     $ virtualenv venv
     $ source venv/bin/activate
     $ git checkout dev
-    $ pip install -r requirements.txt
 ```
+* Install binary dependencies for the project for **macOS**.
+```sh
+    $ brew install cairo pango gdk-pixbuf libffi
+```
+* If you are running Linux or another Operating System refer to this link [https://weasyprint.readthedocs.io/en/stable/install.html#installing](https://weasyprint.readthedocs.io/en/stable/install.html#installing)
 
 * Create a `.env` file and copy/paste the environment variables from the `.env_example` file that's already existent in the root project directory.
+* Run the following commands to install Python dependecies as well as generate staticfiles.
+```sh
+    $ pip install -r requirements.txt
+    $ python manage.py collectstatic
+```
 * Create a postgreSQL database called `healthid` using the default `postgres` user and change the value of variable `DB_PASSWORD` in your `.env` file to your `postgres` user's password.
 * Run the following commands to make the database migrations.
 
