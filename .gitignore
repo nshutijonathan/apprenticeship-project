@@ -13,3 +13,4 @@ htmlcov/
 db.sqlite3
 .tox
 receipt.png
+healthid_db

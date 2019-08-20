@@ -172,3 +172,17 @@ add_medical_notes = '''mutation{{
             }}
           }}
 '''
+
+book = '''mutation{{
+  bookConsultation(
+    customerId: {customer_id},
+    consultationTypeId: {consultation_type_id},
+    status: "{status}"
+    ){{
+    bookConsultation{
+      bookingDate,
+      status,
+      consultant
+    }}
+}}
+'''

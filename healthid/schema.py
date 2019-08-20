@@ -5,7 +5,8 @@ from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
                                                  ObtainJSONWebToken)
 from healthid.apps.business.schema import business_mutation, business_query
 from healthid.apps.consultation.schema import (consultation_catalogue_mutation,
-                                               consultation_query)
+                                               consultation_query,
+                                               schedule_consultation_query)
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
 from healthid.apps.orders.schema import (SuppliersMutation, SuppliersQuery,
@@ -39,6 +40,7 @@ class Query(
         product_query.BatchQuery,
         event_querys.Query,
         consultation_query.Query,
+        schedule_consultation_query.Query,
         sales_schema.Query,
         sales_query.Query,
         promotions_query.Query,

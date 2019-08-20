@@ -287,6 +287,7 @@ class CustomerConsultationFactory(factory.DjangoModelFactory):
     consultation_type = factory.SubFactory(ConsultationItemFactory)
     consultant = fake.name()
     booked_by = factory.SubFactory(UserFactory)
+    status = "Now"
 
 
 class MedicalHistoryFactory(factory.DjangoModelFactory):
