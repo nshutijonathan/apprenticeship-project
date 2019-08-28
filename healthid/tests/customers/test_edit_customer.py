@@ -1,18 +1,17 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import edit_customer_basic_profile
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
-from healthid.utils.messages.common_responses import\
-     SUCCESS_RESPONSES, ERROR_RESPONSES
+from healthid.utils.messages.common_responses import (
+    SUCCESS_RESPONSES, ERROR_RESPONSES)
+from healthid.tests.factories import CustomerFactory
 
 
 class TestCustomerProfileEdit(BaseConfiguration):
     def test_no_edit(self):
         """Test method for unchanged profile fields"""
-
         response = self.query_with_token(
             self.access_token, edit_customer_basic_profile(
                 self.customer_fields_to_dict(self.customer_1)))
-
         message = response["data"]["editCustomerBasicProfile"]["message"]
         expected_message = CUSTOMER_ERROR_RESPONSES["unchanged_edits"]
 
@@ -20,7 +19,8 @@ class TestCustomerProfileEdit(BaseConfiguration):
 
     def test_profile_edit_with_invalid_email(self):
         """Test method for a profile edit with invalid email"""
-        customer_data = self.customer_fields_to_dict(self.customer_1)
+        customer_2 = CustomerFactory()
+        customer_data = self.customer_fields_to_dict(customer_2)
         customer_data["email"] = "invalid email"
 
         response = self.query_with_token(
@@ -34,7 +34,8 @@ class TestCustomerProfileEdit(BaseConfiguration):
 
     def test_profile_edit_with_invalid_name(self):
         """Test method for a profile edit with invalid first name"""
-        customer_data = self.customer_fields_to_dict(self.customer_1)
+        customer_2 = CustomerFactory()
+        customer_data = self.customer_fields_to_dict(customer_2)
         customer_data["first_name"] = ""
 
         response = self.query_with_token(
@@ -49,7 +50,8 @@ class TestCustomerProfileEdit(BaseConfiguration):
 
     def test_profile_edit_with_invalid_mobileNumber(self):
         """Test method for a profile edit with invalid primary mobile number"""
-        customer_data = self.customer_fields_to_dict(self.customer_1)
+        customer_2 = CustomerFactory()
+        customer_data = self.customer_fields_to_dict(customer_2)
         customer_data['primary_mobile_number'] = "23456"
 
         response = self.query_with_token(

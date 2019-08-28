@@ -19,5 +19,11 @@ SALES_ERROR_RESPONSES = {
     "inexistent_promotion": "Promotion with id {} does not exist.",
     "outlet_id_validation_error": "You don't belong to outlet with id {}.",
     "default_velocity": "Not enough sales data to calculate sales velocity."
-                        "Please use default value"
-}
+                        "Please use default value",
+    "less_quantities": "Products with ids '{}' do not have enough" +
+    " quantities to be sold",
+    "negative_integer": "Price for products with ids '{}' should" +
+    "be positive integer",
+    "negative_discount": "Products with ids '{}' can't have negative discount",
+    "not_returnable": "Products with ids {} are not returnable"
+    }

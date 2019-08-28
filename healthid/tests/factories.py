@@ -1,6 +1,6 @@
 import factory
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from faker import Faker
 
 from django.conf import settings
@@ -9,7 +9,8 @@ from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          OrderDetails, Suppliers,
                                          PaymentTerms, Tier)
 from healthid.apps.products.models import (ProductCategory, Product,
-                                           MeasurementUnit)
+                                           MeasurementUnit,
+                                           BatchInfo, Quantity)
 from healthid.apps.authentication.models import Role
 from healthid.apps.consultation.models import (
     ConsultationCatalogue, CustomerConsultation, MedicalHistory)
@@ -17,6 +18,7 @@ from healthid.apps.business.models import Business
 from healthid.apps.outlets.models import (Country, City, OutletKind, Outlet)
 from healthid.apps.preference.models import Timezone
 from healthid.apps.profiles.models import Profile
+from healthid.apps.sales.models import Sale, PromotionType, Promotion
 
 
 fake = Faker()
@@ -217,6 +219,7 @@ class ProductFactory(factory.DjangoModelFactory):
     reorder_point = 2
     reorder_max = 0
     request_declined = False
+    is_approved = True
 
 
 class OrderFactory(factory.DjangoModelFactory):
@@ -260,7 +263,7 @@ class CustomerFactory(factory.DjangoModelFactory):
     email = fake.email()
     first_name = fake.first_name()
     last_name = fake.last_name()
-    primary_mobile_number = fake.phone_number()
+    primary_mobile_number = factory.Sequence(lambda x: "+234600000%d" % x)
     city = factory.SubFactory(CityFactory)
     country = factory.SubFactory(CountryFactory)
 
@@ -299,3 +302,80 @@ class MedicalHistoryFactory(factory.DjangoModelFactory):
     medical_notes = fake.text()
     author = fake.name()
     authorized_by = factory.SubFactory(UserFactory)
+
+
+class SaleFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Sale
+
+    sales_person = factory.SubFactory(UserFactory)
+    customer = factory.SubFactory(CustomerFactory)
+    outlet = factory.SubFactory(OutletFactory)
+    amount_to_pay = fake.random_int()
+    discount_total = fake.random_int()
+    sub_total = fake.random_int()
+    paid_amount = fake.random_int()
+    change_due = fake.random_int()
+    payment_method = "cash"
+    notes = fake.text()
+    loyalty_earned = fake.random_int(min=0, max=1)
+
+
+class PromotionTypeFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = PromotionType
+
+    name = factory.Sequence(lambda x: "Promotion Type %d" % x)
+
+
+class PromotionFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Promotion
+
+    promotion_type = factory.SubFactory(PromotionTypeFactory)
+    outlet = factory.SubFactory(OutletFactory)
+    title = factory.Sequence(lambda x: "Promotion Title %d" % x)
+    description = fake.text()
+    discount = fake.random_int(min=1, max=100000000)
+    is_approved = True
+
+    @factory.post_generation
+    def products(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for product in extracted:
+                self.products.add(product)
+
+
+class BatchInfoFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = BatchInfo
+
+    batch_no = factory.Sequence(lambda x: "Batch no 0%d" % x)
+    supplier = factory.SubFactory(SuppliersFactory)
+    date_received = datetime.now()
+    expiry_date = datetime.now() + timedelta(days=100)
+    unit_cost = fake.random_int()
+    sold_out = False
+    product = factory.SubFactory(ProductFactory)
+    user = factory.SubFactory(UserFactory)
+    service_quality = fake.random_int(min=2, max=3)
+    delivery_promptness = True
+    comment = factory.Sequence(lambda x: "Batch comment %d" % x)
+
+
+class QuantityFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Quantity
+
+    batch = factory.SubFactory(BatchInfoFactory)
+    is_approved = True
+    quantity_received = fake.random_int(min=100, max=1000)
+    quantity_remaining = fake.random_int(min=100, max=1000)

@@ -1,9 +1,8 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import (
-    create_customer, customer_query_all, customer_search_query,
+    customer_query_all, customer_search_query,
     customer_name_query, customer_number_query, customer_id_query)
-from healthid.tests.factories import (
-    ConsultationItemFactory, CustomerFactory, CustomerConsultationFactory)
+from healthid.tests.factories import CustomerFactory
 
 
 class TestQueryCustomer(BaseConfiguration):
@@ -11,15 +10,7 @@ class TestQueryCustomer(BaseConfiguration):
 
     def setUp(self):
         super(TestQueryCustomer, self).setUp()
-        self.customer = self.query_with_token(
-            self.access_token,
-            create_customer.format(
-                **self.create_customer_data))
-
-        self.consultation_item = ConsultationItemFactory()
         self.customer_2 = CustomerFactory()
-        self.customer_consultation = CustomerConsultationFactory(
-            customer=self.customer_2)
 
     def test_fetch_all_customers(self):
         """
@@ -27,50 +18,45 @@ class TestQueryCustomer(BaseConfiguration):
         """
         response = self.query_with_token(
             self.access_token, customer_query_all)
-        expected_name = 'Dany'
+        expected_name = self.customer_2.last_name
         self.assertNotIn('errors', response)
         self.assertIn('data', response)
         self.assertEqual(
             expected_name,
-            response['data']['customers'][0]['firstName'])
+            response['data']['customers'][1]['lastName'])
 
     def test_query_customer_using_name(self):
-        name = 'Habib'
-        last_name = 'Audu'
         response = self.query_with_token(
             self.access_token,
-            customer_name_query.format(name=name))
+            customer_name_query.format(name=self.customer_2.first_name))
         self.assertEqual(
-            last_name,
+            self.customer_2.last_name,
             response['data']['customer'][0]['lastName'])
 
     def test_query_customer_using_mobile_number(self):
-        mobile_number = '+256788088831'
-        first_name = 'Habib'
         response = self.query_with_token(
             self.access_token, customer_number_query.format(
-                mobile_number=mobile_number))
+                mobile_number=self.customer_2.primary_mobile_number))
         self.assertEqual(
-            first_name,
+            self.customer_2.first_name,
             response['data']['customer'][0]['firstName'])
 
     def test_query_customer_using_id(self):
-        customer_id = self.customer['data']['createCustomer']['customer']['id']
-        first_name = 'Habib'
+        customer_id = self.customer_2.id
         response = self.query_with_token(
             self.access_token, customer_id_query.format(
                 customer_id=customer_id))
         self.assertEqual(
-            first_name,
+            self.customer_2.first_name,
             response['data']['customer'][0]['firstName'])
 
     def test_valid_filter_params(self):
-        first_name = 'Habib'
         response = self.query_with_token(
             self.access_token, customer_search_query.format(
-                search_key='firstName_Iexact', search_term=first_name))
+                search_key='firstName_Iexact',
+                search_term=self.customer_2.first_name))
         self.assertEqual(
-            first_name,
+            self.customer_2.first_name,
             response['data']['filterCustomers']
             ['edges'][0]['node']['firstName'])
 

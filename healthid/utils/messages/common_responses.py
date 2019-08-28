@@ -17,5 +17,7 @@ ERROR_RESPONSES = {
     "authorization_error": "You do not have permission to perform this action",
     "invalid_login_credentials": "Please, enter valid credentials",
     "invalid_date_format": "Incorrect data format for {}, "
-                           "should be YYYY-MM-DD"
+                           "should be YYYY-MM-DD",
+    "update_error": "You can't update a business,you're not assigned to!",
+    "no_matching_ids": "There are no {}(s) matching IDs: {}."
 }

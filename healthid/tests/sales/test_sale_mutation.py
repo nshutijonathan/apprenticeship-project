@@ -1,41 +1,44 @@
 
+from faker import Faker
 from healthid.tests.base_config import BaseConfiguration
-from healthid.tests.test_fixtures.customers import create_customer
 from healthid.tests.test_fixtures.sales import (create_sale,
                                                 query_sales_history,
                                                 query_sale_history)
 from healthid.utils.sales_utils.validators import remove_quotes
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.tests.factories import (OutletFactory, SaleFactory,
+                                      CustomerFactory, ProductFactory,
+                                      BatchInfoFactory, QuantityFactory)
+
+faker = Faker()
 
 
 class TestCreateSale(BaseConfiguration):
     def setUp(self):
         super().setUp()
-        response = self.query_with_token(
-            self.access_token,
-            create_customer.format(**self.create_customer_data))
-        self.customer_id = response["data"]["createCustomer"]['customer']['id']
-
-        self.product_details = {"productId": self.product.id,
-                                "quantity": 4, "discount": 0, "price": 21}
+        self.outlet_2 = OutletFactory()
+        self.customer_2 = CustomerFactory()
+        self.sale = SaleFactory(outlet=self.outlet_2, customer=self.customer_2)
+        self.product_2 = ProductFactory()
+        self.product_batch = BatchInfoFactory(product=self.product_2)
+        self.quantity_2 = QuantityFactory(quantity_remaining=200,
+                                          batch=self.product_batch)
+        self.product_details = {"productId": self.product_2.id,
+                                "quantity": faker.random_int(min=1, max=5),
+                                "discount": faker.random_int(min=0, max=10),
+                                "price": faker.random_int(min=10, max=40)}
         self.sales_data = {
-            "discount_total": 48.5,
-            "amount_to_pay": 20,
-            "change_due": 399,
-            "paid_amount": 590,
+            "discount_total": faker.random_int(min=1, max=100),
+            "amount_to_pay": faker.random_int(min=1, max=10000),
+            "change_due": faker.random_int(min=0, max=10000),
+            "paid_amount": faker.random_int(min=0, max=10000),
             "payment_method": "cash",
             "outlet_id": self.outlet.id,
-            "customer_id": self.customer_id,
-            "sub_total": 33,
+            "customer_id": self.customer_2.id,
+            "sub_total": faker.random_int(min=1, max=10000),
             "products": '[{}]'.format(remove_quotes(self.product_details))
         }
-
-    def test_customer_does_not_exist(self):
-        self.sales_data["customer_id"] = "89"
-        response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
-        self.assertIsNotNone(response['errors'])
-        self.assertEqual(response['errors'][0]['message'],
-                         "Profile with id 89 does not exist.")
 
     def test_invalid_discount(self):
         self.sales_data["discount_total"] = -48.5
@@ -78,13 +81,14 @@ class TestCreateSale(BaseConfiguration):
                          "The paid amount should be greater than 1")
 
     def test_non_existing_product(self):
-        self.product_details["productId"] = 23
+        self.product_details["productId"] = 10000
         self.sales_data['products'] = remove_quotes(self.product_details)
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "There are no Product(s) matching IDs: 23.")
+                         ERROR_RESPONSES['no_matching_ids']
+                         .format('Product', 10000))
 
     def test_invalid_product_discount(self):
         self.product_details["discount"] = -12
@@ -93,18 +97,18 @@ class TestCreateSale(BaseConfiguration):
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "Products with ids '{}' can't have negative discount"
-                         .format(self.product.id))
+                         SALES_ERROR_RESPONSES['negative_discount']
+                         .format(self.product_2.id))
 
     def test_less_stock_than_actual_sale(self):
-        self.product_details["quantity"] = 179
+        self.product_details["quantity"] = 500
         self.sales_data['products'] = remove_quotes(self.product_details)
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "Products with ids '{}' do not have enough quantities to be sold"  # noqa
-                         .format(self.product.id))
+                         SALES_ERROR_RESPONSES['less_quantities']
+                         .format(self.product_2.id))
 
     def test_invalid_price(self):
         self.product_details["price"] = -21
@@ -113,8 +117,8 @@ class TestCreateSale(BaseConfiguration):
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "Price for products with ids '{}' should be positive integer"  # noqa
-                         .format(self.product.id))
+                         SALES_ERROR_RESPONSES['negative_integer']
+                         .format(self.product_2.id))
 
     def test_create_sale_successfully(self):
         self.create_receipt_template()
@@ -125,19 +129,14 @@ class TestCreateSale(BaseConfiguration):
 
     def test_fetch_sales_history(self):
         response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
-        response = self.query_with_token(
-            self.access_token_master, query_sales_history(self.outlet.id))
-        self.assertEqual(self.sales_data['discount_total'], response['data']
+            self.access_token_master, query_sales_history(self.outlet_2.id))
+        self.assertEqual(self.sale.discount_total, response['data']
                          ['outletSalesHistory'][0]['discountTotal'])
 
     def test_fetch_sale_history(self):
         response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
-        sale_id = response['data']['createSale']['sale']['id']
-        response = self.query_with_token(
-            self.access_token_master, query_sale_history(sale_id))
-        self.assertEqual(sale_id, response['data']['saleHistory']['id'])
-
-        self.assertEqual(self.sales_data['change_due'], response['data']
+            self.access_token_master, query_sale_history(self.sale.id))
+        self.assertEqual(
+            str(self.sale.id), response['data']['saleHistory']['id'])
+        self.assertEqual(self.sale.change_due, response['data']
                          ['saleHistory']['changeDue'])

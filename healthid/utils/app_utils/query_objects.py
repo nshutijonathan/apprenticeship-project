@@ -3,6 +3,7 @@ from functools import reduce
 
 from django.db.models import Q
 from graphql import GraphQLError
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class GetObjectList:
@@ -26,7 +27,8 @@ class GetObjectList:
         query = reduce(lambda q, id: q | Q(id=id), list_of_ids, Q())
         queryset = model.objects.filter(query)
         if not queryset:
+            message = ERROR_RESPONSES['no_matching_ids']
             ids = ', '.join(map(str, list_of_ids))
             raise GraphQLError(
-                f'There are no {model.__name__}(s) matching IDs: {ids}.')
+                message.format(model.__name__, ids))
         return queryset

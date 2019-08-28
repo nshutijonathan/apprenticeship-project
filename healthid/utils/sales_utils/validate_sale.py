@@ -6,6 +6,7 @@ from healthid.apps.preference.models import OutletPreference
 from healthid.apps.products.models import Product
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.app_utils.query_objects import GetObjectList
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 from datetime import datetime, timezone
 
@@ -51,7 +52,7 @@ class SalesValidator:
             raise GraphQLError(message)
 
     def check_validity_quantity_sold(self):
-        message = "Products with ids '{}' do not have enough quantities to be sold"  # noqa
+        message =  SALES_ERROR_RESPONSES['less_quantities'] # noqa
         is_valid = [(existing_quantity >= requested_quantity) and
                     (requested_quantity > 0) for existing_quantity,
                     requested_quantity in
@@ -66,7 +67,7 @@ class SalesValidator:
         return self.sorted_queryset
 
     def check_product_price(self):
-        message = "Price for products with ids '{}' should be positive integer"
+        message = SALES_ERROR_RESPONSES['negative_integer']
         is_valid = [price > 1 for price in self.product_prices]
         if not all(is_valid):
             invalid_quantities = list(
@@ -75,7 +76,7 @@ class SalesValidator:
             raise GraphQLError(message)
 
     def check_product_discount(self):
-        message = "Products with ids '{}' can't have negative discount"
+        message = SALES_ERROR_RESPONSES['negative_discount']
         is_valid = [discount >= 0 and discount <=
                     100 for discount in self.product_discounts]
         if not all(is_valid):
@@ -122,11 +123,12 @@ class SalesValidator:
                     "The payment method is not valid in this outlet")
 
     def check_product_returnable(self):
+        message = message = SALES_ERROR_RESPONSES['not_returnable']
         is_valid = [product.is_returnable for product in self.product_queryset]
         if not all(is_valid):
             invalid_items = list(
                 compress(self.product_ids, [not item for item in is_valid]))
-            message = 'Products with ids {} are not returnable'.format(
+            message = message.format(
                 ",".join(map(str, invalid_items)))
             raise GraphQLError(message)
 
