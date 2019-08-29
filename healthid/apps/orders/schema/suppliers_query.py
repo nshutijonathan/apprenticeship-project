@@ -69,39 +69,70 @@ class Query(graphene.AbstractType):
                                        page_number=graphene.Int())
     user_requests = graphene.List(SuppliersType)
     filter_suppliers = DjangoFilterConnectionField(SuppliersType)
-    all_suppliers_note = graphene.List(SupplierNoteType)
+    all_suppliers_note = graphene.List(SupplierNoteType,
+                                       page_count=graphene.Int(),
+                                       page_number=graphene.Int())
     suppliers_note = graphene.List(SupplierNoteType,
                                    id=graphene.String(required=True))
+    total_suppliers_pages_count = graphene.Int()
+    pagination_result = None
 
     @user_permission('Operations Admin')
     def resolve_all_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        suppliers_set = Suppliers.objects.filter(parent=None)
+        suppliers_set = Suppliers.objects.filter(parent=None).order_by('id')
         if page_count or page_number:
             suppliers = pagination_query(
                 suppliers_set, page_count, page_number)
-            return suppliers
-        return pagination_query(suppliers_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = suppliers
+            return suppliers[0]
+        paginated_response = pagination_query(suppliers_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @user_permission('Operations Admin')
     def resolve_edit_requests(self, info):
         return Suppliers.objects.exclude(parent=None)
 
     @login_required
+    def resolve_total_suppliers_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying, totalSuppliersPagesCount query field should
+        strictly be called after the suppliers query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
+
+    @login_required
     def resolve_approved_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        approved_suppliers_set = Suppliers.objects.filter(is_approved=True)
+        approved_suppliers_set = Suppliers.objects.filter(
+                                                   is_approved=True
+                                                   ).order_by('id')
         if page_count or page_number:
             approved_suppliers = pagination_query(
                 approved_suppliers_set, page_count, page_number)
-            return approved_suppliers
-        return pagination_query(approved_suppliers_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = approved_suppliers
+            return approved_suppliers[0]
+        paginated_response = pagination_query(approved_suppliers_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @login_required
     def resolve_user_requests(self, info):
@@ -130,5 +161,19 @@ class Query(graphene.AbstractType):
         return SupplierNote.objects.filter(supplier_id=supplier)
 
     @login_required
-    def resolve_all_suppliers_note(self, info):
-        return SupplierNote.objects.all()
+    def resolve_all_suppliers_note(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        suppliers_notes_set = SupplierNote.objects.all().order_by('id')
+        if page_count or page_number:
+            suppliers_notes = pagination_query(
+                suppliers_notes_set, page_count, page_number)
+            Query.pagination_result = suppliers_notes
+            return suppliers_notes[0]
+        paginated_response = pagination_query(suppliers_notes_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]

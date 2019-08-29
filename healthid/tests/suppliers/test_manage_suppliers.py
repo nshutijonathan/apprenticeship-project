@@ -1,20 +1,28 @@
 from django.core.management import call_command
 
 from healthid.tests.base_config import BaseConfiguration
-from healthid.tests.test_fixtures.suppliers import (approve_request,
-                                                    approve_supplier,
-                                                    approved_suppliers,
-                                                    decline_request,
-                                                    delete_supplier,
-                                                    edit_request,
-                                                    edit_requests,
-                                                    empty_search,
-                                                    filter_suppliers,
-                                                    invalid_search,
-                                                    supplier_mutation,
-                                                    user_requests,
-                                                    edit_proposal)
+from healthid.tests.test_fixtures.suppliers import (
+    approve_request,
+    approve_supplier,
+    approved_suppliers,
+    decline_request,
+    delete_supplier,
+    edit_request,
+    edit_requests,
+    empty_search,
+    filter_suppliers,
+    invalid_search,
+    supplier_mutation,
+    user_requests,
+    edit_proposal,
+    all_suppliers_default_paginated,
+    approved_suppliers_default_pagination_query,
+    suppliers_notes_default_pagination,
+    all_suppliers_custom_paginated,
+    approved_suppliers_custom_pagination_query,
+    suppliers_notes_custom_pagination)
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
+from healthid.tests.factories import SuppliersFactory, SupplierNote
 
 
 class ManageSuppliersTestCase(BaseConfiguration):
@@ -146,3 +154,47 @@ class ManageSuppliersTestCase(BaseConfiguration):
         )
         self.assertIn(ORDERS_ERROR_RESPONSES["supplier_search_key_error"],
                       response['errors'][0]['message'])
+
+    def test_retrieve_all_suppliers_with_default_pagination(self):
+        SuppliersFactory.create_batch(size=5)
+        response = self.query_with_token(
+            self.access_token_master,
+            all_suppliers_default_paginated)
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
+
+    def test_retrieve_approved_suppliers_default_pagination(self):
+        SuppliersFactory.create_batch(size=5, is_approved=True)
+        response = self.query_with_token(
+            self.access_token_master,
+            approved_suppliers_default_pagination_query)
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
+
+    def test_retrieve_all_suppliers_notes_default_pagination(self):
+        SupplierNote.create_batch(size=15)
+        response = self.query_with_token(
+            self.access_token_master,
+            suppliers_notes_default_pagination)
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
+
+    def test_retrieve_all_suppliers_with_custom_pagination(self):
+        SuppliersFactory.create_batch(size=13)
+        response = self.query_with_token(
+            self.access_token_master,
+            all_suppliers_custom_paginated.format(pageCount=5, pageNumber=1))
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)
+
+    def test_retrieve_approved_suppliers_custom_pagination(self):
+        SuppliersFactory.create_batch(size=13, is_approved=True)
+        response = self.query_with_token(
+            self.access_token_master,
+            approved_suppliers_custom_pagination_query.format(
+                pageCount=5, pageNumber=1))
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)
+
+    def test_retrieve_all_suppliers_notes_custom_pagination(self):
+        SupplierNote.create_batch(size=13)
+        response = self.query_with_token(
+            self.access_token_master,
+            suppliers_notes_custom_pagination.format(
+                pageCount=5, pageNumber=1))
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)

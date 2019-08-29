@@ -263,6 +263,70 @@ all_suppliers_note = '''
 
 '''
 
+all_suppliers_default_paginated = '''
+{
+  allSuppliers{
+    id
+    name
+  }
+  totalSuppliersPagesCount
+}
+'''
+
+approved_suppliers_default_pagination_query = '''
+        {
+            approvedSuppliers{
+                id
+                name
+            }
+            totalSuppliersPagesCount
+        }
+
+'''
+suppliers_notes_default_pagination = '''
+{
+  allSuppliersNote{
+    supplier {
+      id
+    }
+  }
+  totalSuppliersPagesCount
+}
+
+'''
+
+all_suppliers_custom_paginated = '''
+{{
+  allSuppliers(pageCount:{pageCount} pageNumber:{pageNumber}){{
+    id
+    name
+  }}
+  totalSuppliersPagesCount
+}}
+'''
+
+approved_suppliers_custom_pagination_query = '''
+    {{
+      approvedSuppliers(pageCount:{pageCount} pageNumber:{pageNumber}){{
+            id
+            name
+        }}
+        totalSuppliersPagesCount
+    }}
+
+'''
+suppliers_notes_custom_pagination = '''
+{{
+  allSuppliersNote(pageCount:{pageCount} pageNumber:{pageNumber}){{
+    supplier {{
+      id
+    }}
+  }}
+  totalSuppliersPagesCount
+}}
+
+'''
+
 
 def supplier_notes(supplier_id):
     return (f'''query{{suppliersNote(id: "{supplier_id}"){{id}}}}''')

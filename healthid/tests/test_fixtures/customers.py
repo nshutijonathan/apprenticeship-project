@@ -136,3 +136,32 @@ def edit_customer_basic_profile(update_data):
         }}
         }}
 '''
+
+
+customer_query_paginated = '''
+query{
+  customers{
+   id
+   firstName
+   lastName
+   primaryMobileNumber
+   secondaryMobileNumber
+
+  }
+ totalCustomersPagesCount
+}
+'''
+
+customer_custom_query_paginated = '''
+query{{
+  customers(pageCount:{pageCount} pageNumber:{pageNumber}){{
+   id
+   firstName
+   lastName
+   primaryMobileNumber
+   secondaryMobileNumber
+
+  }}
+ totalCustomersPagesCount
+}}
+'''

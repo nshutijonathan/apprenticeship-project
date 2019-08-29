@@ -7,7 +7,7 @@ def pagination_query(query_set, page_count, page_number):
     :param query_set: Query Set to be paginated
     :param page_count: Number of records in each page.
     :param page_number: The actual page
-    :return paginated record count:
+    :returns a tuple of the paginated record and number of pages
     """
     paginator = Paginator(query_set, page_count)
-    return paginator.get_page(page_number)
+    return paginator.get_page(page_number), paginator.num_pages

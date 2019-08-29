@@ -278,3 +278,60 @@ mutation{{
   }}
 }}
 '''
+
+retrieve_orders_default_paginated = '''
+query {
+  orders {
+    id
+  }
+  totalOrdersPagesCount
+}
+'''
+
+retrieve_open_orders_default_paginated = '''
+query {
+  openOrders {
+    id
+    closed
+  }
+  totalOrdersPagesCount
+}
+'''
+
+retrieve_closed_orders_default_paginated = '''
+query {
+  closedOrders {
+    id
+    closed
+  }
+  totalOrdersPagesCount
+}
+'''
+retrieve_orders_custom_paginated = '''
+query {{
+  orders(pageCount:{pageCount} pageNumber: {pageNumber}) {{
+    id
+  }}
+  totalOrdersPagesCount
+}}
+'''
+
+retrieve_open_orders_custom_paginated = '''
+query {{
+  openOrders(pageCount:{pageCount} pageNumber: {pageNumber}) {{
+    id
+    closed
+  }}
+  totalOrdersPagesCount
+}}
+'''
+
+retrieve_closed_orders_custom_paginated = '''
+query {{
+  closedOrders(pageCount:{pageCount} pageNumber: {pageNumber}) {{
+    id
+    closed
+  }}
+  totalOrdersPagesCount
+}}
+'''

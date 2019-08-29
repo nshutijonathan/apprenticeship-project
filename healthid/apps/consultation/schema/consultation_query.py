@@ -26,6 +26,8 @@ class Query(graphene.ObjectType):
         consultant_role=graphene.String(),
         minutes_per_session=graphene.Int()
     )
+    total_consultations_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_consultations(self, info, **kwargs):
@@ -33,14 +35,33 @@ class Query(graphene.ObjectType):
         page_number = kwargs.get('page_number')
         user = info.context.user
         all_consultations = ConsultationCatalogue.objects.filter(
-            outlet=user.active_outlet)
+            outlet=user.active_outlet).order_by("id")
         if page_count or page_number:
             consultations = pagination_query(
                 all_consultations, page_count, page_number)
-            return consultations
-        return pagination_query(all_consultations,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = consultations
+            return consultations[0]
+        paginated_response = pagination_query(all_consultations,
+                                              PAGINATION_DEFAULT["page_count"],
+                                              PAGINATION_DEFAULT["page_number"]
+                                              )
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_total_consultations_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying totalConsultationsPagesCount query field should
+        strictly be called after the consultations query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_consultation(self, info, **kwargs):

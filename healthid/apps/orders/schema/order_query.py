@@ -90,6 +90,7 @@ class SupplierOrderDetailsType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
+
     suppliers_order_details = graphene.List(
         SupplierOrderDetailsType, order_id=graphene.Int(required=True))
     supplier_order_details = graphene.Field(
@@ -103,6 +104,8 @@ class Query(graphene.AbstractType):
                                 page_number=graphene.Int())
     closed_orders = graphene.List(OrderType, page_count=graphene.Int(),
                                   page_number=graphene.Int())
+    total_orders_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_suppliers_order_details(self, info, **kwargs):
@@ -132,14 +135,34 @@ class Query(graphene.AbstractType):
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        orders_set = Order.objects.all()
+        orders_set = Order.objects.all().order_by('id')
         if page_count or page_number:
             orders = pagination_query(
                 orders_set, page_count, page_number)
-            return orders
-        return pagination_query(orders_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = orders
+            return orders[0]
+        paginated_response = pagination_query(orders_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_total_orders_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying, totalOrdersPagesCount query field should
+        strictly be called after the orders query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_order(self, info, **kwargs):
@@ -161,14 +184,19 @@ class Query(graphene.AbstractType):
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        open_orders_set = Order.objects.filter(closed=False)
+        open_orders_set = Order.objects.filter(closed=False).order_by('id')
         if page_count or page_number:
             open_orders = pagination_query(
                 open_orders_set, page_count, page_number)
-            return open_orders
-        return pagination_query(open_orders_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = open_orders
+            return open_orders[0]
+        paginated_response = pagination_query(open_orders_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @login_required
     def resolve_closed_orders(self, info, **kwargs):
@@ -180,11 +208,16 @@ class Query(graphene.AbstractType):
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        closed_orders_set = Order.objects.filter(closed=True)
+        closed_orders_set = Order.objects.filter(closed=True).order_by('id')
         if page_count or page_number:
             closed_orders = pagination_query(
                 closed_orders_set, page_count, page_number)
-            return closed_orders
-        return pagination_query(closed_orders_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = closed_orders
+            return closed_orders[0]
+        paginated_response = pagination_query(closed_orders_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]

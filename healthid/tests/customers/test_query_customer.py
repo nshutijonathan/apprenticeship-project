@@ -1,7 +1,8 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import (
     customer_query_all, customer_search_query,
-    customer_name_query, customer_number_query, customer_id_query)
+    customer_name_query, customer_number_query, customer_id_query,
+    customer_query_paginated, customer_custom_query_paginated)
 from healthid.tests.factories import CustomerFactory
 
 
@@ -81,3 +82,15 @@ class TestQueryCustomer(BaseConfiguration):
         self.assertIn('errors', response)
         self.assertEqual(
             expected_message, response['errors'][0]['message'])
+
+    def test_default_pagination_query(self):
+        response = self.query_with_token(
+            self.access_token, customer_query_paginated)
+        self.assertEqual(response["data"]["totalCustomersPagesCount"], 1)
+
+    def test_custom_pagination_query(self):
+        CustomerFactory.create_batch(size=12)
+        response = self.query_with_token(
+            self.access_token,
+            customer_custom_query_paginated.format(pageCount=5, pageNumber=1))
+        self.assertEqual(response["data"]["totalCustomersPagesCount"], 3)

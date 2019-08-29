@@ -138,6 +138,8 @@ class Preference(BaseModel):
         ]
 
         if outlet_vat_rate:
+            if outlet_vat_rate > 100.00:
+                raise GraphQLError("Vat rate cannot be greater than 100.0")
             outlet_vat = update_vat(outlet_vat_rate, preference)
             preference.vat_rate.rate = outlet_vat
 

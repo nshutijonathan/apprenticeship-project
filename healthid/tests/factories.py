@@ -7,7 +7,7 @@ from django.conf import settings
 
 from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          OrderDetails, Suppliers,
-                                         PaymentTerms, Tier)
+                                         PaymentTerms, Tier, SupplierNote)
 from healthid.apps.products.models import (ProductCategory, Product,
                                            MeasurementUnit,
                                            BatchInfo, Quantity)
@@ -175,6 +175,7 @@ class SuppliersFactory(factory.DjangoModelFactory):
     commentary = "no comment"
     payment_terms = factory.SubFactory(PaymentTermsFactory)
     user = factory.SubFactory(UserFactory)
+    is_approved = False
 
 
 class MeasurementUnitFactory(factory.DjangoModelFactory):
@@ -231,6 +232,7 @@ class OrderFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda x: "Order %d" % x)
     destination_outlet = factory.SubFactory(OutletFactory)
     delivery_date = datetime.now()
+    closed = False
 
 
 class OrderDetailsFactory(factory.DjangoModelFactory):
@@ -260,7 +262,7 @@ class CustomerFactory(factory.DjangoModelFactory):
     class Meta:
         model = Profile
 
-    email = fake.email()
+    email = factory.Sequence(lambda x: "customer%d@user%d.com" % (x, x))
     first_name = fake.first_name()
     last_name = fake.last_name()
     primary_mobile_number = factory.Sequence(lambda x: "+234600000%d" % x)
@@ -379,3 +381,26 @@ class QuantityFactory(factory.DjangoModelFactory):
     is_approved = True
     quantity_received = fake.random_int(min=100, max=1000)
     quantity_remaining = fake.random_int(min=100, max=1000)
+
+
+class SupplierNote(factory.DjangoModelFactory):
+    class Meta:
+        model = SupplierNote
+
+    supplier = factory.SubFactory(SuppliersFactory)
+    user = factory.SubFactory(UserFactory)
+    note = fake.text()
+
+    @factory.post_generation
+    def outlet(self, create, extracted, **kwargs):
+        """
+        Method for establishing a many to many relationship
+        """
+        if not create:
+            return
+
+        if extracted:
+            # A list of outlet instances were passed in and should be used,
+            # for the many to many relationship.
+            for outlt in extracted:
+                self.outlet.add(outlt)

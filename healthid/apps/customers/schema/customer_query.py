@@ -58,6 +58,8 @@ class Query(graphene.AbstractType):
     returns:
          customer(s) object where one or more results were found,
          otherwise a GraphqlError is raised
+         In the case parameters for pagination are provided the,
+         paginated response is returned based on the pagination params
     """
 
     customers = graphene.List(
@@ -70,19 +72,40 @@ class Query(graphene.AbstractType):
         mobile_number=graphene.String(),
         customer_id=graphene.String())
     filter_customers = DjangoFilterConnectionField(CustomerCustomerType)
+    total_customers_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_customers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        resolved_value = Profile.objects.all()
+        resolved_value = Profile.objects.all().order_by('id')
         if page_count or page_number:
             customers = pagination_query(
                 resolved_value, page_count, page_number)
-            return customers
-        return pagination_query(resolved_value,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = customers
+            return customers[0]
+        paginated_response = pagination_query(resolved_value,
+                                              PAGINATION_DEFAULT["page_count"],
+                                              PAGINATION_DEFAULT["page_number"]
+                                              )
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_total_customers_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying totalCustomersPagesCount query field should
+        strictly be called after the customers query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_customer(self, info, **kwargs):

@@ -47,6 +47,8 @@ class Query(graphene.ObjectType):
         description=graphene.String()
     )
     event_types = graphene.List(EventTypeType)
+    total_events_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_events(self, info, **kwargs):
@@ -54,16 +56,38 @@ class Query(graphene.ObjectType):
         page_number = kwargs.get('page_number')
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
-        events_set = Event.objects.filter(Q(user=user) | Q(outlet=outlet))
+        events_set = Event.objects.filter(
+                                   Q(user=user) | Q(outlet=outlet)
+                                   ).order_by('id')
         if page_count or page_number:
             events = pagination_query(
                 events_set, page_count, page_number)
-            return events
+            Query.pagination_result = events
+            return events[0]
         if events_set:
-            return pagination_query(events_set,
-                                    PAGINATION_DEFAULT["page_count"],
-                                    PAGINATION_DEFAULT["page_number"])
+            paginated_response = pagination_query(events_set,
+                                                  PAGINATION_DEFAULT[
+                                                      "page_count"],
+                                                  PAGINATION_DEFAULT[
+                                                      "page_number"])
+            Query.pagination_result = paginated_response
+            return paginated_response[0]
         return GraphQLError(EVENTS_ERROR_RESPONSES["no_events_error"])
+
+    @login_required
+    def resolve_total_events_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying totalEventsPagesCount query field should
+        strictly be called after the events query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_event(self, info, **kwargs):

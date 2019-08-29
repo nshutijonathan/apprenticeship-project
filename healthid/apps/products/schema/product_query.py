@@ -105,6 +105,8 @@ class SurveyType(DjangoObjectType):
 
 
 class Query(graphene.AbstractType):
+    pagination_result = None
+
     products = graphene.List(ProductType,
                              search=graphene.String(),
                              page_count=graphene.Int(),
@@ -150,6 +152,8 @@ class Query(graphene.AbstractType):
     product_categories = graphene.List(
         ProductCategoryType, outlet_id=graphene.Int(required=True))
     measurement_unit = graphene.List(MeasurementUnitType)
+    total_products_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_products(self, info, **kwargs):
@@ -168,10 +172,30 @@ class Query(graphene.AbstractType):
         if page_count or page_number:
             products = pagination_query(
                 products_set, page_count, page_number)
-            return products
-        return pagination_query(products_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = products
+            return products[0]
+        paginated_response = pagination_query(products_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_total_products_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying, totaLProductsPagesCount query field should
+        strictly be called after the products query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_filter_products(self, info, **kwargs):
@@ -198,14 +222,19 @@ class Query(graphene.AbstractType):
         outlet = check_user_has_an_active_outlet(user)
         proposed_products_set = Product.all_products.for_outlet(
             outlet.id).filter(
-            is_approved=False, parent_id__isnull=True)
+            is_approved=False, parent_id__isnull=True).order_by('id')
         if page_count or page_number:
             proposed_products = pagination_query(
                 proposed_products_set, page_count, page_number)
-            return proposed_products
-        return pagination_query(proposed_products_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = proposed_products
+            return proposed_products[0]
+        paginated_response = pagination_query(proposed_products_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @login_required
     def resolve_approved_products(self, info, **kwargs):
@@ -214,14 +243,19 @@ class Query(graphene.AbstractType):
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
         approved_products_set = Product.objects.for_outlet(
-            outlet.id).filter(is_approved=True)
+            outlet.id).filter(is_approved=True).order_by('id')
         if page_count or page_number:
             approved_products = pagination_query(
                 approved_products_set, page_count, page_number)
-            return approved_products
-        return pagination_query(approved_products_set,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = approved_products
+            return approved_products[0]
+        paginated_response = pagination_query(approved_products_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @login_required
     def resolve_product(self, info, **kwargs):

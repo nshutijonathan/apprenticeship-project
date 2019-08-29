@@ -480,3 +480,35 @@ mutation {{
     }}
 }}
 '''
+all_products_default_pagination = '''
+{
+  products{
+    id
+    salesPrice
+    productName
+    manufacturer
+  }
+  totalProductsPagesCount
+}
+'''
+all_proposed_products_default_pagination = '''
+{
+  proposedProducts{
+    id
+    salesPrice
+    productName
+    manufacturer
+  }
+  totalProductsPagesCount
+}
+'''
+all_approved_products_default_pagination = '''
+{
+  approvedProducts{
+    productName
+    skuNumber
+    tags
+  }
+  totalProductsPagesCount
+}
+'''

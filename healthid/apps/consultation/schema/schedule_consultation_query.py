@@ -25,19 +25,41 @@ class Query(graphene.ObjectType):
         consultant=graphene.String(),
         booking_date=graphene.Date()
     )
+    total_bookings_pages_count = graphene.Int()
+    pagination_result = None
 
     @login_required
     def resolve_bookings(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        all_customer_consultations = CustomerConsultation.objects.all()
+        all_customer_consultations = CustomerConsultation.objects.all().\
+            order_by("id")
         if page_count or page_number:
             customer_consultations = pagination_query(
                 all_customer_consultations, page_count, page_number)
-            return customer_consultations
-        return pagination_query(all_customer_consultations,
-                                PAGINATION_DEFAULT["page_count"],
-                                PAGINATION_DEFAULT["page_number"])
+            Query.pagination_result = customer_consultations
+            return customer_consultations[0]
+        paginated_response = pagination_query(all_customer_consultations,
+                                              PAGINATION_DEFAULT["page_count"],
+                                              PAGINATION_DEFAULT["page_number"]
+                                              )
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_total_bookings_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying totalBookingsPagesCount query field should
+        strictly be called after the bookings query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
 
     @login_required
     def resolve_booking(self, info, **kwargs):
