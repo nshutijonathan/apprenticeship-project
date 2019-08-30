@@ -4,7 +4,8 @@ SALES_SUCCESS_RESPONSES = {
                                    "sales prompt",
     "add_to_cart_success": "Product added to cart.",
     "calculated_velocity":  "Sales velocity calculated successfully."
-                            "Use calculated value"
+                            "Use calculated value",
+    "sales_return_approved": "Sales return approved successfully"
 }
 
 SALES_ERROR_RESPONSES = {
@@ -25,5 +26,9 @@ SALES_ERROR_RESPONSES = {
     "negative_integer": "Price for products with ids '{}' should" +
     "be positive integer",
     "negative_discount": "Products with ids '{}' can't have negative discount",
-    "not_returnable": "Products with ids {} are not returnable"
-    }
+    "not_returnable": "Products with ids {} are not returnable",
+    "already_approved_sales_returns":
+        "Sales returns with ids {} already approved",
+    "empty_sales_return": "Sales return can't be empty!",
+    "no_sales_error": "No sales to view yet!",
+}

@@ -11,6 +11,25 @@ mutation{{
     returnReason: ExpiredProduct}}]
   ){{
     message
+    salesReturnInitiated{{
+      id
+      salereturndetailSet{{
+        id
+      }}
+    }}
   }}
 }}
+'''
+
+
+approve_sales_return = '''
+mutation{{
+  approveSalesReturn(
+    salesReturnId: {sales_return_id},
+    salesId: {sale_id},
+    returnedSales: {returned_sales_ids}
+    ){{
+      message
+    }}
+  }}
 '''

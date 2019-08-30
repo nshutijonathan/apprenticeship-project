@@ -1,7 +1,11 @@
 import json
+from itertools import compress
+
 from graphql import GraphQLError
-from healthid.utils.app_utils.database import get_model_object
+
 from healthid.apps.products.models import Product
+from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 
 def validate_fields(promotion, **kwargs):
@@ -40,3 +44,22 @@ def remove_quotes(dictionary):
     Remove quotes from dictionary
     """
     return json.dumps(dictionary).replace('"', "")
+
+
+def check_approved_sales(returned_sales, sales_return_detail):
+    is_valid = []
+    approved_returns_ids = []
+    for returned_sale in returned_sales:
+        returned_sale_detail = get_model_object(
+            sales_return_detail, 'id', returned_sale)
+        if returned_sale_detail.is_approved:
+            approved_returns_ids.append(returned_sale_detail.id)
+            is_valid.append(False)
+    if not all(is_valid):
+        invalid_items = list(
+            compress(approved_returns_ids,
+                     [not item for item in is_valid]))
+        message = SALES_ERROR_RESPONSES[
+            "already_approved_sales_returns"].format(
+            ",".join(map(str, invalid_items)))
+        raise GraphQLError(message)

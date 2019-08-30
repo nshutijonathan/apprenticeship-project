@@ -290,3 +290,12 @@ sales_velocity_query = '''
         }}
     }}
 '''
+
+
+all_sales_history_query = '''
+    query{
+         allSalesHistory{
+                id
+        }
+    }
+'''

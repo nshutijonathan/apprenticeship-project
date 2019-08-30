@@ -5,7 +5,7 @@ from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
 from healthid.apps.products.models import Product
-from healthid.apps.sales.models import Sale
+from healthid.apps.sales.models import Sale, SaleReturn
 from healthid.apps.sales.models import SaleDetail
 from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.receipts.barcode import \
@@ -60,6 +60,8 @@ class Receipt(BaseModel):
     receipt_template = models.ForeignKey(
         ReceiptTemplate, on_delete=models.CASCADE, related_name='receipts')
     sale = models.OneToOneField(Sale, on_delete=models.CASCADE, null=True)
+    sales_return = models.ForeignKey(
+        SaleReturn, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.id

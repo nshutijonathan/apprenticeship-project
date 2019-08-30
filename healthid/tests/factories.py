@@ -19,7 +19,9 @@ from healthid.apps.business.models import Business
 from healthid.apps.outlets.models import (Country, City, OutletKind, Outlet)
 from healthid.apps.preference.models import Timezone
 from healthid.apps.profiles.models import Profile
-from healthid.apps.sales.models import Sale, PromotionType, Promotion
+from healthid.apps.sales.models import Sale, PromotionType, Promotion, \
+    SaleReturn, SaleReturnDetail
+from healthid.apps.receipts.models import ReceiptTemplate, Receipt
 
 
 fake = Faker()
@@ -388,12 +390,6 @@ class SupplierNoteFactory(factory.DjangoModelFactory):
     class Meta:
         model = SupplierNote
 
-    supplier = factory.SubFactory(SuppliersFactory)
-    user = factory.SubFactory(UserFactory)
-    note = fake.text()
-
-
-class SupplierNote(factory.DjangoModelFactory):
     @factory.post_generation
     def outlet(self, create, extracted, **kwargs):
         """
@@ -407,4 +403,47 @@ class SupplierNote(factory.DjangoModelFactory):
             # for the many to many relationship.
             for outlt in extracted:
                 self.outlet.add(outlt)
+
+    supplier = factory.SubFactory(SuppliersFactory)
+    user = factory.SubFactory(UserFactory)
     note = factory.Sequence(lambda x: "Supplier Note %d" % x)
+
+
+class ReceiptTemplateFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = ReceiptTemplate
+
+    outlet = factory.SubFactory(OutletFactory)
+
+
+class ReceiptFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Receipt
+
+    receipt_template = factory.SubFactory(ReceiptTemplateFactory)
+    sale = factory.SubFactory(SaleFactory)
+
+
+class SaleReturnFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = SaleReturn
+
+    outlet = factory.SubFactory(OutletFactory)
+    sale = factory.SubFactory(SaleFactory)
+    return_amount = fake.random_int(min=100, max=1000)
+    refund_compensation_type = "cash"
+
+
+class SaleReturnDetailFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = SaleReturnDetail
+
+    quantity = fake.random_int(min=1, max=100)
+    price = fake.random_int(min=100, max=1000)
+    return_reason = "Expired Product"
+    resellable = True
+    is_approved = False
+    product = factory.SubFactory(ProductFactory)
+    sales_return = factory.SubFactory(SaleReturn)

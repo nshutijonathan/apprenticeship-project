@@ -3,7 +3,8 @@ from faker import Faker
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.sales import (create_sale,
                                                 query_sales_history,
-                                                query_sale_history)
+                                                query_sale_history,
+                                                all_sales_history_query)
 from healthid.utils.sales_utils.validators import remove_quotes
 from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
@@ -31,7 +32,7 @@ class TestCreateSale(BaseConfiguration):
         self.sales_data = {
             "discount_total": faker.random_int(min=1, max=100),
             "amount_to_pay": faker.random_int(min=1, max=10000),
-            "change_due": faker.random_int(min=0, max=10000),
+            "change_due": 7980.0,
             "paid_amount": faker.random_int(min=0, max=10000),
             "payment_method": "cash",
             "outlet_id": self.outlet.id,
@@ -140,3 +141,9 @@ class TestCreateSale(BaseConfiguration):
             str(self.sale.id), response['data']['saleHistory']['id'])
         self.assertEqual(self.sale.change_due, response['data']
                          ['saleHistory']['changeDue'])
+
+    def test_fetch_all_sales_history(self):
+        response = self.query_with_token(
+            self.access_token_master, all_sales_history_query)
+        self.assertEqual(str(self.sale.id),
+                         response['data']['allSalesHistory'][0]['id'])

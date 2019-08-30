@@ -104,6 +104,11 @@ class Product(BaseModel):
     reorder_point = models.IntegerField(default=0)
     reorder_max = models.IntegerField(default=0)
     request_declined = models.BooleanField(default=False)
+
+    '''all_products model manager returns both all products including
+    deactivated products i.e Products.all_products.all() returns both
+    active and deactivated products use it when you need deactivate
+    products as well.'''
     all_products = ProductManager(
         approved_only=False, active_only=False, original_only=False)
     objects = ProductManager(approved_only=False)
@@ -245,6 +250,7 @@ class BatchInfo(BaseModel):
     unit_cost = models.DecimalField(
         max_digits=20, decimal_places=2, default=Decimal('0.00'))
     sold_out = models.BooleanField(default=False)
+    is_returnable = models.BooleanField(default=True)
     product = models.ForeignKey(
         Product, related_name='batch_info',
         on_delete=models.CASCADE, null=True)

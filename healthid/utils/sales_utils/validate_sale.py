@@ -1,5 +1,5 @@
+from datetime import timezone, datetime
 from itertools import compress
-
 from graphql import GraphQLError
 
 from healthid.apps.preference.models import OutletPreference
@@ -8,11 +8,8 @@ from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.app_utils.query_objects import GetObjectList
 from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
-from datetime import datetime, timezone
-
 
 class SalesValidator:
-
     def __init__(self, products):
         self.product_quantities = []
         self.product_discounts = []
@@ -52,7 +49,7 @@ class SalesValidator:
             raise GraphQLError(message)
 
     def check_validity_quantity_sold(self):
-        message =  SALES_ERROR_RESPONSES['less_quantities'] # noqa
+        message = SALES_ERROR_RESPONSES['less_quantities']  # noqa
         is_valid = [(existing_quantity >= requested_quantity) and
                     (requested_quantity > 0) for existing_quantity,
                     requested_quantity in

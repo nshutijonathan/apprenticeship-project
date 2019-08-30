@@ -22,7 +22,7 @@ from healthid.tests.test_fixtures.suppliers import (
     approved_suppliers_custom_pagination_query,
     suppliers_notes_custom_pagination)
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
-from healthid.tests.factories import SuppliersFactory, SupplierNote
+from healthid.tests.factories import SuppliersFactory, SupplierNoteFactory
 
 
 class ManageSuppliersTestCase(BaseConfiguration):
@@ -170,7 +170,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
         self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
 
     def test_retrieve_all_suppliers_notes_default_pagination(self):
-        SupplierNote.create_batch(size=15)
+        SupplierNoteFactory.create_batch(size=15)
         response = self.query_with_token(
             self.access_token_master,
             suppliers_notes_default_pagination)
@@ -192,7 +192,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
         self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)
 
     def test_retrieve_all_suppliers_notes_custom_pagination(self):
-        SupplierNote.create_batch(size=13)
+        SupplierNoteFactory.create_batch(size=13)
         response = self.query_with_token(
             self.access_token_master,
             suppliers_notes_custom_pagination.format(

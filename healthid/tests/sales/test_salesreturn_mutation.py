@@ -1,9 +1,15 @@
-from healthid.tests.base_config import BaseConfiguration
-from healthid.tests.test_fixtures.sales_return import\
-    initiate_sales_return_query
-from healthid.tests.factories import SaleFactory, OutletFactory, ProductFactory
+from faker import Faker
 from datetime import timedelta
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.tests.test_fixtures.sales_return import \
+    initiate_sales_return_query, approve_sales_return
+from healthid.tests.factories import (
+    SaleFactory, OutletFactory, ProductFactory, ReceiptTemplateFactory,
+    ReceiptFactory, SaleReturnFactory, SaleReturnDetailFactory)
+from healthid.tests.base_config import BaseConfiguration
+
+faker = Faker()
 
 
 class TestCreateSaleReturn(BaseConfiguration):
@@ -12,10 +18,22 @@ class TestCreateSaleReturn(BaseConfiguration):
         self.sale = SaleFactory()
         self.outlet = OutletFactory()
         self.product = ProductFactory()
+        self.receipt_template = ReceiptTemplateFactory(outlet=self.outlet)
+        self.receipt = ReceiptFactory(
+            receipt_template=self.receipt_template, sale=self.sale)
+        self.sales_return = SaleReturnFactory(
+            outlet=self.outlet, sale=self.sale)
+        self.sales_return_detail = SaleReturnDetailFactory(
+            product=self.product, sales_return=self.sales_return)
+
         self.sales_return_data = {
             'outlet_id': self.outlet.id,
             'product_id': self.product.id,
             'sale_id': self.sale.id
+        }
+        self.approve_sales_return_data = {
+            'sale_id': self.sale.id,
+            'returned_sales_ids': []
         }
 
     def test_initiate_sales_return_success(self):
@@ -63,7 +81,7 @@ class TestCreateSaleReturn(BaseConfiguration):
 
     def test_returnable_days(self):
         """
-        test sales return initiation failure due to
+        tests sales return initiation failure due to
         return after 30 default preferred returnable days
         """
         sale = self.sale
@@ -76,3 +94,52 @@ class TestCreateSaleReturn(BaseConfiguration):
         self.assertEqual(
             resp['errors'][0]['message'],
             'Product preferred returnable days are done')
+
+    def test_approve_empty_sales_return(self):
+
+        sales_return_id = self.sales_return.id
+
+        self.approve_sales_return_data['sales_return_id'] = sales_return_id
+
+        resp = self.query_with_token(self.access_token_master,
+                                     approve_sales_return.format(
+                                         **self.approve_sales_return_data))
+
+        self.assertIn('errors', resp)
+        self.assertEqual(
+            resp['errors'][0]['message'],
+            SALES_ERROR_RESPONSES["empty_sales_return"])
+
+    def test_approve_sales_return_successfully(self):
+        sales_return_id = self.sales_return.id
+
+        sales_return_detail_id = self.sales_return_detail.id
+        self.approve_sales_return_data['sales_return_id'] = sales_return_id
+        self.approve_sales_return_data['returned_sales_ids'].\
+            append(int(sales_return_detail_id))
+        resp = self.query_with_token(self.access_token_master,
+                                     approve_sales_return.format(
+                                         **self.approve_sales_return_data))
+        self.assertNotIn('errors', resp)
+        self.assertEqual(
+            resp['data']['approveSalesReturn']['message'],
+            "Sales return approved successfully")
+
+    def test_already_approved_sales_return(self):
+        self.sales_return_detail = \
+            SaleReturnDetailFactory(is_approved=True,
+                                    product=self.product,
+                                    sales_return=self.sales_return)
+
+        self.approve_sales_return_data['sales_return_id'] = \
+            self.sales_return.id
+
+        self.approve_sales_return_data['returned_sales_ids'].append(
+            int(self.sales_return_detail.id))
+
+        resp = self.query_with_token(
+            self.access_token_master, approve_sales_return.format(
+                **self.approve_sales_return_data))
+        self.assertIn('errors', resp)
+        self.assertEqual(
+            resp['errors'][0]['message'], "Sales returns with ids {} already approved".format(self.sales_return_detail.id))  # noqa

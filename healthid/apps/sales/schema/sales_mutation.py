@@ -14,7 +14,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.apps.receipts.models import Receipt
 from healthid.apps.receipts.schema.receipt_schema import ReceiptType
-from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES, \
+    SALES_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
@@ -44,7 +45,6 @@ class CreateSalesPrompts(graphene.Mutation):
                          [titles, prompt_descriptions, outlet_ids])
 
         if not valid_list or len(product_ids) < 1:
-
             raise GraphQLError(SALES_ERROR_RESPONSES["incomplete_list"])
 
         for title, description in zip(titles, prompt_descriptions):
@@ -52,7 +52,6 @@ class CreateSalesPrompts(graphene.Mutation):
                 raise GraphQLError(SALES_ERROR_RESPONSES["title_error"])
         created_prompts = []
         for index, title in enumerate(titles, 0):
-
             params = {'model': SalesPrompt}
             sales_prompt = SalesPrompt(
                 prompt_title=title.title(),
@@ -69,9 +68,9 @@ class CreateSalesPrompts(graphene.Mutation):
         return CreateSalesPrompts(
             sales_prompts=created_prompts,
             message=SUCCESS_RESPONSES[
-                    "creation_success"].format(
-                                        "Sales prompt " + str(
-                                                         sales_prompt_count)))
+                "creation_success"].format(
+                "Sales prompt " + str(
+                    sales_prompt_count)))
 
 
 class UpdateSalesPrompt(graphene.Mutation):
@@ -101,7 +100,7 @@ class UpdateSalesPrompt(graphene.Mutation):
         with SaveContextManager(salesPrompt, **params) as salesPrompt:
             return UpdateSalesPrompt(
                 success=SUCCESS_RESPONSES[
-                        "update_success"].format("Sales prompt"),
+                    "update_success"].format("Sales prompt"),
                 salesPrompt=salesPrompt)
 
 
@@ -123,7 +122,7 @@ class DeleteSalesPrompt(graphene.Mutation):
         prompt.delete(user)
         return DeleteSalesPrompt(
             success=SUCCESS_RESPONSES[
-                    "deletion_success"].format("Sales prompt"))
+                "deletion_success"].format("Sales prompt"))
 
 
 class Products(graphene.InputObjectType):
@@ -281,8 +280,37 @@ class InitiateSaleReturn(graphene.Mutation):
         return_initiated = new_return.create_return(
             user=info.context.user, **kwargs)
         return InitiateSaleReturn(
-                          message='Return was initiated successfully',
-                          sales_return_initiated=return_initiated)
+            message='Return was initiated successfully',
+            sales_return_initiated=return_initiated)
+
+
+class ApproveSalesReturn(graphene.Mutation):
+    sales_return = graphene.Field(SaleReturnType)
+    message = graphene.String()
+
+    class Arguments:
+        sales_return_id = graphene.Int(required=True)
+        sales_id = graphene.Int(required=True)
+        returned_sales = graphene.List(graphene.Int, required=True)
+
+    @login_required
+    @user_permission('Manager')
+    def mutate(self, info, **kwargs):
+        sales_id = kwargs.get('sales_id')
+        returned_sales = kwargs.get('returned_sales')
+
+        if not returned_sales:
+            raise GraphQLError(SALES_ERROR_RESPONSES["empty_sales_return"])
+
+        receipt = get_model_object(Receipt, 'sale_id', sales_id)
+
+        new_return = SaleReturn()
+        sales_return = new_return.approve_sales_return(
+            user=info.context.user, receipt=receipt, **kwargs)
+
+        return ApproveSalesReturn(
+            sales_return=sales_return,
+            message=SALES_SUCCESS_RESPONSES["sales_return_approved"])
 
 
 class Mutation(graphene.ObjectType):
@@ -292,3 +320,4 @@ class Mutation(graphene.ObjectType):
     create_sale = CreateSale.Field()
     consultation_payment = ConsultationPayment.Field()
     initiate_sales_return = InitiateSaleReturn.Field()
+    approve_sales_return = ApproveSalesReturn.Field()

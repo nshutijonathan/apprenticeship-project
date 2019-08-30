@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save
 
 from healthid.apps.authentication.models import User
 from healthid.apps.outlets.models import Outlet
-from healthid.apps.products.models import Product
+from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.profiles.models import Profile
 from healthid.models import BaseModel
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -13,6 +13,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.sales_utils.initiate_sale import initiate_sale
 from healthid.utils.sales_utils.validate_sale import SalesValidator
+from healthid.utils.sales_utils.validators import check_approved_sales
 
 
 class PromotionType(BaseModel):
@@ -196,7 +197,11 @@ class Sale(BaseModel):
 
         with SaveContextManager(sale) as sale:
             loyalty_points_earned = initiate_sale(
-                sold_product_instances, sold_products, sale, SaleDetail)
+                sold_product_instances,
+                sold_products,
+                sale,
+                SaleDetail,
+                BatchHistory)
             if customer_id:
                 customer = get_model_object(Profile, "id", customer_id)
                 sale.customer = customer
@@ -207,8 +212,7 @@ class Sale(BaseModel):
                 sale.save()
         return sale
 
-    def sales_history(self, outlet_id=None, search=None, first=None,
-                      skip=None):
+    def sales_history(self, outlet_id=None, search=None):
         sales = Sale.objects.filter(outlet_id=outlet_id)
 
         if search:
@@ -220,11 +224,6 @@ class Sale(BaseModel):
                 Q(notes__icontains=search)
             )
             sales = sales.filter(search_keys)
-        if skip:
-            sales = sales[skip:]
-
-        if first:
-            sales = sales[:first]
         return sales
 
     class Meta:
@@ -273,7 +272,6 @@ class SaleReturn(BaseModel):
 
     def create_return(self, user, **kwargs):
         """This function initiates a return of products sold
-
         Args:
             user: the logged in user
             sale_id(int): id referencing that sale we are returning from
@@ -302,13 +300,10 @@ class SaleReturn(BaseModel):
 
         sales_return = SaleReturn(
             cashier=cashier, customer=customer, sale=sales_instance)
-
         for (key, value) in kwargs.items():
             setattr(sales_return, key, value)
-
         with SaveContextManager(sales_return, model=SaleReturn)as sales_return:
             pass
-
         sale_return_detail_list = []
         for product in kwargs.get('returned_products'):
             product_instance = get_model_object(
@@ -323,8 +318,58 @@ class SaleReturn(BaseModel):
             )
             sale_return_detail_list.append(sales_return_detail)
         SaleReturnDetail.objects.bulk_create(sale_return_detail_list)
-
         return sales_return
+
+    def approve_sales_return(self, user, receipt,  **kwargs):
+        returned_sales = kwargs.get('returned_sales')
+        sales_id = kwargs.get('sales_id')
+        sales_return_id = kwargs.get('sales_return_id')
+
+        sales_return = get_model_object(SaleReturn, 'id', sales_return_id)
+
+        check_approved_sales(returned_sales, SaleReturnDetail)
+
+        for returned_sale in returned_sales:
+            returned_sale_detail = get_model_object(
+                SaleReturnDetail, 'id', returned_sale)
+
+            batch_histories = BatchHistory.objects.filter(
+                sale_id=sales_id,
+                product_id=returned_sale_detail.product_id)
+
+            returned_quantity = returned_sale_detail.quantity
+
+            self.return_batch_quantity(batch_histories, receipt,
+                                       returned_quantity, returned_sale_detail,
+                                       sales_return_id, user)
+        return sales_return
+
+    def return_batch_quantity(self, batch_histories, receipt,
+                              returned_quantity, returned_sale_detail,
+                              sales_return_id, user):
+        for batch_history in batch_histories:
+            batch = get_model_object(BatchInfo, 'id',
+                                     batch_history.batch_info.id)
+            batch_quantity = batch.quantity
+
+            quantity = batch.batch_quantities.filter(
+                is_approved=True).first()
+
+            if returned_sale_detail.resellable:
+                if returned_quantity > batch_history.quantity_taken:
+                    quantity.quantity_remaining = \
+                        batch_quantity + batch_history.quantity_taken
+                    quantity.save()
+                    returned_quantity -= batch_history.quantity_taken
+                else:
+                    quantity.quantity_remaining = \
+                        batch_quantity + returned_quantity
+                    quantity.save()
+            returned_sale_detail.is_approved = True
+            returned_sale_detail.done_by = user
+            returned_sale_detail.save()
+        receipt.sales_return_id = sales_return_id
+        receipt.save()
 
 
 class SaleReturnDetail(BaseModel):
@@ -349,3 +394,16 @@ class SaleReturnDetail(BaseModel):
 
     def __str__(self):
         return self.return_reason
+
+
+class BatchHistory(BaseModel):
+    batch_info = models.ForeignKey(
+        BatchInfo, on_delete=models.SET_NULL, null=True,
+        related_name='batch_info_history')
+    sale = models.ForeignKey(
+        Sale, on_delete=models.SET_NULL, null=True,
+        related_name='sale_batch_history')
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, null=True,
+        related_name='quantity_by_batches')
+    quantity_taken = models.PositiveIntegerField()

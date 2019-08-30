@@ -1,7 +1,8 @@
 import math
 
 
-def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
+def initiate_sale(sold_product_instances, sold_products, sale, sale_detail,
+                  batch_history):
     """
     This function create a sale detail by looping through all sold
     products and create a record in SaleDetail by adding sale Id.
@@ -30,11 +31,20 @@ def initiate_sale(sold_product_instances, sold_products, sale, sale_detail):
                 quantity.quantity_remaining = batch_quantity \
                     - product_quantity
                 quantity.save()
+                batch_quantity_history = batch_history(
+                    batch_info=batch, sale=sale, product=sold_product,
+                    quantity_taken=product_quantity)
+                batch_quantity_history.save()
                 break
             else:
                 quantity.quantity_remaining = 0
                 quantity.save()
                 product_quantity -= batch_quantity
+
+                batch_quantity_history = batch_history(
+                    batch_info=batch, sale=sale, product=sold_product,
+                    quantity_taken=batch_quantity)
+                batch_quantity_history.save()
 
         detail = sale_detail(quantity=product_detail.quantity,
                              discount=product_detail.discount,
