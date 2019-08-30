@@ -8,6 +8,15 @@ from healthid.apps.outlets.schema.outlet_schema import OutletType
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
+from healthid.utils.orders_utils.inventory_notification import \
+    autosuggest_product_order
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_has_an_active_outlet
+
+
+class AutosuggestOrder(graphene.ObjectType):
+    product_name = graphene.String()
+    suggested_quantity = graphene.String()
 
 
 class OrderType(DjangoObjectType):
@@ -106,6 +115,7 @@ class Query(graphene.AbstractType):
                                   page_number=graphene.Int())
     total_orders_pages_count = graphene.Int()
     pagination_result = None
+    autosuggest_product_order = graphene.List(AutosuggestOrder)
 
     @login_required
     def resolve_suppliers_order_details(self, info, **kwargs):
@@ -221,3 +231,18 @@ class Query(graphene.AbstractType):
                                                   "page_number"])
         Query.pagination_result = paginated_response
         return paginated_response[0]
+
+    @login_required
+    def resolve_autosuggest_product_order(self, info, **kwargs):
+        """
+        Auto suggest products that needs to be ordered and the
+        quantity that needs to be ordered for based on the sales
+        velocity calculator
+
+        Returns:
+            list: tuple(product_name, quantity)
+        """
+        user = info.context.user
+        outlet = check_user_has_an_active_outlet(user)
+        product_to_order = autosuggest_product_order(outlet=outlet)
+        return product_to_order

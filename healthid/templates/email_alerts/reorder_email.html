@@ -37,7 +37,7 @@
                                 <p>This is to notify you that the following products have gone below the specified weeks of inventory
                                 and may need to be reordered</p>
                                   {% for product in products  %}
-                                  <li>{{ product }}</li>
+                                  <li>Product-name: {{ product.0 }} --------- Quantity-Refill: {{ product.1 }} units</li>
                                 {% endfor %}
                               </td>
                             </tr>

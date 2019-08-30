@@ -9,6 +9,8 @@ from healthid.utils.stock_utils.stock_count_alert import \
     generate_stock_counts_notifications
 from healthid.utils.product_utils.product_expiry import \
     check_for_expiry_products
+from healthid.utils.orders_utils.inventory_notification import \
+    inventory_check
 
 time_interval = os.environ.get('EXPIRY_NOTIFICATION_DURATION', '43200')
 job_run_interval = int(settings.STOCK_JOB_TIME_INTERVAL)
@@ -25,6 +27,10 @@ def start():
     scheduler.add_job(check_for_expiry_products,
                       'interval',
                       minutes=int(generate_promotion_interval))
+    scheduler.add_job(inventory_check, 'cron',
+                      day_of_week='sun',
+                      hour=23,
+                      minute=50)
     scheduler.start()
 
 

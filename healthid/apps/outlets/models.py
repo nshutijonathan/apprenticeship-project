@@ -92,6 +92,19 @@ class Outlet(BaseModel):
         outlet_users = self.outletuser_set.filter(is_active_outlet=True)
         return [outlet_user.user for outlet_user in outlet_users]
 
+    @property
+    def get_manager(self):
+        """
+        Method that get the manager of the outlet
+
+        Returns:
+            list(obj): user manager active in the outlet
+        """
+        outlet_user = self.outletuser_set.filter(
+                       is_active_outlet=True).filter(
+                       user__role__name='Manager').first()
+        return outlet_user.user
+
 
 class OutletUser(models.Model):
     """

@@ -335,3 +335,12 @@ query {{
   totalOrdersPagesCount
 }}
 '''
+
+auto_order = '''
+query{
+  autosuggestProductOrder{
+    productName,
+    suggestedQuantity
+  }
+}
+'''

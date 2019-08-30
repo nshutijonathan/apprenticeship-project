@@ -2,7 +2,8 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.orders import (order, approve_supplier_order,
                                                  edit_order, close_order,
                                                  send_supplier_order_emails,
-                                                 mark_supplier_order_as_sent)
+                                                 mark_supplier_order_as_sent,
+                                                 auto_order)
 
 from healthid.apps.orders.models.orders import SupplierOrderDetails
 
@@ -112,3 +113,17 @@ class TestOrders(BaseConfiguration):
             self.access_token,
             close_order.format(order_id=self.order.id))
         self.assertNotIn('errors', response)
+
+    def test_auto_order(self):
+        """Test that function works as expected
+        """
+        response = self.query_with_token(
+            self.access_token,
+            auto_order
+        )
+        self.assertNotIn('errors', response)
+        self.assertIn('data', response)
+        self.assertIn('autosuggestProductOrder', response['data'])
+        self.assertTrue(isinstance(
+            response['data']['autosuggestProductOrder'], list))
+        self.assertListEqual([], response['data']['autosuggestProductOrder'])
