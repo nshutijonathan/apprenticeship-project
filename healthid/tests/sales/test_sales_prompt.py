@@ -36,7 +36,7 @@ class TestSalesPrompt(BaseConfiguration):
         Test method for creating multiple sales prompts with invalid product
         """
         data = {
-            "product_id": 0,
+            "product_id": 300,
             "outlet_id": self.outlet.id,
             "title": "Title1 Coming",
             "description": "Description2 Coming"
@@ -45,7 +45,7 @@ class TestSalesPrompt(BaseConfiguration):
             self.access_token_master,
             create_sales_prompts.format(**data))
         self.assertIn(
-            PRODUCTS_ERROR_RESPONSES["inexistent_product"].format("0"),
+            PRODUCTS_ERROR_RESPONSES["inexistent_product"].format("300"),
             response['errors'][0]['message'])
 
     def test_sales_prompts_with_invalid_list(self):
@@ -103,7 +103,7 @@ class TestSalesPrompt(BaseConfiguration):
         """
         data = {
             "product_id": self.product.id,
-            "outlet_id": 0,
+            "outlet_id": 300,
             "title": "Title1 Coming",
             "description": "Description2 Coming"
         }
@@ -112,7 +112,7 @@ class TestSalesPrompt(BaseConfiguration):
             create_sales_prompts.format(**data))
         self.assertIn("errors", response)
         self.assertIn(
-            OUTLET_ERROR_RESPONSES["inexistent_outlet"].format("0"),
+            OUTLET_ERROR_RESPONSES["inexistent_outlet"].format("300"),
             response['errors'][0]['message'])
 
     def test_update_sales_prompts(self):

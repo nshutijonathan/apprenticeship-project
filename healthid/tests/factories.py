@@ -7,7 +7,8 @@ from django.conf import settings
 
 from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          OrderDetails, Suppliers,
-                                         PaymentTerms, Tier, SupplierNote)
+                                         SupplierNote, PaymentTerms,
+                                         Tier)
 from healthid.apps.products.models import (ProductCategory, Product,
                                            MeasurementUnit,
                                            BatchInfo, Quantity)
@@ -383,7 +384,7 @@ class QuantityFactory(factory.DjangoModelFactory):
     quantity_remaining = fake.random_int(min=100, max=1000)
 
 
-class SupplierNote(factory.DjangoModelFactory):
+class SupplierNoteFactory(factory.DjangoModelFactory):
     class Meta:
         model = SupplierNote
 
@@ -391,6 +392,8 @@ class SupplierNote(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     note = fake.text()
 
+
+class SupplierNote(factory.DjangoModelFactory):
     @factory.post_generation
     def outlet(self, create, extracted, **kwargs):
         """
@@ -404,3 +407,4 @@ class SupplierNote(factory.DjangoModelFactory):
             # for the many to many relationship.
             for outlt in extracted:
                 self.outlet.add(outlt)
+    note = factory.Sequence(lambda x: "Supplier Note %d" % x)

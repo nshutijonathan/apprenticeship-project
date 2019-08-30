@@ -1,10 +1,11 @@
 import re
-
+from graphql import GraphQLError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import (DatabaseError, IntegrityError, OperationalError,
                        transaction)
 
 from healthid.utils.app_utils.error_handler import errors
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class SaveContextManager():
@@ -94,11 +95,20 @@ def get_model_object(model, column_name, column_value, **kwargs):
                (it's optional).
 
     Returns:
-        model_instance: If the value exists.
+        model_instance: If the value exists or not, at checks of
+         column_name id having column_value as an int and
+         greater or equal to one, or column_name id having
+         column_value as a string, or any other column_name being
+         any name other than id.
         error: Else expection is raised with appropriate message.
     """
     manager_query = kwargs.get('manager_query', model.objects)
     try:
+        if ((column_name == "id") and isinstance(column_value, int) and
+                (column_value < 1)):
+            error_message = ERROR_RESPONSES[
+                "invalid_id"].format(column_value)
+            raise GraphQLError(error_message)
         model_instance = manager_query.get(**{column_name: column_value})
         return model_instance
     except ObjectDoesNotExist:

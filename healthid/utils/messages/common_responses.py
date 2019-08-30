@@ -19,5 +19,7 @@ ERROR_RESPONSES = {
     "invalid_date_format": "Incorrect data format for {}, "
                            "should be YYYY-MM-DD",
     "update_error": "You can't update a business,you're not assigned to!",
-    "no_matching_ids": "There are no {}(s) matching IDs: {}."
+    "no_matching_ids": "There are no {}(s) matching IDs: {}.",
+    "invalid_id": "The id {} should be a positive number starting from 1 or"
+    " just a string of characters"
 }

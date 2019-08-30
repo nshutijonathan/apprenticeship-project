@@ -45,7 +45,7 @@ class CityTestCase(CountryTestCase):
             response['errors'][0]['message'])
 
     def test_create_city_country_does_not_exist(self):
-        country_id = 0
+        country_id = 300
         query_string = create_city_string.format(
             country_id=country_id,
             city_name='kampala'

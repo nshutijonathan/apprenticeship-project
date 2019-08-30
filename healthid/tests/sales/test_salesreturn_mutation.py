@@ -3,6 +3,7 @@ from healthid.tests.test_fixtures.sales_return import\
     initiate_sales_return_query
 from healthid.tests.factories import SaleFactory, OutletFactory, ProductFactory
 from datetime import timedelta
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class TestCreateSaleReturn(BaseConfiguration):
@@ -34,14 +35,16 @@ class TestCreateSaleReturn(BaseConfiguration):
         """
         test sales return initiation failure with wrong sale id
         """
-        self.sales_return_data['outlet_id'] = 0
+        self.sales_return_data['outlet_id'] = 300
         resp = self.query_with_token(
             self.access_token, initiate_sales_return_query.format(
                 **self.sales_return_data))
         self.assertIn('errors', resp)
         self.assertEqual(
             resp['errors'][0]['message'],
-            "Outlet with id 0 does not exist."
+            OUTLET_ERROR_RESPONSES["inexistent_outlet"].format(
+                "300"
+            )
         )
 
     def test_initiate_sales_return_wrong_product(self):
