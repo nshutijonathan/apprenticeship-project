@@ -5,7 +5,8 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models import Suppliers, SupplierNote
+from healthid.apps.orders.models import (Suppliers,
+                                         SupplierNote, Tier, PaymentTerms)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
@@ -39,6 +40,16 @@ class SuppliersType(DjangoObjectType):
 class SupplierNoteType(DjangoObjectType):
     class Meta:
         model = SupplierNote
+
+
+class TierType(DjangoObjectType):
+    class Meta:
+        model = Tier
+
+
+class PaymentTermsType(DjangoObjectType):
+    class Meta:
+        model = PaymentTerms
 
 
 class Query(graphene.AbstractType):
