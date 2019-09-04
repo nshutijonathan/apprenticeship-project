@@ -1,16 +1,13 @@
 import graphene
 from graphql_jwt.decorators import login_required
 from django.forms import model_to_dict
-from healthid.apps.customers.schema.customer_schema import CustomerProfileType
+from healthid.apps.customers.schema.customer_schema import (
+                                                        CustomerProfileType)
 from healthid.apps.profiles.models import Profile
-from healthid.apps.wallet.models import CustomerCredit
-from healthid.apps.preference.models import Currency
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.customer_utils.create_customer_validation \
-    import (validate_customer_fields)
-from healthid.utils.preference_utils.outlet_preference import (
-    get_user_outlet_currency_id)
+     import (validate_customer_fields)
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
@@ -62,19 +59,11 @@ class CreateCustomer(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         customer = validate_customer_fields(Profile(), **kwargs)
-        user = info.context.user
-        outlet_currency_id = get_user_outlet_currency_id(user)
-        currency = get_model_object(
-            Currency, "id", outlet_currency_id)
         with SaveContextManager(customer, model=Profile) as customer:
-            customer_credit = CustomerCredit(
-                customer=customer, credit_currency=currency)
-            with SaveContextManager(customer_credit, model=CustomerCredit):
-                pass
-        return CreateCustomer(
-            message=SUCCESS_RESPONSES["creation_success"].format(
-                "Customer"),
-            customer=customer)
+            return CreateCustomer(
+                message=SUCCESS_RESPONSES[
+                        "creation_success"].format("Customer"),
+                customer=customer)
 
 
 class EditCustomerBasicProfile(graphene.Mutation):
@@ -126,7 +115,7 @@ class EditCustomerBasicProfile(graphene.Mutation):
     def mutate(self, info, id, **kwargs):
         customer = get_model_object(
             Profile, "id", id, message=CUSTOMER_ERROR_RESPONSES[
-                "customer_profile_not_found"])
+                                       "customer_profile_not_found"])
         existing_fields = model_to_dict(customer)
         if "city_id" in kwargs:
             kwargs["city"] = kwargs.pop("city_id")
@@ -148,8 +137,8 @@ class EditCustomerBasicProfile(graphene.Mutation):
         customer = validate_customer_fields(customer, **changed_fields)
         with SaveContextManager(customer, model=Profile) as customer:
             message = SUCCESS_RESPONSES[
-                "update_success"].format(
-                customer.first_name + "'s basic profile")
+                      "update_success"].format(
+                      customer.first_name + "'s basic profile")
             return EditCustomerBasicProfile(
                 message=message,
                 customer=customer)

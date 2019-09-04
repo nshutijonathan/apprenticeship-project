@@ -26,7 +26,6 @@ from healthid.apps.stock.schema import stock_mutation
 from healthid.apps.stock.schema import stock_query
 from healthid.apps.customers.schema import customer_mutation, customer_query
 from healthid.apps.orders.schema import invoices_mutation
-from healthid.apps.wallet.schema import wallet_mutation
 
 
 class Query(
@@ -74,7 +73,6 @@ class Mutation(
         customer_mutation.Mutation,
         cart_mutation.Mutation,
         invoices_mutation.Mutation,
-        wallet_mutation.Mutation,
         graphene.ObjectType):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()

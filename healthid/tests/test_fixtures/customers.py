@@ -32,13 +32,6 @@ create_customer = '''
                 emergencyContactEmail
                 loyaltyMember
                 createdAt
-                wallet{{
-                    storeCredit
-                    creditCurrency{{
-                        id
-                        name
-                    }}
-                }}
         }}
         }}
         }}

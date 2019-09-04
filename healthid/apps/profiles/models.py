@@ -9,7 +9,7 @@ class BaseProfile(BaseModel):
 
     CUSTOMER = 0
     USER_TYPES = (
-        (CUSTOMER, "Customer"),)
+     (CUSTOMER, "Customer"),)
     email = models.EmailField(
         max_length=100, null=True, unique=True, default=None, blank=True)
     user_type = models.IntegerField(choices=USER_TYPES, default=CUSTOMER)

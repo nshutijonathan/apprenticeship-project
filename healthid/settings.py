@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_apscheduler',
     'healthid.apps.stock',
-    'healthid.apps.wallet',
 ]
 
 MIDDLEWARE = [

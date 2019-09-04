@@ -1,7 +1,7 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.customers import (create_customer)
 from healthid.utils.messages.common_responses import\
-    SUCCESS_RESPONSES, ERROR_RESPONSES
+     SUCCESS_RESPONSES, ERROR_RESPONSES
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
 
 
@@ -12,11 +12,10 @@ class TestCustomerCreation(BaseConfiguration):
             self.access_token,
             create_customer.format(**self.create_customer_data))
         expected_message = SUCCESS_RESPONSES[
-            "creation_success"].format("Customer")
+                           "creation_success"].format("Customer")
         self.assertEqual(
             expected_message,
             response["data"]["createCustomer"]["message"])
-        self.assertIn("wallet", response["data"]["createCustomer"]["customer"])
         self.assertNotIn("errors", response)
 
     def test_create_customer_invalid_firstname(self):
@@ -37,7 +36,7 @@ class TestCustomerCreation(BaseConfiguration):
             self.access_token,
             create_customer.format(**self.create_customer_data))
         expected_message = ERROR_RESPONSES[
-            "invalid_field_error"].format("email")
+                           "invalid_field_error"].format("email")
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
@@ -49,7 +48,7 @@ class TestCustomerCreation(BaseConfiguration):
             self.access_token,
             create_customer.format(**self.create_customer_data))
         expected_message = CUSTOMER_ERROR_RESPONSES[
-            "first_name_error"].format("first_name")
+                           "first_name_error"].format("first_name")
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
@@ -61,8 +60,8 @@ class TestCustomerCreation(BaseConfiguration):
             self.access_token,
             create_customer.format(**self.create_customer_data))
         expected_message = ERROR_RESPONSES[
-            "invalid_field_error"
-        ].format("mobile number (ex. +2346787646)")
+                           "invalid_field_error"
+                           ].format("mobile number (ex. +2346787646)")
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])
