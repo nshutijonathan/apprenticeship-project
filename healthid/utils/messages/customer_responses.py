@@ -9,5 +9,7 @@ CUSTOMER_ERROR_RESPONSES = {
                             "does not exist' {}",
     "invalid_email": "Please provide a valid email",
     "first_name_error": "{} can't be an empty String",
+    "customer_credit_double_creation_error":
+        "Customer credit account already exists",
 
 }

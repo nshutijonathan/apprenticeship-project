@@ -17,11 +17,13 @@ from healthid.apps.consultation.models import (
     ConsultationCatalogue, CustomerConsultation, MedicalHistory)
 from healthid.apps.business.models import Business
 from healthid.apps.outlets.models import (Country, City, OutletKind, Outlet)
-from healthid.apps.preference.models import Timezone
+from healthid.apps.preference.models import (
+    Timezone, Currency)
 from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import Sale, PromotionType, Promotion, \
     SaleReturn, SaleReturnDetail
 from healthid.apps.receipts.models import ReceiptTemplate, Receipt
+from healthid.apps.wallet.models import CustomerCredit
 
 
 fake = Faker()
@@ -387,6 +389,7 @@ class QuantityFactory(factory.DjangoModelFactory):
 
 
 class SupplierNoteFactory(factory.DjangoModelFactory):
+
     class Meta:
         model = SupplierNote
 
@@ -447,3 +450,26 @@ class SaleReturnDetailFactory(factory.DjangoModelFactory):
     is_approved = False
     product = factory.SubFactory(ProductFactory)
     sales_return = factory.SubFactory(SaleReturn)
+
+
+class CurrencyFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Currency
+
+    name = fake.name()
+    symbol = fake.name()
+    symbol_native = fake.name()
+    decimal_digits = 2
+    rounding = 0
+    code = factory.Sequence(lambda x: "code_%d" % x)
+    name_plural = fake.name()
+
+
+class CustomerCreditFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = CustomerCredit
+
+    customer = factory.SubFactory(CustomerFactory)
+    credit_currency = factory.SubFactory(CurrencyFactory)
