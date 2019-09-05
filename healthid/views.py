@@ -18,6 +18,9 @@ from healthid.utils.constants.product_constants import \
     PRODUCT_INCLUDE_CSV_FIELDS
 from healthid.utils.csv_export.generate_csv import generate_csv_response
 from rest_framework.exceptions import APIException
+from healthid.utils.customer_utils.handle_customer_csv_upload import\
+    HandleCustomerCSVValidation
+from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
 
 
 class HandleCSV(APIView):
@@ -26,8 +29,21 @@ class HandleCSV(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, param, format=None):
+        """
+        Rest API post method that is meant to handle the mass,
+        upload of information from csv files
+        :param request: Will be used to extract the file type
+        :param param: endpoint parameter confirming the nature of info,
+                      expected in the csv
+        :param format:
+        :return: Throws error on validation failure and returns,
+                  success on Successful data upload
+        """
         handle_csv_object = HandleCsvValidations()
+        handle_customer_csv_object = HandleCustomerCSVValidation()
         handle_csv = handle_csv_object.handle_csv_upload
+        handle_customer_csv_upload =\
+            handle_customer_csv_object.handle_customer_csv_upload
         csv_file = request.FILES['file']
         if not csv_file.name.endswith('.csv'):
             message = {"error": "Please upload a csv file"}
@@ -38,6 +54,7 @@ class HandleCSV(APIView):
         next(io_string)
         try:
             if param == 'suppliers':
+
                 user = request.user
                 add_supplier.handle_csv_upload(user, io_string)
                 message = {
@@ -45,10 +62,18 @@ class HandleCSV(APIView):
                 }
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
+
                 quantity_added = handle_csv(io_string=io_string)
                 message = {
                     "success": "Successfully added products",
                     "noOfProductsAdded": quantity_added,
+                }
+                return Response(message, status.HTTP_201_CREATED)
+            if param == 'customers':
+                customers_added = handle_customer_csv_upload(io_string)
+                message = {
+                    "success": SUCCESS_RESPONSES["csv_upload_success"],
+                    "noOfCustomersAdded": customers_added,
                 }
                 return Response(message, status.HTTP_201_CREATED)
         except Exception as e:

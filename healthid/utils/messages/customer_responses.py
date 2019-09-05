@@ -1,4 +1,6 @@
-
+SUCCESS_RESPONSES = {
+    "csv_upload_success": "Successfully added customer(s)"
+}
 CUSTOMER_ERROR_RESPONSES = {
     "customer_profile_not_found": "Customer profile cannot be found",
     "unchanged_edits": "Profile fields unchanged, nothing to edit",
