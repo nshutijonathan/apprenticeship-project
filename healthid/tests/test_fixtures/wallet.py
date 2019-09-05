@@ -21,3 +21,17 @@ create_customer_credit = '''
         }}
     }}
 '''
+
+edit_credit = '''
+    mutation {{
+        editCustomerWallet(
+            customerId:{customer_id},
+            storeCredit:{store_credit}
+        ){{
+    message
+    customer{{
+      storeCredit
+   }}
+  }}
+}}
+'''

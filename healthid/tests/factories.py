@@ -23,6 +23,7 @@ from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import Sale, PromotionType, Promotion, \
     SaleReturn, SaleReturnDetail
 from healthid.apps.receipts.models import ReceiptTemplate, Receipt
+from healthid.apps.wallet.models import StoreCreditWalletHistory
 from healthid.apps.wallet.models import CustomerCredit
 
 
@@ -473,3 +474,15 @@ class CustomerCreditFactory(factory.DjangoModelFactory):
 
     customer = factory.SubFactory(CustomerFactory)
     credit_currency = factory.SubFactory(CurrencyFactory)
+
+
+class StoreCreditWalletHistoryFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = StoreCreditWalletHistory
+
+    customer = factory.SubFactory(CustomerCreditFactory)
+    sales_person = factory.SubFactory(UserFactory)
+    credit = fake.random_int(min=1)
+    debit = fake.random_int(min=1)
+    current_store_credit = fake.random_int(min=1)

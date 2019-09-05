@@ -1,10 +1,12 @@
 import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
-from healthid.apps.wallet.schema.wallet_schema import CustomerCreditType
+from healthid.apps.wallet.schema.wallet_schema import (
+    CustomerCreditType)
 from healthid.apps.profiles.models import Profile
 from healthid.apps.wallet.models import CustomerCredit
 from healthid.apps.preference.models import Currency
+from healthid.apps.wallet.models import StoreCreditWalletHistory
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.preference_utils.outlet_preference import (
@@ -30,7 +32,7 @@ class CreateCustomerCredit(graphene.Mutation):
     message = graphene.String()
 
     class Arguments:
-        customer_id = graphene.Int(required=True)
+        customer_id = graphene.Int()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -55,12 +57,51 @@ class CreateCustomerCredit(graphene.Mutation):
         customer_credit = CustomerCredit(
             customer=customer, credit_currency=currency)
         with SaveContextManager(customer_credit, model=CustomerCredit):
+            return CreateCustomerCredit(
+                message=SUCCESS_RESPONSES[
+                    "creation_success"].format("Customer's credit account"),
+                customer_credit=customer_credit)
+
+
+class EditCustomerWallet(graphene.Mutation):
+    """
+    Edits a Customer's basic profile.
+    """
+    customer = graphene.Field(CustomerCreditType)
+    message = graphene.String()
+
+    class Arguments:
+        customer_id = graphene.Int(required=True)
+        store_credit = graphene.Float(required=True)
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        user = info.context.user
+        customer_id = kwargs['customer_id']
+        credit = kwargs['store_credit']
+        customer_credit = get_model_object(
+            CustomerCredit, 'customer_id', customer_id)
+        if credit <= 0:
+            raise GraphQLError(
+                CUSTOMER_ERROR_RESPONSES['wrong_amount']
+            )
+        previous_value = customer_credit.store_credit
+        customer_credit.store_credit = (
+            float(previous_value) + float(credit))
+        customer_credit.save()
+        credit_wallet = StoreCreditWalletHistory(
+            sales_person=user,
+            credit=credit,
+            current_store_credit=previous_value,
+            customer=customer_credit)
+        with SaveContextManager(
+                credit_wallet,
+                model=StoreCreditWalletHistory) as credit_wallet:
             pass
-        return CreateCustomerCredit(
-            message=SUCCESS_RESPONSES[
-                "creation_success"].format("Customer's credit account"),
-            customer_credit=customer_credit)
+        return EditCustomerWallet(message=SUCCESS_RESPONSES[
+            "update_success"].format("Credit"), customer=customer_credit)
 
 
 class Mutation(graphene.ObjectType):
     create_customer_credit = CreateCustomerCredit.Field()
+    edit_customer_wallet = EditCustomerWallet.Field()

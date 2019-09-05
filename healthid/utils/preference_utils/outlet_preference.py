@@ -6,10 +6,8 @@ from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 def get_outlet_preference_by_user(user):
     """
         Method to return outlet preference user is active to
-
     Args:
         user(obj): user context
-
     Returns:
         outlet_preference(obj): if user is active to an outlet
         None: if user is not active to any outlet
@@ -26,10 +24,8 @@ def get_outlet_preference_by_user(user):
 def get_user_outlet_currency_id(user):
     """
         Method to return outlet currency id user is active to
-
     Args:
         user(obj): user context
-
     Returns:
         outlet_currency_id(string): if user is active to an outlet
         otherwise a GraphQLError is raised

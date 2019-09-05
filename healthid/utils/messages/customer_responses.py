@@ -11,5 +11,8 @@ CUSTOMER_ERROR_RESPONSES = {
     "first_name_error": "{} can't be an empty String",
     "customer_credit_double_creation_error":
         "Customer credit account already exists",
+    "customer_credit_not_found":
+    "Customer credit account does not exist or yet to be created",
+    "wrong_amount": "You can not add negative credit."
 
 }

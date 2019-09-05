@@ -18,8 +18,6 @@ from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 class CreateCustomer(graphene.Mutation):
     """
     Creates a Customer
-
-
     Args:
         first_name (str) the customers first name
         last_name (str) the customers last name
@@ -35,7 +33,6 @@ class CreateCustomer(graphene.Mutation):
         emergency_contact_number (Str) customer emergency contact mobile number
         emergency_contact_email (email) customer emergency contact email
         loyalty_member (bool)
-
     returns:
          success message and details of customer created if successful,
          otherwise a GraphqlError is raised
@@ -80,7 +77,6 @@ class CreateCustomer(graphene.Mutation):
 class EditCustomerBasicProfile(graphene.Mutation):
     """
     Edits a Customer's basic profile
-
     Args:
         id (int) profile ID
         first_name (str) customer first name
@@ -97,7 +93,6 @@ class EditCustomerBasicProfile(graphene.Mutation):
         emergency_contact_number (Str) customer's emergency contact's number
         emergency_contact_email (email) customer's emergency contact's email
         loyalty_member (bool)
-
     returns:
          success message and details of customer Edited if successful,
          otherwise GraphqlError instances are raised

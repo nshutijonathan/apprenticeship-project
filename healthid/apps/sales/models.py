@@ -7,6 +7,7 @@ from healthid.apps.authentication.models import User
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.profiles.models import Profile
+
 from healthid.models import BaseModel
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)

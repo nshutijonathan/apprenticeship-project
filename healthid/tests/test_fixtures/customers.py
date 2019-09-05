@@ -100,6 +100,30 @@ customer_search_query = '''
     }}
 '''
 
+create_customer_credit = '''
+    mutation{{
+        createCustomerCredit(
+            customerId:{customer_id},
+        )
+        {{
+            message
+            customerCredit{{
+            storeCredit
+            creditCurrency{{
+                id
+                name
+            }}
+            customer{{
+                id
+                firstName
+                lastName
+                email
+            }}
+            }}
+        }}
+    }}
+'''
+
 
 def edit_customer_basic_profile(update_data):
     return f'''
