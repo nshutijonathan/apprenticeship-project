@@ -13,16 +13,16 @@ create_consultation_item = '''mutation {{
                     description:"{description}",
                     consultantRole:"{consultant_role}",
                     approvedDeliveryFormats:["{approved_formats}"],
-                    outletId:{outlet_id},
-                    minutesPerSession:{minutes_per_session}
+                    businessId:"{business_id}",
+                    minutesPerSession:{minutes_per_session},
                     pricePerSession:{price_per_session}
                   ){{
                     consultation{{
                       id
                       description
                       consultationName
-                    outlet{{
-                        name
+                    business{{
+                        id
                       }}
                   }}
                   success
@@ -40,8 +40,8 @@ edit_consultation_item = '''mutation {{
                       id
                       description
                       consultationName
-                    outlet{{
-                        name
+                    business{{
+                        id
                       }}
                   }}
                   message
@@ -62,7 +62,8 @@ book_consultation = '''mutation{{
                 bookConsultation(
                   customerId: {customer_id},
                   consultationTypeId: {consultation_type_id},
-                  status: "{status}"
+                  status: "{status}",
+                  outletId: {outlet_id}
                 ){{
                   bookConsultation{{
                     id
@@ -70,10 +71,10 @@ book_consultation = '''mutation{{
                     status
                     consultationType{{
                       consultationName
-                      outlet{{
-                        id
-                        name
-                      }}
+                    }}
+                    outlet{{
+                      id
+                      name
                     }}
                     customer{{
                       id
@@ -107,10 +108,10 @@ update_consultation = '''mutation{{
                     status
                     consultationType{{
                       consultationName
-                      outlet{{
-                        id
-                        name
-                      }}
+                    }}
+                    outlet{{
+                      id
+                      name
                     }}
                     customer{{
                       id

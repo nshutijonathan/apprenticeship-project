@@ -15,7 +15,10 @@ CONSULTATION_ERROR_RESPONSES = {
      a sale record attached to it",
     "completed_status_error": "Consultation is already marked as complete",
     "consultation_doesnot_exist_error":
-    "Consultation doesnot belong in your outlet",
+    "Consultation does not exist in your business",
     "schedule_error": "Consultation Schedule doesnot belong  in your outlet",
-    "invalid_id": "{} id should be a positive number."
+    "invalid_id": "{} id should be a positive number.",
+    "outlet_error": "outlet must be part of the business where the consulation \
+    was created",
+    "no_scheduled_consultations": "Your outlet has no scheduled consultations."
 }

@@ -39,7 +39,7 @@ class CreateConsultationItem(graphene.Mutation):
     class Arguments:
         consultation_name = graphene.String(required=True)
         description = graphene.String(required=True)
-        outlet_id = graphene.Int(required=True)
+        business_id = graphene.String(required=True)
         approved_delivery_formats = graphene.List(graphene.String)
         consultant_role = graphene.String()
         minutes_per_session = graphene.Int()
@@ -94,7 +94,7 @@ class EditConsultationItem(graphene.Mutation):
     class Arguments:
         consultation_id = graphene.Int(required=True)
         description = graphene.String()
-        outlet_id = graphene.Int()
+        business_id = graphene.String()
         approved_delivery_formats = graphene.List(graphene.String)
         consultant_role = graphene.String()
         minutes_per_session = graphene.Int()
@@ -144,7 +144,7 @@ class DeleteConsultationItem(graphene.Mutation):
         consultation.delete(user)
         message = [SUCCESS_RESPONSES[
                    "deletion_success"].format(
-                    consultation.consultation_name)]
+            consultation.consultation_name)]
         return DeleteConsultationItem(message=message)
 
 

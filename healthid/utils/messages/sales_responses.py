@@ -3,6 +3,7 @@ SALES_SUCCESS_RESPONSES = {
     "sales_prompt_create_success": "Successfully created {sales_prompt_count} "
                                    "sales prompt",
     "add_to_cart_success": "Product added to cart.",
+    "sale_intiate_success": "Return was initiated successfully",
     "calculated_velocity":  "Sales velocity calculated successfully."
                             "Use calculated value",
     "sales_return_approved": "Sales return approved successfully"

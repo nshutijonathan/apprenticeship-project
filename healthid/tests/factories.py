@@ -283,10 +283,10 @@ class ConsultationItemFactory(factory.DjangoModelFactory):
 
     consultation_name = fake.name()
     description = fake.text()
-    outlet = factory.SubFactory(OutletFactory)
     minutes_per_session = fake.random_int(min=1, max=60)
     approved_delivery_formats = ["Telephonic"]
     price_per_session = fake.random_int()
+    business = factory.SubFactory(BusinessFactory)
 
 
 class CustomerConsultationFactory(factory.DjangoModelFactory):
@@ -299,6 +299,7 @@ class CustomerConsultationFactory(factory.DjangoModelFactory):
     consultant = fake.name()
     booked_by = factory.SubFactory(UserFactory)
     status = "Now"
+    outlet = factory.SubFactory(OutletFactory)
 
 
 class MedicalHistoryFactory(factory.DjangoModelFactory):

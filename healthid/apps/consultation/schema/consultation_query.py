@@ -2,6 +2,7 @@ import graphene
 
 from healthid.apps.consultation.models import (
     ConsultationCatalogue)
+from healthid.apps.outlets.models import Outlet
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
@@ -34,8 +35,11 @@ class Query(graphene.ObjectType):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         user = info.context.user
+        outlet = get_model_object(Outlet, 'id', user.active_outlet.id)
+        business_id = outlet.business_id
+
         all_consultations = ConsultationCatalogue.objects.filter(
-            outlet=user.active_outlet).order_by("id")
+            business=business_id).order_by("id")
         if page_count or page_number:
             consultations = pagination_query(
                 all_consultations, page_count, page_number)
@@ -67,10 +71,12 @@ class Query(graphene.ObjectType):
     def resolve_consultation(self, info, **kwargs):
         consultation_id = kwargs.get("consultation_id")
         user = info.context.user
+        outlet = get_model_object(Outlet, 'id', user.active_outlet.id)
+        business_id = outlet.business_id
         if consultation_id > 0:
             consultation = get_model_object(
                 ConsultationCatalogue, 'id', consultation_id)
-            if consultation.outlet.id != user.active_outlet.id:
+            if consultation.business.id != business_id:
                 consultation_query_error =\
                     CONSULTATION_ERROR_RESPONSES[
                         "consultation_doesnot_exist_error"]

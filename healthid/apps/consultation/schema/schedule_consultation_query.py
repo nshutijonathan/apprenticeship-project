@@ -32,19 +32,25 @@ class Query(graphene.ObjectType):
     def resolve_bookings(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        all_customer_consultations = CustomerConsultation.objects.all().\
-            order_by("id")
-        if page_count or page_number:
-            customer_consultations = pagination_query(
-                all_customer_consultations, page_count, page_number)
-            Query.pagination_result = customer_consultations
-            return customer_consultations[0]
-        paginated_response = pagination_query(all_customer_consultations,
-                                              PAGINATION_DEFAULT["page_count"],
-                                              PAGINATION_DEFAULT["page_number"]
-                                              )
-        Query.pagination_result = paginated_response
-        return paginated_response[0]
+        user_outlet = info.context.user.active_outlet.id
+        all_customer_consultations = CustomerConsultation.objects.filter(
+            outlet_id=user_outlet).order_by("id")
+
+        if len(all_customer_consultations) > 0:
+            if page_count or page_number:
+                customer_consultations = pagination_query(
+                    all_customer_consultations, page_count, page_number)
+                Query.pagination_result = customer_consultations
+                return customer_consultations[0]
+            paginated_response =\
+                pagination_query(all_customer_consultations,
+                                 PAGINATION_DEFAULT["page_count"],
+                                 PAGINATION_DEFAULT["page_number"]
+                                 )
+            Query.pagination_result = paginated_response
+            return paginated_response[0]
+        error = CONSULTATION_ERROR_RESPONSES["no_scheduled_consultations"]
+        raise GraphQLError(error)
 
     @login_required
     def resolve_total_bookings_pages_count(self, info, **kwargs):
@@ -64,9 +70,13 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_booking(self, info, **kwargs):
         customer_id = kwargs.get("id")
+        user = info.context.user
         if customer_id > 0:
             booking = get_model_object(
                 CustomerConsultation, 'id', customer_id)
+            if booking.outlet.id != user.active_outlet.id:
+                error = CONSULTATION_ERROR_RESPONSES["schedule_error"]
+                raise GraphQLError(error)
             return booking
         customer = CONSULTATION_ERROR_RESPONSES["invalid_id"].format("Booking")
         raise GraphQLError(customer)

@@ -13,8 +13,8 @@ create_consultations = '''
             id
             description
             consultationName
-        outlet{
-            name
+        business{
+            tradingName
             }
         }
         success
@@ -28,8 +28,8 @@ query {
         id
         description
         consultationName
-       outlet{
-          name
+       business{
+          tradingName
         }
   }
 }
@@ -41,8 +41,8 @@ query {{
         id
         description
         consultationName
-       outlet{{
-          name
+       business{{
+          tradingName
         }}
     }}
 }}
@@ -53,8 +53,8 @@ consultation_id_query = '''
         id
         description
         consultationName
-        outlet{{
-            name
+        business{{
+            tradingName
             }}
     }}
     }}
@@ -72,6 +72,9 @@ retrieve_schedule_consultations = '''
           firstName
           profileImage
           email
+        }
+        outlet{
+          id
         }
       }
     }

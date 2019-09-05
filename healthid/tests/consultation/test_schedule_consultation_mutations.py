@@ -6,7 +6,8 @@ from healthid.tests.test_fixtures.consultation import (
 from healthid.utils.messages.consultation_reponses import\
     CONSULTATION_SUCCESS_RESPONSES
 from healthid.tests.factories import (
-    ConsultationItemFactory, CustomerFactory, CustomerConsultationFactory)
+    ConsultationItemFactory, CustomerFactory, CustomerConsultationFactory,
+    OutletFactory)
 
 
 fake = Faker()
@@ -20,15 +21,18 @@ class TestScheduleConsultation(BaseConfiguration):
     def setUp(self):
         super(TestScheduleConsultation, self).setUp()
 
-        self.consultation_item = ConsultationItemFactory()
         self.customer_2 = CustomerFactory()
         self.customer_consultation = CustomerConsultationFactory(
             customer=self.customer_2)
+        self.outlet = OutletFactory()
+        self.consultation_item = ConsultationItemFactory(
+            business=self.outlet.business)
 
         self.booking_data = {
             "customer_id": self.customer_2.id,
             "consultation_type_id": self.consultation_item.id,
-            "status": "Now"
+            "status": "Now",
+            "outlet_id": self.outlet.id,
         }
 
     def test_book_consultation(self):

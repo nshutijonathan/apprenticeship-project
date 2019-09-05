@@ -11,6 +11,7 @@ from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import Sale
 from healthid.models import BaseModel
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.business.models import Business
 from healthid.utils.messages.consultation_reponses import\
     CONSULTATION_ERROR_RESPONSES
 
@@ -18,7 +19,7 @@ from healthid.utils.messages.consultation_reponses import\
 class ConsultationCatalogue(BaseModel):
     """
     A model for saving data on consultations that
-    an outlet offers
+    a business offers
     """
     DOCTOR, NURSE, HEALTH_COACH, PHARMACIST, SALES_ASSOCIATE =\
         'Doctor', 'Nurse', 'Health_Coach', 'Pharmacist', 'Sales_Person'
@@ -39,7 +40,7 @@ class ConsultationCatalogue(BaseModel):
 
     consultation_name = models.CharField(max_length=80)
     description = models.TextField()
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
     approved_delivery_formats = ArrayField(
         models.CharField(
             choices=DELIVERY_FORMATS, default=IN_PERSON, max_length=50))
@@ -50,7 +51,7 @@ class ConsultationCatalogue(BaseModel):
 
     class Meta:
         unique_together = ((
-            'consultation_name', 'outlet', 'approved_delivery_formats',
+            'consultation_name', 'business', 'approved_delivery_formats',
             'minutes_per_session'))
 
     def save(self, *args, **kwargs):
@@ -69,10 +70,10 @@ class CustomerConsultation(BaseModel):
     """
     NOW, DONE, LATER = 'Now', 'Done', 'Later'
     STATUS_TYPES = [
-     (NOW, "Now"),
-     (DONE, 'Already Completed'),
-     (LATER, 'Later'),
-     ]
+        (NOW, "Now"),
+        (DONE, 'Already Completed'),
+        (LATER, 'Later'),
+    ]
 
     customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
     consultation_type = models.ForeignKey(
@@ -93,6 +94,8 @@ class CustomerConsultation(BaseModel):
     event = models.OneToOneField(
         Event, on_delete=models.SET_NULL, null=True,
         related_name='consultation_event')
+    outlet = models.ForeignKey(
+        Outlet, on_delete=models.CASCADE, related_name='outlet_consultations')
 
     def save(self, *args, **kwargs):
         """

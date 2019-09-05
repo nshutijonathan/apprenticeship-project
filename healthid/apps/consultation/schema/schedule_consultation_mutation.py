@@ -6,15 +6,17 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.consultation.models import (CustomerConsultation)
+from healthid.apps.consultation.models import (
+    CustomerConsultation, ConsultationCatalogue)
+from healthid.apps.outlets.models import Outlet
 from healthid.apps.consultation.schema.consultation_schema import (
     CustomerConsultationType)
 from healthid.apps.events.models import Event, EventType
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
-from healthid.utils.messages.consultation_reponses import\
-    CONSULTATION_SUCCESS_RESPONSES
+from healthid.utils.messages.consultation_reponses import (
+    CONSULTATION_SUCCESS_RESPONSES, CONSULTATION_ERROR_RESPONSES)
 
 
 class BookConsultation(graphene.Mutation):
@@ -36,6 +38,7 @@ class BookConsultation(graphene.Mutation):
     class Arguments:
         customer_id = graphene.Int(required=True)
         consultation_type_id = graphene.Int(required=True)
+        outlet_id = graphene.Int(required=True)
         consultant = graphene.String()
         status = graphene.String()
         booking_date = graphene.String()
@@ -44,15 +47,25 @@ class BookConsultation(graphene.Mutation):
     def mutate(self, info, **kwargs):
         user = info.context.user
         book_consultation = CustomerConsultation(booked_by=user)
-
+        consultation_type_id = kwargs.get('consultation_type_id')
+        outlet_id = kwargs.get('outlet_id')
         booking_date = kwargs.get('booking_date')
+
+        consultation_catalogue_item = get_model_object(
+            ConsultationCatalogue, 'id', consultation_type_id)
+        outlet = get_model_object(Outlet, 'id', outlet_id)
+
+        if consultation_catalogue_item.business.id != outlet.business.id:
+            outlet_error = CONSULTATION_ERROR_RESPONSES["outlet_error"]
+            raise GraphQLError(outlet_error)
 
         if booking_date:
             booking_date = parser.parse(booking_date)
             kwargs['booking_date'] = make_aware(booking_date)
 
         for (key, value) in kwargs.items():
-            if key in ('customer_id', 'consultation_type_id') and \
+            if key in ('customer_id', 'consultation_type_id',
+                       'outlet_id') and \
                     str(value).strip() == "":
                 raise GraphQLError(
                     'The {} field cannot be empty'.format(key))

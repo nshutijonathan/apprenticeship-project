@@ -26,13 +26,13 @@ class TestConsultationCatalogue(BaseConfiguration):
             customer=self.customer_2)
 
         self.consultation_data = {
-                "consultation_name": fake.word(),
-                "description": fake.text(max_nb_chars=50),
-                "consultant_role": "Pharmacist",
-                "approved_formats": "Telephonic",
-                "outlet_id": self.outlet.id,
-                "minutes_per_session": fake.random_int(min=1, max=60),
-                "price_per_session": fake.random_int()
+            "consultation_name": fake.word(),
+            "description": fake.text(max_nb_chars=50),
+            "consultant_role": "Pharmacist",
+            "approved_formats": "Telephonic",
+            "business_id": self.business.id,
+            "minutes_per_session": fake.random_int(min=1, max=60),
+            "price_per_session": fake.random_int()
         }
 
     def test_create_consultation_item(self):
@@ -114,7 +114,7 @@ class TestConsultationCatalogue(BaseConfiguration):
 
         message = [SUCCESS_RESPONSES[
                    "deletion_success"].format(
-                    self.consultation_item.consultation_name)]
+            self.consultation_item.consultation_name)]
 
         response = self.query_with_token(
             self.access_token_master, delete_consultation_item.format(

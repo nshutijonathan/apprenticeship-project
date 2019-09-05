@@ -14,8 +14,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.apps.receipts.models import Receipt
 from healthid.apps.receipts.schema.receipt_schema import ReceiptType
-from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES, \
-    SALES_SUCCESS_RESPONSES
+from healthid.utils.messages.sales_responses import (SALES_ERROR_RESPONSES,
+                                                     SALES_SUCCESS_RESPONSES)
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
@@ -202,7 +202,7 @@ class ConsultationPayment(graphene.Mutation):
         customer_consultation_id = kwargs.get('customer_consultation_id')
         customer_consultation = get_model_object(
             CustomerConsultation, 'id', customer_consultation_id)
-        outlet = customer_consultation.consultation_type.outlet
+        outlet = customer_consultation.outlet
 
         if customer_consultation.paid:
             raise GraphQLError('This consultation is already marked as paid')
@@ -280,7 +280,7 @@ class InitiateSaleReturn(graphene.Mutation):
         return_initiated = new_return.create_return(
             user=info.context.user, **kwargs)
         return InitiateSaleReturn(
-            message='Return was initiated successfully',
+            message=SALES_SUCCESS_RESPONSES["sale_intiate_success"],
             sales_return_initiated=return_initiated)
 
 
