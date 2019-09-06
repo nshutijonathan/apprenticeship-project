@@ -26,7 +26,7 @@ from healthid.apps.stock.schema import stock_mutation
 from healthid.apps.stock.schema import stock_query
 from healthid.apps.customers.schema import customer_mutation, customer_query
 from healthid.apps.orders.schema import invoices_mutation
-from healthid.apps.wallet.schema import wallet_mutation
+from healthid.apps.wallet.schema import wallet_mutation, wallet_query
 
 
 class Query(
@@ -50,6 +50,7 @@ class Query(
         cart_query.Query,
         customer_query.Query,
         order_query.Query,
+        wallet_query.CustomerCreditQuery,
         graphene.ObjectType):
     pass
 

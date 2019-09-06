@@ -35,3 +35,35 @@ edit_credit = '''
   }}
 }}
 '''
+
+store_credit_query_all = '''
+query {
+    customerCredits {
+        storeCredit
+    }
+}
+'''
+
+customer_id_store_credit_query = '''
+query {{
+    customerCredit(customerId: {customer_id}) {{
+        storeCredit
+    }}
+}}
+'''
+
+customer_credit_pagination_query = '''
+query {{
+    customerCredits(pageCount: {}, pageNumber: {}) {{
+        storeCredit
+    }}
+}}
+'''
+
+customer_credit_invalid_argument = '''
+query {{
+    customerCredit{}({}) {{
+        storeCredit
+    }}
+}}
+'''
