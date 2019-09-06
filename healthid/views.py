@@ -10,13 +10,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from healthid.apps.products.models import Product
+from healthid.apps.profiles.models import Profile
 from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.orders_utils.add_supplier import add_supplier
 from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
-from healthid.utils.constants.product_constants import \
-    PRODUCT_INCLUDE_CSV_FIELDS
+from healthid.utils.constants.product_constants import (
+    PRODUCT_INCLUDE_CSV_FIELDS)
+from healthid.utils.constants.customer_constants import (
+    CUSTOMERS_INCLUDE_CSV_FIELDS)
 from healthid.utils.csv_export.generate_csv import generate_csv_response
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from rest_framework.exceptions import APIException
 from healthid.utils.customer_utils.handle_customer_csv_upload import\
     HandleCustomerCSVValidation
@@ -116,13 +120,13 @@ class HandleCsvExport(APIView):
             return response
 
 
-class EmptyProductCsvExport(APIView):
+class EmptyCsvFileExport(APIView):
     """Handle the download of empty CSV file"""
     authentication_classes = (SessionAuthentication, TokenAuthentication)
     permission_classes = (IsAuthenticated, )
 
-    def get(self, request):
-        """Responds to a get request for csv download.
+    def get(self, request, param):
+        """Responds to a get request for csv download based on params
 
         Args:
             request(obj): The http request from client.
@@ -131,6 +135,19 @@ class EmptyProductCsvExport(APIView):
             The response in a csv format with a status of 200.
 
         """
-        response = generate_csv_response(HttpResponse, 'sample_product.csv',
-                                         Product, PRODUCT_INCLUDE_CSV_FIELDS)
+        if param == 'products':
+            response = generate_csv_response(
+                HttpResponse,
+                'sample_product.csv',
+                Product,
+                PRODUCT_INCLUDE_CSV_FIELDS)
+        elif param == 'customers':
+            response = generate_csv_response(
+                HttpResponse,
+                'sample_customers.csv',
+                Profile,
+                CUSTOMERS_INCLUDE_CSV_FIELDS)
+        else:
+            return Response(ERROR_RESPONSES["wrong_param"],
+                            status=status.HTTP_404_NOT_FOUND)
         return response

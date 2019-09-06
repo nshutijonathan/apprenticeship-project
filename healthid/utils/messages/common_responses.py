@@ -21,5 +21,6 @@ ERROR_RESPONSES = {
     "update_error": "You can't update a business,you're not assigned to!",
     "no_matching_ids": "There are no {}(s) matching IDs: {}.",
     "invalid_id": "The id {} should be a positive number starting from 1 or"
-    " just a string of characters"
+    " just a string of characters",
+    "wrong_param": "Please provide a right parameter in url"
 }

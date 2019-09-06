@@ -20,7 +20,7 @@ from graphene_django.views import GraphQLView
 
 from .apps.authentication.views import activate, PasswordResetView
 from .apps.orders.views import SupplierOrderFormPDFView
-from .views import HandleCSV, HandleCsvExport, EmptyProductCsvExport
+from .views import HandleCSV, HandleCsvExport, EmptyCsvFileExport
 
 
 admin.site.site_header = "HealthID Admin"
@@ -34,8 +34,8 @@ urlpatterns = [
     path('healthid/csv/<param>', HandleCSV.as_view(), name='handle_csv'),
     path('healthid/export_csv/<param>', HandleCsvExport.as_view(),
          name='export_csv'),
-    path('healthid/sample_product_csv', EmptyProductCsvExport.as_view(),
-         name='export_product_csv'),
+    path('healthid/sample_csv_file/<param>', EmptyCsvFileExport.as_view(),
+         name='export_csv_file'),
     path('healthid/password_reset/<uidb64>/<token>',
          csrf_exempt(PasswordResetView.as_view()), name='password_reset'),
     path('healthid/supplier-order-pdf/<supplier_order_detail_id>',

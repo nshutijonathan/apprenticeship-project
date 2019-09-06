@@ -53,7 +53,7 @@ class CsvExportTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_empty_product_csv_export_succeeds(self):
-        self.url = reverse('export_product_csv')
+        self.url = reverse('export_csv_file', kwargs={'param': 'products'})
         response = self.client.get(self.url,
                                    format='json', **self.auth_headers)
         content_type = response._headers['content-type'][1]
