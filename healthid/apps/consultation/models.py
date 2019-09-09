@@ -40,7 +40,10 @@ class ConsultationCatalogue(BaseModel):
 
     consultation_name = models.CharField(max_length=80)
     description = models.TextField()
-    business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    business = models.ForeignKey(
+        Business, related_name='consultation_catalogue',
+        on_delete=models.CASCADE,
+        null=True)
     approved_delivery_formats = ArrayField(
         models.CharField(
             choices=DELIVERY_FORMATS, default=IN_PERSON, max_length=50))
@@ -95,7 +98,9 @@ class CustomerConsultation(BaseModel):
         Event, on_delete=models.SET_NULL, null=True,
         related_name='consultation_event')
     outlet = models.ForeignKey(
-        Outlet, on_delete=models.CASCADE, related_name='outlet_consultations')
+        Outlet, on_delete=models.CASCADE,
+        related_name='outlet_consultations',
+        null=True)
 
     def save(self, *args, **kwargs):
         """
