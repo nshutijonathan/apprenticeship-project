@@ -1,7 +1,9 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.wallet import (
-    customer_id_store_credit_query, store_credit_query_all,
-    customer_credit_pagination_query, customer_credit_invalid_argument)
+    customer_id_store_credit_query,
+    store_credit_query_all,
+    customer_credit_pagination_query,
+    customer_credit_invalid_argument)
 from healthid.tests.factories import (
     CustomerCreditFactory, CustomerFactory, CurrencyFactory)
 

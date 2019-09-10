@@ -49,8 +49,9 @@ class CustomerCreditQuery(graphene.ObjectType):
 
     @login_required
     def resolve_total_customer_credit_account_pages(self, info, **kwargs):
-        """ Resolves the total number of pages when store
-            credit accounts are paginated.
+        """
+        Resolves the total number of pages when store credit accounts
+         are paginated.
         """
         if not CustomerCreditQuery.pagination_result:
             return 0

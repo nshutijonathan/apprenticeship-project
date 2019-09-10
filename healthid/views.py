@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from healthid.apps.products.models import Product, BatchInfo
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.profiles.models import Profile
 from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.orders_utils.add_supplier import add_supplier
@@ -19,12 +20,14 @@ from healthid.utils.constants.product_constants import (
     PRODUCT_INCLUDE_CSV_FIELDS, BATCH_INFO_CSV_FIELDS)
 from healthid.utils.constants.customer_constants import (
     CUSTOMERS_INCLUDE_CSV_FIELDS)
+from healthid.utils.constants.suppliers_infor_constants import \
+    SUPPLIERS_INCLUDE_CSV_FIELDS
 from healthid.utils.csv_export.generate_csv import generate_csv_response
-from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from rest_framework.exceptions import APIException
 from healthid.utils.customer_utils.handle_customer_csv_upload import\
     HandleCustomerCSVValidation
 from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class HandleCSV(APIView):
@@ -126,8 +129,8 @@ class EmptyCsvFileExport(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, param):
-        """Responds to a get request for csv download based on params
-
+        """Responds to a get request for csv download based on the params
+           with either products or customers or suppliers
         Args:
             request(obj): The http request from client.
 
@@ -153,7 +156,13 @@ class EmptyCsvFileExport(APIView):
                                              BatchInfo,
                                              BATCH_INFO_CSV_FIELDS,
                                              name='batch')
+        elif param == 'suppliers':
+            response = generate_csv_response(
+                HttpResponse,
+                'sample_suppliers.csv',
+                Suppliers,
+                SUPPLIERS_INCLUDE_CSV_FIELDS)
         else:
-            return Response(ERROR_RESPONSES["wrong_param"],
-                            status=status.HTTP_404_NOT_FOUND)
+            response = Response(ERROR_RESPONSES["wrong_param"],
+                                status.HTTP_404_NOT_FOUND)
         return response

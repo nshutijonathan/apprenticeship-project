@@ -10,6 +10,7 @@ from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
                                                     suppliers_query)
 from healthid.views import HandleCSV
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from rest_framework.test import APIClient
 
 
 class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
@@ -32,6 +33,8 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         }
         call_command('loaddata', 'healthid/fixtures/tests')
         self.view = HandleCSV.as_view()
+        self.client = APIClient()
+        self.url = reverse('export_csv', kwargs={'param': 'products'})
 
     def handle_csv_request(self, path):
         file = open(path, 'rb')
@@ -58,8 +61,8 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.assertIn('errors', response)
         self.assertIn(ERROR_RESPONSES[
                       "duplication_error"].format(
-                        "Suppliers with email email@ntale.com"),
-                      response['errors'][0]['message'])
+            "Suppliers with email email@ntale.com"),
+            response['errors'][0]['message'])
 
     def test_suppliers_query(self):
         response = self.query_with_token(self.access_token_master,
@@ -92,3 +95,18 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         response = self.view(request, param='suppliers')
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', str(response.data))
+
+    def test_empty_suppliers_csv_export_succeeds(self):
+        self.url = reverse('export_csv_file', kwargs={'param': 'suppliers'})
+        response = self.client.get(self.url,
+                                   format='json', **self.auth_headers)
+        content_type = response._headers['content-type'][1]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content_type, 'text/csv')
+
+    def test_empty_suppliers_csv_export_failure(self):
+        self.url = reverse('export_csv_file', kwargs={'param': 'supplier'})
+        response = self.client.get(self.url,
+                                   format='json', **self.auth_headers)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data, ERROR_RESPONSES['wrong_param'])
