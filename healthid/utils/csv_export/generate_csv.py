@@ -1,7 +1,7 @@
 import csv
 
 
-def generate_csv_response(response, filename, model, include=[]):
+def generate_csv_response(response, filename, model, include=[], name=None):
     """Generate an empty CSV file.
 
     The CSV file header is generated from the model fields and
@@ -22,9 +22,16 @@ def generate_csv_response(response, filename, model, include=[]):
     response['Content-Disposition'] = \
         'attachment; filename=' + filename
 
-    header_row = [field.name.replace('_', ' ').title()
-                  for field in model._meta.get_fields()
-                  if field.name in include]
+    if name == 'batch':
+        model_fields = [field.name for field in model._meta.get_fields()]
+        header_row = [field.replace('_', ' ').title()
+                      for field in include
+                      if field in model_fields]
+        header_row.insert(5, 'Quantity Received')
+    else:
+        header_row = [field.name.replace('_', ' ').title()
+                      for field in model._meta.get_fields()
+                      if field.name in include]
 
     writer = csv.DictWriter(
         response,

@@ -51,5 +51,6 @@ PRODUCTS_ERROR_RESPONSES = {
     "product_category_no_edits": "Product category unchanged, "
                                  "nothing to edit.",
     "invalid_batch_quality": "Service quality must be an integer "
-                             "between 1 and 5"
+                             "between 1 and 5",
+    "wrong_param": "Please provide a valid param in the url"
 }

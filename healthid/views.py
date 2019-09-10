@@ -9,14 +9,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from healthid.apps.products.models import Product
+from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.profiles.models import Profile
 from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.orders_utils.add_supplier import add_supplier
 from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
 from healthid.utils.constants.product_constants import (
-    PRODUCT_INCLUDE_CSV_FIELDS)
+    PRODUCT_INCLUDE_CSV_FIELDS, BATCH_INFO_CSV_FIELDS)
 from healthid.utils.constants.customer_constants import (
     CUSTOMERS_INCLUDE_CSV_FIELDS)
 from healthid.utils.csv_export.generate_csv import generate_csv_response
@@ -147,6 +147,12 @@ class EmptyCsvFileExport(APIView):
                 'sample_customers.csv',
                 Profile,
                 CUSTOMERS_INCLUDE_CSV_FIELDS)
+        elif param == 'batch_info':
+            response = generate_csv_response(HttpResponse,
+                                             'sample_batch_info.csv',
+                                             BatchInfo,
+                                             BATCH_INFO_CSV_FIELDS,
+                                             name='batch')
         else:
             return Response(ERROR_RESPONSES["wrong_param"],
                             status=status.HTTP_404_NOT_FOUND)

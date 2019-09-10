@@ -5,7 +5,6 @@ from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.apps.wallet.schema.wallet_schema import CustomerCreditType
 from healthid.apps.wallet.models import CustomerCredit
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class CustomerCreditQuery(graphene.ObjectType):
@@ -34,9 +33,10 @@ class CustomerCreditQuery(graphene.ObjectType):
             CustomerCreditQuery.pagination_result = customer_credits
             return customer_credits[0]
 
-        paginated_response = pagination_query(resolved_values,
-                                              PAGINATION_DEFAULT['page_count'],
-                                              PAGINATION_DEFAULT['page_number'])
+        paginated_response = pagination_query(
+            resolved_values,
+            PAGINATION_DEFAULT['page_count'],
+            PAGINATION_DEFAULT['page_number'])
         CustomerCreditQuery.pagination_result = paginated_response
         return paginated_response[0]
 
@@ -49,7 +49,9 @@ class CustomerCreditQuery(graphene.ObjectType):
 
     @login_required
     def resolve_total_customer_credit_account_pages(self, info, **kwargs):
-        """ Resolves the total number of pages when store credit accounts are paginated. """
+        """ Resolves the total number of pages when store
+            credit accounts are paginated.
+        """
         if not CustomerCreditQuery.pagination_result:
             return 0
         return CustomerCreditQuery.pagination_result[1]

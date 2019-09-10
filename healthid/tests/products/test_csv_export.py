@@ -60,3 +60,12 @@ class CsvExportTestCase(BaseConfiguration, JSONWebTokenTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content_type, 'text/csv')
+
+    def test_empty_batch_info_csv_export(self):
+        self.url = reverse('export_csv_file', kwargs={'param': 'batch_info'})
+        response = self.client.get(
+            self.url, cformat='json', **self.auth_headers)
+        content_type = response._headers['content-type'][1]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content_type, 'text/csv')
