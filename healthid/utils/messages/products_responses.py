@@ -13,7 +13,8 @@ PRODUCTS_SUCCESS_RESPONSES = {
     "low_quantity_alert": "Low quantity alert! "
                           "Product name: {}, Unit(s) left: {}.",
     "proposal_approval_success": "Proposal for change in quantity of {}"
-                                 " received on {} has been approved"
+                                 " received on {} has been approved",
+    "batch_upload_success": "Successfully uploaded batch CSV information."
 
 }
 
@@ -52,5 +53,14 @@ PRODUCTS_ERROR_RESPONSES = {
                                  "nothing to edit.",
     "invalid_batch_quality": "Service quality must be an integer "
                              "between 1 and 5",
-    "wrong_param": "Please provide a valid param in the url"
+    "wrong_param": "Please provide a valid param in the url",
+    "batch_csv_error": "CSV file improperly formatted. The batch "
+                       "information columns must be ordered as follows:"
+                       "Product,Supplier,Date Received,"
+                       "Expiry Date,Unit Cost,Quantity Received,"
+                       "Service Quality,Delivery Promptness",
+    "batch_bool_error": "Please ensure eiether 'True' or 'False' is "
+                        "entered in the 'Delivery Promptness' column.",
+    "batch_expiry_error": "The batch for product '{}' has expired. "
+                          "Please check its expiry and delivery dates."
 }

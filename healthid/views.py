@@ -1,5 +1,7 @@
 import csv
 import io
+import traceback
+import sys
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.authentication import (SessionAuthentication,
@@ -8,7 +10,6 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.profiles.models import Profile
@@ -23,11 +24,13 @@ from healthid.utils.constants.customer_constants import (
 from healthid.utils.constants.suppliers_infor_constants import \
     SUPPLIERS_INCLUDE_CSV_FIELDS
 from healthid.utils.csv_export.generate_csv import generate_csv_response
-from rest_framework.exceptions import APIException
 from healthid.utils.customer_utils.handle_customer_csv_upload import\
     HandleCustomerCSVValidation
 from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.products_responses import (
+    PRODUCTS_SUCCESS_RESPONSES
+    )
 
 
 class HandleCSV(APIView):
@@ -58,18 +61,17 @@ class HandleCSV(APIView):
         data_set = csv_file.read().decode('UTF-8')
 
         io_string = io.StringIO(data_set)
-        next(io_string)
         try:
             if param == 'suppliers':
-
                 user = request.user
+                next(io_string)
                 add_supplier.handle_csv_upload(user, io_string)
                 message = {
                     "success": "Successfully added supplier(s)"
                 }
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
-
+                next(io_string)
                 quantity_added = handle_csv(io_string=io_string)
                 message = {
                     "success": "Successfully added products",
@@ -77,17 +79,25 @@ class HandleCSV(APIView):
                 }
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'customers':
+                next(io_string)
                 customers_added = handle_customer_csv_upload(io_string)
                 message = {
                     "success": SUCCESS_RESPONSES["csv_upload_success"],
                     "noOfCustomersAdded": customers_added,
                 }
                 return Response(message, status.HTTP_201_CREATED)
+            if param == 'batch_info':
+                user = request.user
+                handle_csv_object.handle_batch_csv_upload(user, io_string)
+                message = {
+                    "success": PRODUCTS_SUCCESS_RESPONSES[
+                        "batch_upload_success"
+                        ]
+                }
+                return Response(message, status.HTTP_201_CREATED)
         except Exception as e:
-            APIException.status_code = status.HTTP_400_BAD_REQUEST
-            raise APIException({
-                "errors": str(e)
-            })
+            traceback.print_exc(file=sys.stdout)
+            raise e
 
 
 class HandleCsvExport(APIView):

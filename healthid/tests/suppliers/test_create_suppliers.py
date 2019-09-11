@@ -86,7 +86,7 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         path = os.path.join(self.base_path, 'invalid_csv.csv')
         request = self.handle_csv_request(path)
         response = self.view(request, param='suppliers')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
         self.assertIn('error', str(response.data))
 
     def test_invalid_csv_format(self):
