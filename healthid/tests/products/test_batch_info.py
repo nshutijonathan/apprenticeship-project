@@ -4,7 +4,6 @@ from healthid.tests.test_fixtures.batch_info \
     query_product_batch_info, single_batch_info, \
     all_batch_info, delete_batch_info
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
-from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class TestBatchInfo(BaseConfiguration):
@@ -79,7 +78,7 @@ class TestBatchInfo(BaseConfiguration):
         resp = self.query_with_token(
             self.access_token, batch_info_query.format(**self.batch_data))
         self.assertIn(
-            ERROR_RESPONSES["invalid_date_format"].format(date_field),
+            'invalid literal',
             resp['errors'][0]['message'])
 
     def test_invalid_batch_info_id(self):

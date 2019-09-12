@@ -1,8 +1,9 @@
 import datetime
 from functools import wraps
 from itertools import compress
-
 from graphql import GraphQLError
+from django.core.exceptions import FieldError
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
 class ProductBatchInfo:
@@ -10,15 +11,12 @@ class ProductBatchInfo:
     This class contains methods to help with validating batch info.
     """
 
-    def validate_date_field(self, date_string, date_field):
-        date_format = '%Y-%m-%d'
+    def validate_date_field(self, date_string, field):
         try:
-            datetime.datetime.strptime(date_string, date_format)
-        except Exception:
-            raise GraphQLError(
-                f"Incorrect data format for "
-                f"{date_field}, should be YYYY-MM-DD"
-            )
+            year, month, day = [int(value) for value in date_string.split('-')]
+            datetime.date(year=year, month=month, day=day)
+        except Exception as error:
+            raise GraphQLError(error)
 
     def validate_positive_integers(self, integer, field):
         if integer <= 0:
@@ -28,14 +26,18 @@ class ProductBatchInfo:
     def __call__(self, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            date_fields = ('date_received', 'expiry_date')
-            int_fields = ('quantity_received', 'unit_cost')
-            for field, field_value in kwargs.items():
-                if field in date_fields:
-                    self.validate_date_field(field_value, field)
-                if field in int_fields:
-                    self.validate_positive_integers(field_value, field)
-            return func(*args, **kwargs)
+            try:
+                date_fields = ('date_received', 'expiry_date')
+                int_fields = ('quantity_received', 'unit_cost')
+                for field, field_value in kwargs.items():
+                    if field in date_fields:
+                        self.validate_date_field(field_value, field)
+                    if field in int_fields:
+                        self.validate_positive_integers(field_value, field)
+                return func(*args, **kwargs)
+            except FieldError:
+                raise GraphQLError(
+                    ERROR_RESPONSES['invalid_date_format'].format('date'))
         return wrapper
 
 

@@ -1,6 +1,5 @@
 import re
 from itertools import compress
-
 from graphql import GraphQLError
 
 
