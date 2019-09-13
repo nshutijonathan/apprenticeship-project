@@ -132,12 +132,21 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn('error', str(response.data))
 
-    def test_invalid_csv_format(self):
+    def test_invalid_csv_with_missing_column(self):
         path = os.path.join(self.base_path, 'missing_column.csv')
         request = self.handle_csv_request(path)
         response = self.view(request, param='suppliers')
         self.assertEqual(response.status_code, 400)
-        self.assertIn('error', str(response.data))
+        self.assertIn(ERROR_RESPONSES["csv_missing_field"],
+                      str(response.data[0]))
+
+    def test_invalid_csv_with_more_column(self):
+        path = os.path.join(self.base_path, 'more_column.csv')
+        request = self.handle_csv_request(path)
+        response = self.view(request, param='suppliers')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ERROR_RESPONSES["csv_many_field"],
+                      str(response.data[0]))
 
     def test_empty_suppliers_csv_export_succeeds(self):
         self.url = reverse('export_csv_file', kwargs={'param': 'suppliers'})

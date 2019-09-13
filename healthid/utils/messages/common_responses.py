@@ -22,6 +22,8 @@ ERROR_RESPONSES = {
     "no_matching_ids": "There are no {}(s) matching IDs: {}.",
     "invalid_id": "The id {} should be a positive number starting from 1 or"
     " just a string of characters",
-    "wrong_param": "Please provide a right parameter in url",
     "invalid_values": "{} contains invalid values",
+    "wrong_param": "Please provide a valid parameter in the url",
+    "csv_missing_field": "csv file is missing some column(s)",
+    "csv_many_field": "csv file has more than the required column(s)"
 }

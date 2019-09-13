@@ -14,7 +14,7 @@ from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.profiles.models import Profile
 from healthid.apps.products.serializers import ProductsSerializer
-from healthid.utils.orders_utils.add_supplier import add_supplier
+from healthid.utils.orders_utils.add_supplier import AddSupplier
 from healthid.utils.product_utils.handle_csv_export import handle_csv_export
 from healthid.utils.product_utils.handle_csv_upload import HandleCsvValidations
 from healthid.utils.constants.product_constants import (
@@ -51,7 +51,9 @@ class HandleCSV(APIView):
         """
         handle_csv_object = HandleCsvValidations()
         handle_customer_csv_object = HandleCustomerCSVValidation()
+        handle_supplier_csv_object = AddSupplier()
         handle_csv = handle_csv_object.handle_csv_upload
+        handle_supplier_csv = handle_supplier_csv_object.handle_csv_upload
         handle_customer_csv_upload =\
             handle_customer_csv_object.handle_customer_csv_upload
         csv_file = request.FILES['file']
@@ -63,11 +65,13 @@ class HandleCSV(APIView):
         io_string = io.StringIO(data_set)
         try:
             if param == 'suppliers':
-                user = request.user
                 next(io_string)
-                add_supplier.handle_csv_upload(user, io_string)
+                user = request.user
+                supplier_count = handle_supplier_csv(
+                    user=user, io_string=io_string)
                 message = {
-                    "success": "Successfully added supplier(s)"
+                    "success": "Successfully added supplier(s)",
+                    "noOfSuppliersAdded": supplier_count,
                 }
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
