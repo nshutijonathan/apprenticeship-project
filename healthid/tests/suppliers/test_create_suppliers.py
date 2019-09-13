@@ -7,10 +7,14 @@ from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
 from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
-                                                    suppliers_query)
+                                                    suppliers_query,
+                                                    supplier_query_by_id,
+                                                    supplier_query_by_name)
 from healthid.views import HandleCSV
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from rest_framework.test import APIClient
+from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
+from healthid.tests.factories import SuppliersFactory
 
 
 class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
@@ -35,6 +39,13 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.view = HandleCSV.as_view()
         self.client = APIClient()
         self.url = reverse('export_csv', kwargs={'param': 'products'})
+
+        self.supplier_1 = SuppliersFactory()
+
+        self.supplier_data = {
+            "id": self.supplier_1.id,
+            "name": self.supplier_1.name
+        }
 
     def handle_csv_request(self, path):
         file = open(path, 'rb')
@@ -69,6 +80,38 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
                                          suppliers_query)
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
+
+    def test_supplier_query_by_id(self):
+        response = self.query_with_token(self.access_token_master,
+                                         supplier_query_by_id.format(
+                                             **self.supplier_data))
+        supplier_id = self.supplier_data['id']
+
+        self.assertNotIn('errors', response)
+        self.assertEqual(supplier_id, response['data']['singleSupplier']['id'])
+
+    def test_supplier_query_by_name(self):
+        response = self.query_with_token(self.access_token_master,
+                                         supplier_query_by_name.format(
+                                             **self.supplier_data))
+        supplier_name = self.supplier_data['name']
+
+        self.assertNotIn('errors', response)
+        self.assertEqual(
+            supplier_name, response['data']['singleSupplier']['name'])
+
+    def test_supplier_query_with_empty_field(self):
+        data = {
+            "name": ""
+        }
+        response = self.query_with_token(self.access_token_master,
+                                         supplier_query_by_name.format(
+                                             **data))
+        message = ORDERS_ERROR_RESPONSES[
+            "invalid_supplier_field"]
+        self.assertEqual(
+            message,
+            response['errors'][0]['message'])
 
     def test_create_supplier(self):
         response = self.query_with_token(self.access_token, supplier_mutation)

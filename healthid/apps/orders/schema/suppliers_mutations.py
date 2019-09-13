@@ -13,7 +13,7 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.validators import special_cahracter_validation
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.orders_responses import\
-      ORDERS_ERROR_RESPONSES, ORDERS_SUCCESS_RESPONSES
+    ORDERS_ERROR_RESPONSES, ORDERS_SUCCESS_RESPONSES
 
 
 class SuppliersInput(graphene.InputObjectType):
@@ -99,7 +99,7 @@ class ApproveSupplier(graphene.Mutation):
         name = supplier.name
         supplier.save()
         success = SUCCESS_RESPONSES[
-                  "approval_success"].format("Supplier" + name)
+            "approval_success"].format("Supplier" + name)
         return cls(success=success, supplier=supplier)
 
 
@@ -125,7 +125,7 @@ class DeleteSupplier(graphene.Mutation):
         name = supplier.name
         supplier.delete()
         success = SUCCESS_RESPONSES[
-                  "deletion_success"].format("Supplier" + name)
+            "deletion_success"].format("Supplier" + name)
         return cls(success=success)
 
 
@@ -181,7 +181,7 @@ class EditSupplier(graphene.Mutation):
         supplier = get_model_object(Suppliers, 'id', id)
         if not supplier.is_approved:
             msg = ORDERS_ERROR_RESPONSES[
-                   "supplier_edit_proposal_validation_error"]
+                "supplier_edit_proposal_validation_error"]
             raise GraphQLError(msg)
 
         kwargs.pop('id')
@@ -201,7 +201,7 @@ class EditSupplier(graphene.Mutation):
         with SaveContextManager(edit_request, model=Suppliers) as edit_request:
             name = supplier.name
             msg = ORDERS_SUCCESS_RESPONSES[
-                  "supplier_edit_request_success"].format(name)
+                "supplier_edit_request_success"].format(name)
             return cls(edit_request, msg)
 
 
@@ -339,7 +339,7 @@ class DeclineEditRequest(graphene.Mutation):
         edit_request.save()
         supplier_name = edit_request.name
         msg = ORDERS_ERROR_RESPONSES[
-              "supplier_request_denied"].format(supplier_name)
+            "supplier_request_denied"].format(supplier_name)
         return cls(msg, edit_request)
 
 
@@ -390,7 +390,7 @@ class CreateSupplierNote(graphene.Mutation):
                 supplier_note=supplier_note,
                 supplier=supplier,
                 message=SUCCESS_RESPONSES[
-                        "creation_success"].format("Supplier's note"))
+                    "creation_success"].format("Supplier's note"))
 
 
 class UpdateSupplierNote(graphene.Mutation):
@@ -441,7 +441,7 @@ class UpdateSupplierNote(graphene.Mutation):
         with SaveContextManager(supplier_note) as supplier_note:
             return cls(
                 success=SUCCESS_RESPONSES[
-                        "update_success"].format("Supplier's note"),
+                    "update_success"].format("Supplier's note"),
                 supplier_note=supplier_note)
 
 

@@ -63,6 +63,7 @@ class Query(graphene.AbstractType):
     returns:
         all_suppliers(list): returns all suppliers in the database with a null
                              'parent' field
+        single_supplier(field): returns a particular supplier by id or name
         edit_request(list): returns all suppliers that have a non-null
                             'parent' field
         approved_suppliers(list): returns all approved suppliers
@@ -74,6 +75,9 @@ class Query(graphene.AbstractType):
 
     all_suppliers = graphene.List(SuppliersType, page_count=graphene.Int(),
                                   page_number=graphene.Int())
+    single_supplier = graphene.Field(SuppliersType,
+                                     name=graphene.String(),
+                                     id=graphene.String())
     edit_requests = graphene.List(SuppliersType)
     approved_suppliers = graphene.List(SuppliersType,
                                        page_count=graphene.Int(),
@@ -106,6 +110,18 @@ class Query(graphene.AbstractType):
         Query.pagination_result = paginated_response
         return paginated_response[0]
 
+    @login_required
+    def resolve_single_supplier(self, info, **kwargs):
+        name = kwargs.get('name')
+        id = kwargs.get('id')
+        if not (name or id):
+            message = ORDERS_ERROR_RESPONSES[
+                "invalid_supplier_field"]
+            raise GraphQLError(message)
+        field, value = ('id', id) if id else('name', name)
+        supplier = get_model_object(Suppliers, field, value)
+        return supplier
+
     @user_permission('Operations Admin')
     def resolve_edit_requests(self, info):
         return Suppliers.objects.exclude(parent=None)
@@ -130,8 +146,8 @@ class Query(graphene.AbstractType):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         approved_suppliers_set = Suppliers.objects.filter(
-                                                   is_approved=True
-                                                   ).order_by('id')
+            is_approved=True
+        ).order_by('id')
         if page_count or page_number:
             approved_suppliers = pagination_query(
                 approved_suppliers_set, page_count, page_number)

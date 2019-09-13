@@ -46,5 +46,7 @@ ORDERS_ERROR_RESPONSES = {
                               " not match the provided BatchInfo",
     "scan_disabled": "Barcode scanning is disabled",
     "close_order_invalid_user": "Cannot close order in outlet you're "
-                                "not active in"
+                                "not active in",
+    "invalid_supplier_field": "Please provide the right field of "
+                                "supplier name or id"
 }

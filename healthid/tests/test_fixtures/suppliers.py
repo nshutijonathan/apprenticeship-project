@@ -38,6 +38,24 @@ suppliers_query = '''
 
 '''
 
+supplier_query_by_id = '''
+            query{{
+              singleSupplier(id: "{id}"){{
+              id
+              name
+              }}
+            }}
+'''
+
+supplier_query_by_name = '''
+            query{{
+              singleSupplier(name: "{name}"){{
+              id
+              name
+              }}
+            }}
+'''
+
 approved_suppliers = '''
         query{
             approvedSuppliers{
