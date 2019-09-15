@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'healthid.apps.customers',
     'healthid.apps.profiles',
     'rest_framework',
+    'rest_framework_swagger',
     'rest_framework.authtoken',
     'corsheaders',
     'cloudinary',

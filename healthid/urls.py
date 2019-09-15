@@ -21,7 +21,9 @@ from graphene_django.views import GraphQLView
 from .apps.authentication.views import activate, PasswordResetView
 from .apps.orders.views import SupplierOrderFormPDFView
 from .views import HandleCSV, HandleCsvExport, EmptyCsvFileExport
+from rest_framework.documentation import include_docs_urls
 
+core_schema_view = include_docs_urls(title='HealthID API')
 
 admin.site.site_header = "HealthID Admin"
 admin.site.site_title = "HealthID Admin"
@@ -41,4 +43,5 @@ urlpatterns = [
     path('healthid/supplier-order-pdf/<supplier_order_detail_id>',
          SupplierOrderFormPDFView.as_view(),
          name='supplier-order-form'),
+    path('healthid/schema/', core_schema_view)
 ]

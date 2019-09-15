@@ -4,6 +4,14 @@
 
 Health ID is an inventory management and customer engagement software platform designed for pharmacists/chemists and their customers. For pharmacists/chemists, Health ID helps them run their stores more efficiently and grow their business by improved targeting of promotions and value-added services. For consumers, Health ID improves their overall experience of pharmacies, provides personalised services and information, and also offers unique product discounts.
 
+
+## API documemation links
+
+[Graphql API Documentation](https://healthid-web-api.herokuapp.com/healthid/)
+
+[Django API Documentation](https://healthid-web-api.herokuapp.com/healthid/schema)
+
+
 ## Installing
 
 ```sh
