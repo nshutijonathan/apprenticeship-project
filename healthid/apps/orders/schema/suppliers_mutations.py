@@ -418,6 +418,7 @@ class UpdateSupplierNote(graphene.Mutation):
 
     @classmethod
     @login_required
+    @user_permission('Operations Admin')
     def mutate(cls, root, info, id, **kwargs):
         outlet_ids = kwargs.pop('outlet_ids')
         supplier_note = get_model_object(SupplierNote, "id", id)
@@ -464,6 +465,7 @@ class DeleteSupplierNote(graphene.Mutation):
         id = graphene.Int(required=True)
 
     @login_required
+    @user_permission('Operations Admin')
     def mutate(self, info, id):
         user = info.context.user
         supplier_note = get_model_object(SupplierNote, "id", id)

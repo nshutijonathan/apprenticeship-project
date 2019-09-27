@@ -14,6 +14,11 @@ from healthid.tests.factories import SupplierNoteFactory
 
 
 class TestSuppliersNote(BaseConfiguration):
+    def setUp(self):
+        super(TestSuppliersNote, self).setUp()
+        self.supplier_note_factory = SupplierNoteFactory(
+            user=self.master_admin_user)
+
     def test_create_suppliers_note(self):
         """Test method for creating a suppliers note"""
         data = {
@@ -118,12 +123,12 @@ class TestSuppliersNote(BaseConfiguration):
     def test_update_suppliers_note(self):
         """Test method for updating a suppliers note"""
         data = {
-            "supplier_note": self.suppliers_note.id,
+            "supplier_note": self.supplier_note_factory.id,
             "outlet_id": self.outlet.id,
             "note": "Update Supplier note"
         }
         response = self.query_with_token(
-            self.access_token,
+            self.access_token_master,
             update_suppliers_note.format(**data))
         expected_message = SUCCESS_RESPONSES[
             "update_success"].format("Supplier's note")
@@ -137,12 +142,12 @@ class TestSuppliersNote(BaseConfiguration):
           Test method for updating a suppliers note, with less than two words
         """
         data = {
-            "supplier_note": self.suppliers_note.id,
+            "supplier_note": self.supplier_note_factory.id,
             "outlet_id": self.outlet.id,
             "note": "Updated  "
         }
         response = self.query_with_token(
-            self.access_token,
+            self.access_token_master,
             update_suppliers_note.format(**data))
         expected_message = ORDERS_ERROR_RESPONSES["supplier_note_length_error"]
         self.assertEqual(
@@ -153,12 +158,12 @@ class TestSuppliersNote(BaseConfiguration):
           Test method for updating a suppliers note, with special characters
         """
         data = {
-            "supplier_note": self.suppliers_note.id,
+            "supplier_note": self.supplier_note_factory.id,
             "outlet_id": self.outlet.id,
             "note": "Updated %^&$3$@ suplier "
         }
         response = self.query_with_token(
-            self.access_token,
+            self.access_token_master,
             update_suppliers_note.format(**data))
         expected_message = "special characters not allowed"
         self.assertEqual(
@@ -222,8 +227,8 @@ class TestSuppliersNote(BaseConfiguration):
     def test_delete_suppliers_note(self):
         """Test method for deleting suppliers note"""
         response = self.query_with_token(
-            self.access_token,
-            delete_supplier_note(self.suppliers_note.id))
+            self.access_token_master,
+            delete_supplier_note(self.supplier_note_factory.id))
         self.assertIn(SUCCESS_RESPONSES[
                       "deletion_success"].format("Supplier's note"),
                       response["data"]["deleteSuppliernote"]["success"])
