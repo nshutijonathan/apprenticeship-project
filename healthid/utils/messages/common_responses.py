@@ -1,5 +1,6 @@
 SUCCESS_RESPONSES = {
     "creation_success": "{}, created successfully!",
+    "with_interval": "{}, scheduled successfully!",
     "update_success": "{}, updated successfully!",
     "deletion_success": "{}, deleted successfully!",
     "approval_success": "{}, approved successfully!",

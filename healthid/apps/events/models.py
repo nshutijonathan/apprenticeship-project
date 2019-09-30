@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 
 from healthid.apps.authentication.models import User
@@ -27,8 +28,8 @@ class Event(BaseModel):
                                    on_delete=models.SET_NULL)
     start_date = models.DateField()
     end_date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(default=datetime.time(0, 0))
+    end_time = models.TimeField(default=datetime.time(0, 0))
     event_title = models.CharField("title", max_length=255)
     description = models.TextField("description", null=True, blank=True)
     user = models.ManyToManyField(User, related_name='attendees')

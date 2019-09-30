@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db import IntegrityError
 
 import graphene
 from graphql import GraphQLError
@@ -10,6 +11,9 @@ from healthid.apps.stock.models import (StockCount, StockCountRecord,
 
 from healthid.apps.stock.schema.stock_query import (StockCountTemplateType,
                                                     StockCountType)
+
+from healthid.apps.events.models import Event
+
 from healthid.apps.stock.schema.stock_transfer_mutations import (
     CloseStockTransfer, OpenStockTransfer)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -48,10 +52,15 @@ class CreateStockCountTemplate(graphene.Mutation):
 
     class Arguments:
         product_ids = graphene.List(graphene.Int, required=True)
-        event_id = graphene.Int(required=True)
+        event_type_id = graphene.String(required=True)
         assigned_user_ids = graphene.List(graphene.String, required=True)
         designated_user_ids = graphene.List(graphene.String, required=True)
+        batch_ids = graphene.List(graphene.String)
         outlet_id = graphene.Int(required=True)
+        end_date = graphene.String(required=True)
+        start_date = graphene.String(required=True)
+        interval = graphene.Int(required=True)
+        end_on = graphene.String()
 
     @login_required
     @user_permission('Manager', 'Admin')
@@ -63,7 +72,22 @@ class CreateStockCountTemplate(graphene.Mutation):
                 template_instance,
                 **template_fields
             )
-            stock_tempalate.save()
+            event = Event(
+                start_date=template_fields['start_date'],
+                end_date=template_fields['end_date'],
+                event_title=f'Stock Count Reminder',
+                description=f'Stock reminder count on auto scheduling',
+                event_type=template_fields['event_type']
+            )
+            event.save()
+            stock_tempalate.schedule_time = event
+            stock_tempalate.created_by = info.context.user
+            stock_tempalate.unique = True
+            try:
+                stock_tempalate.save()
+            except IntegrityError:
+                raise IntegrityError(STOCK_ERROR_RESPONSES[
+                    'template_integrity_error'])
         to_email = stock_tempalate.assigned_users.values_list(
             'email', flat=True)
         email_stock_template = 'email_alerts/stocks/stock_email.html'
@@ -78,8 +102,13 @@ class CreateStockCountTemplate(graphene.Mutation):
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
         send_mail.send()
-        message = SUCCESS_RESPONSES[
-            "creation_success"].format("Stock count template")
+        if stock_tempalate.interval:
+            message = SUCCESS_RESPONSES["with_interval"].format(
+                "Template with interval {} days".format(
+                    stock_tempalate.interval))
+        else:
+            message = SUCCESS_RESPONSES[
+                "creation_success"].format("Stock count template")
         return CreateStockCountTemplate(
             stock_template=stock_tempalate, success=message)
 
@@ -108,7 +137,7 @@ class EditStockCountTemplate(graphene.Mutation):
     class Arguments:
         template_id = graphene.Int(required=True)
         product_ids = graphene.List(graphene.Int)
-        event_id = graphene.Int()
+        event_type_id = graphene.String(required=True)
         assigned_user_ids = graphene.List(graphene.String)
         designated_user_ids = graphene.List(graphene.String)
         outlet_id = graphene.Int()
@@ -167,7 +196,6 @@ class DeleteStockCountTemplate(graphene.Mutation):
     @login_required
     @user_permission('Manager', 'Admin')
     def mutate(self, info, **kwargs):
-        user = info.context.user
         stock_tempalate = get_model_object(
             StockCountTemplate, 'id', kwargs.get('template_id'))
         to_email = stock_tempalate.assigned_users.values_list(
@@ -182,7 +210,7 @@ class DeleteStockCountTemplate(graphene.Mutation):
             'small_text_detail': 'Hello, stock counts has been canceled'
         }
         send_mail = SendMail(email_stock_template, context, subject, to_email)
-        stock_tempalate.delete(user)
+        stock_tempalate.hard_delete()
         send_mail.send()
         message = SUCCESS_RESPONSES[
             "deletion_success"].format("Stock template")

@@ -1,5 +1,9 @@
 import re
 from itertools import compress
+from dateutil import parser
+
+from django.utils.timezone import make_aware
+
 from graphql import GraphQLError
 
 
@@ -60,3 +64,14 @@ def check_validity_of_ids(user_inputs, db_ids, message=None):
             message = "Products with ids '{}' do not exist in this batch"
         message = message.format(",".join(map(str, invalid_items)))
         raise GraphQLError(message)
+
+
+def validate_date(string_date):
+    """
+    Converts a string date into a python date object
+
+    Arguments:
+        string_date {string} -- [sting date format]
+    """
+    valid_date = make_aware(parser.parse(string_date))
+    return valid_date

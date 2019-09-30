@@ -23,13 +23,20 @@ class StockTemplateTestCase(BaseConfiguration):
         self.user_id1 = self.register_user(self.stock_count_user1).id
         self.user_id2 = self.register_user(self.stock_count_user2).id
         self.outlet_id = self.outlet.id
-        self.event_id = self.event.id
+        self.event_type_id = self.event.event_type.id
+        self.start_date = self.event.start_date.date()
+        self.end_date = self.event.end_date.date()
+        self.end_on = self.event.end_date.date()
         self.stock_template_data = {
             'product_ids': f'[{self.product_id1}, {self.product_id2}]',
             'assigned_user_ids': f'["{self.user_id1}", "{self.user_id2}"]',
             'dessignate_user_ids': f'["{self.user_id1}", "{self.user_id2}"]',
             'outlet_id': self.outlet_id,
-            'event_id': self.event_id
+            'event_type_id': f'"{self.event_type_id}"',
+            'start_date': f'"{self.start_date}"',
+            'end_date': f'"{self.end_date}"',
+            'end_on': f'"{self.end_on}"',
+            'interval': 0
         }
 
     def create_stock_template(self):
@@ -46,6 +53,7 @@ class StockTemplateTestCase(BaseConfiguration):
 
     def test_create_stock_template(self):
         response = self.create_stock_template()
+
         self.assertEqual(SUCCESS_RESPONSES[
                          "creation_success"].format("Stock count template"),
                          response['data']['createStockCountTemplate']

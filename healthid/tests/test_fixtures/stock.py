@@ -6,7 +6,11 @@ create_stock_template_string = '''
             assignedUserIds:{assigned_user_ids}
             designatedUserIds:{dessignate_user_ids}
             outletId:{outlet_id}
-            eventId:{event_id}
+            eventTypeId:{event_type_id}
+            interval:{interval}
+            startDate:{start_date}
+            endDate:{end_date}
+            endOn: {end_on}
         ){{
             stockTemplate{{
             id
@@ -48,7 +52,7 @@ edit_stock_template_string = '''
             assignedUserIds:{assigned_user_ids}
             designatedUserIds:{dessignate_user_ids}
             outletId:{outlet_id}
-            eventId:{event_id}
+            eventTypeId:{event_type_id}
         ){{
             stockTemplate{{
             id

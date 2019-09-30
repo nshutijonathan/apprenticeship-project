@@ -25,5 +25,8 @@ STOCK_ERROR_RESPONSES = {
     "zero_stock_transfers": "No stock transfers yet!",
     "variance_error": "There is a variance, Kindly state the variance reason",
     "inexistent_batch_id": "Please provide atleast one batch id.",
-    "stock_count_closed": "Stock count has been closed"
+    "stock_count_closed": "Stock count has been closed",
+    "template_integrity_error":
+        "You already have scheduled a reminder with a similar \
+            interval and end date."
 }

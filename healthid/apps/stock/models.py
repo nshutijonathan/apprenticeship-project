@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 from healthid.apps.authentication.models import User
 from healthid.apps.events.models import Event
@@ -17,6 +18,8 @@ SCHEDULED_IN_ADVANCE = "Scheduled in advance"
 class StockCountTemplate(BaseModel):
     products = models.ManyToManyField(
         Product, related_name='products_to_count')
+    batches = models.ManyToManyField(
+        BatchInfo, related_name='batches_to_count', blank=True)
     schedule_time = models.ForeignKey(
         Event, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=50, default=SCHEDULED_IN_ADVANCE)
@@ -25,10 +28,45 @@ class StockCountTemplate(BaseModel):
         User, related_name='assigned_to')
     designated_users = models.ManyToManyField(
         User, related_name='designated_to')
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
+    outlet = models.ForeignKey(Outlet, on_delete=models.DO_NOTHING, null=True)
+    interval = models.PositiveIntegerField(null=True, blank=True)
+    end_on = models.DateField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING,
+        related_name='created_by', null=True, blank=True)
+    scheduled = models.BooleanField(default=False)
+    unique = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['created_at', 'interval',
+                        'end_on', 'created_by'],
+                condition=Q(unique=True),
+                name='unique_template_user'),
+
+        ]
 
     def __str__(self):
         return str(self.id)
+
+    def get_products(self):
+        """
+        Return a list of affiliated products
+        """
+        return [product.id for product in self.products.all()]
+
+    def get_assigned_users(self):
+        """
+        Returns a list of affiliated assignees
+        """
+        return [user.id for user in self.assigned_users.all()]
+
+    def get_designated_users(self):
+        """
+        Returns a list of affiliated admins
+        """
+        return [user.id for user in self.designated_users.all()]
 
 
 class StockCount(BaseModel):
@@ -46,7 +84,9 @@ class StockCount(BaseModel):
 
     @property
     def update_template_status(self):
-        """This method update the status of the stock count template"""
+        """
+        This method update the status of the stock count template
+        """
         if not self.is_completed:
             self.stock_template.status = IN_PROGRESS
 
@@ -68,7 +108,8 @@ class StockCountRecord(BaseModel):
 
 
 class StockTransferRecord(BaseModel):
-    """Model to handle stock transfer records
+    """
+     Model to handle stock transfer records
     """
     batch = models.ForeignKey(
         BatchInfo, related_name='stock_transfer_records',
@@ -77,7 +118,8 @@ class StockTransferRecord(BaseModel):
 
 
 class StockTransfer(BaseModel):
-    """Model to handle stock transfer data
+    """
+    Model to handle stock transfer data
     """
     id = models.CharField(
         max_length=9, primary_key=True, default=id_gen, editable=False)

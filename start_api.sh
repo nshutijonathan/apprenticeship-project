@@ -11,7 +11,7 @@ python3 manage.py makemigrations && python3 manage.py migrate
 
 # the script to create data in the database
 # they are arranged according to dependency of models
-python3 manage.py loaddata healthid/fixtures/authenication.json && 
+python3 manage.py loaddata healthid/fixtures/authentication.json && 
 python3 manage.py loaddata healthid/fixtures/business.json && 
 python3 manage.py loaddata healthid/fixtures/consultation_data.json &&
 python3 manage.py loaddata healthid/fixtures/countries.json && 
