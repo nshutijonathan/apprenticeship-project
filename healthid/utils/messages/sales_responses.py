@@ -6,7 +6,8 @@ SALES_SUCCESS_RESPONSES = {
     "sale_intiate_success": "Return was initiated successfully",
     "calculated_velocity":  "Sales velocity calculated successfully."
                             "Use calculated value",
-    "sales_return_approved": "Sales return approved successfully"
+    "sales_return_approved": "Sales return approved successfully",
+    "create_sales_success": "Sale was created successfully"
 }
 
 SALES_ERROR_RESPONSES = {
@@ -32,4 +33,10 @@ SALES_ERROR_RESPONSES = {
         "Sales returns with ids {} already approved",
     "empty_sales_return": "Sales return can't be empty!",
     "no_sales_error": "No sales to view yet!",
+    "less_credit": "You do not have enough credit to purchase these items",
+    "invalid_payment": "The payment method is not valid in this outlet",
+    "invalid_amount": "Amount should be greater than 1",
+    "invalid_discount": "Discount must be greater between 0 and 100",
+    "wrong_currency": "Customer wallet currency must be the same as"
+    " the outlet currency",
 }

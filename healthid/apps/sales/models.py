@@ -1,4 +1,6 @@
 from django.db import models
+from decimal import Decimal
+from graphql import GraphQLError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Sum
 from django.db.models.signals import pre_save
@@ -9,12 +11,16 @@ from healthid.apps.products.models import Product, BatchInfo
 from healthid.apps.profiles.models import Profile
 
 from healthid.models import BaseModel
+from healthid.apps.preference.models import OutletPreference
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.sales_utils.initiate_sale import initiate_sale
 from healthid.utils.sales_utils.validate_sale import SalesValidator
 from healthid.utils.sales_utils.validators import check_approved_sales
+from healthid.apps.wallet.models import (
+    CustomerCredit, StoreCreditWalletHistory)
+from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
 
 
 class PromotionType(BaseModel):
@@ -117,7 +123,9 @@ class Sale(BaseModel):
             payment_method: Holds payment method e.g. cash/cash
             notes: Holds note about the sale
     """
-
+    CASH = 'Cash'
+    CREDIT = 'Credit'
+    PAYMENT_METHODS = ((CASH, 'Cash'), (CREDIT, 'Credit'))
     sales_person = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='sold_by')
     customer = models.ForeignKey(
@@ -130,7 +138,9 @@ class Sale(BaseModel):
     sub_total = models.DecimalField(max_digits=12, decimal_places=2)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2)
     change_due = models.DecimalField(max_digits=12, decimal_places=2)
-    payment_method = models.CharField(max_length=35, default="cash")
+    payment_method = models.CharField(
+        choices=PAYMENT_METHODS,
+        max_length=6)
     notes = models.TextField(blank=True, null=True)
     loyalty_earned = models.PositiveIntegerField(default=0)
 
@@ -195,6 +205,30 @@ class Sale(BaseModel):
                     paid_amount=paid_amount,
                     change_due=change_due,
                     notes=notes)
+        customer = None
+        if customer_id:
+            customer = get_model_object(Profile, "id", customer_id)
+            if payment_method == 'credit':
+                customer_credit = get_model_object(
+                    CustomerCredit, "customer", customer.id)
+                outlet_preference = get_model_object(
+                    OutletPreference, "outlet", outlet_id)
+                if outlet_preference.outlet_currency_id != (
+                        customer_credit.credit_currency_id):
+                    raise GraphQLError(
+                        SALES_ERROR_RESPONSES['wrong_currency'])
+                if customer_credit.store_credit < amount_to_pay:
+                    raise GraphQLError(
+                        SALES_ERROR_RESPONSES['less_credit'])
+                customer_credit.store_credit = (
+                    customer_credit.store_credit - Decimal(amount_to_pay))
+                customer_credit.save()
+                debit_wallet_history = StoreCreditWalletHistory(
+                    sales_person=sales_person,
+                    debit=amount_to_pay,
+                    current_store_credit=customer_credit.store_credit,
+                    customer_account=customer_credit)
+                debit_wallet_history.save()
 
         with SaveContextManager(sale) as sale:
             loyalty_points_earned = initiate_sale(
@@ -204,7 +238,6 @@ class Sale(BaseModel):
                 SaleDetail,
                 BatchHistory)
             if customer_id:
-                customer = get_model_object(Profile, "id", customer_id)
                 sale.customer = customer
                 if customer.loyalty_member:
                     sale.loyalty_earned = loyalty_points_earned

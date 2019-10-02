@@ -6,22 +6,28 @@ from healthid.tests.test_fixtures.sales import (create_sale,
                                                 query_sale_history,
                                                 all_sales_history_query)
 from healthid.utils.sales_utils.validators import remove_quotes
-from healthid.utils.messages.sales_responses import SALES_ERROR_RESPONSES
+from healthid.utils.messages.sales_responses import (
+    SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES)
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.tests.factories import (OutletFactory, SaleFactory,
                                       CustomerFactory, ProductFactory,
-                                      BatchInfoFactory, QuantityFactory)
+                                      BatchInfoFactory, QuantityFactory,
+                                      CustomerCreditFactory)
 
 faker = Faker()
 
 
 class TestCreateSale(BaseConfiguration):
     def setUp(self):
-        super().setUp()
+        super(TestCreateSale, self).setUp()
         self.outlet_2 = OutletFactory()
         self.customer_2 = CustomerFactory()
         self.sale = SaleFactory(outlet=self.outlet_2, customer=self.customer_2)
         self.product_2 = ProductFactory()
+        self.wallet = CustomerCreditFactory(
+            customer=self.customer_2,
+            store_credit=500,
+            credit_currency=self.currency)
         self.product_batch = BatchInfoFactory(product=self.product_2)
         self.quantity_2 = QuantityFactory(quantity_remaining=200,
                                           batch=self.product_batch)
@@ -35,7 +41,7 @@ class TestCreateSale(BaseConfiguration):
             "change_due": 7980.0,
             "paid_amount": faker.random_int(min=0, max=10000),
             "payment_method": "cash",
-            "outlet_id": self.outlet.id,
+            "outlet_id": self.preference.outlet_id,
             "customer_id": self.customer_2.id,
             "sub_total": faker.random_int(min=1, max=10000),
             "products": '[{}]'.format(remove_quotes(self.product_details))
@@ -125,8 +131,10 @@ class TestCreateSale(BaseConfiguration):
         self.create_receipt_template()
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_SUCCESS_RESPONSES["create_sales_success"]
+        self.assertNotIn("errors", response)
         self.assertEqual(response['data']['createSale']['message'],
-                         "Sale was created successfully")
+                         message)
 
     def test_fetch_sales_history(self):
         response = self.query_with_token(
@@ -147,3 +155,63 @@ class TestCreateSale(BaseConfiguration):
             self.access_token_master, all_sales_history_query)
         self.assertEqual(str(self.sale.id),
                          response['data']['allSalesHistory'][0]['id'])
+
+    def test_buy_items_with_less_credit(self):
+        self.sales_data['payment_method'] = "credit"
+        self.sales_data['amount_to_pay'] = faker.random_int(min=600)
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_ERROR_RESPONSES['less_credit']
+        self.assertEqual(
+            response['errors'][0]['message'], message)
+
+    def test_buy_items_with_credit(self):
+        self.sales_data['payment_method'] = "credit"
+        self.sales_data['amount_to_pay'] = faker.random_int(
+            min=1, max=100)
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_SUCCESS_RESPONSES["create_sales_success"]
+        self.assertNotIn("errors", response)
+        self.assertEqual(response['data']['createSale']['message'], message)
+
+    def test_buy_items_with_wrong_credit_currency(self):
+        wallet_2 = CustomerCreditFactory()
+
+        sales_data_2 = self.sales_data
+
+        sales_data_2['payment_method'] = "credit"
+        sales_data_2['amount_to_pay'] = faker.random_int(
+            min=1, max=100)
+        sales_data_2['customer_id'] = wallet_2.customer_id
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**sales_data_2))
+        message = SALES_ERROR_RESPONSES['wrong_currency']
+        self.assertEqual(response['errors'][0]['message'], message)
+
+    def test_with_negative_pay(self):
+        self.sales_data['payment_method'] = "credit"
+        self.sales_data['amount_to_pay'] = faker.random_int(
+            min=-1000, max=-1)
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_ERROR_RESPONSES['invalid_amount']
+        self.assertEqual(response['errors'][0]['message'], message)
+
+    def test_with_invalid_discount(self):
+        self.sales_data['payment_method'] = "credit"
+        self.sales_data['discount_total'] = faker.random_int(
+            min=100, max=1000)
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_ERROR_RESPONSES['invalid_discount']
+        self.assertEqual(response['errors'][0]['message'], message)
+
+    def test_with_invalid_payment_method(self):
+        self.sales_data['payment_method'] = "credit-card-cash"
+        self.sales_data['amount_to_pay'] = faker.random_int(
+            min=1, max=100)
+        response = self.query_with_token(
+            self.access_token, create_sale.format(**self.sales_data))
+        message = SALES_ERROR_RESPONSES['invalid_payment']
+        self.assertEqual(response['errors'][0]['message'], message)

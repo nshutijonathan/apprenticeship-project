@@ -130,12 +130,12 @@ class Preference(BaseModel):
         outlet_currency = kwargs.get('outlet_currency')
         outlet_vat_rate = kwargs.get('outlet_vat')
         preference = get_model_object(model, 'id', preference_id)
-        cash_methods = ['cash', 'card', 'both', 'others']
-        outlet_preference_fields = [
+        cash_methods = ('cash', 'card', 'both', 'others', 'credit')
+        outlet_preference_fields = (
             'outlet_timezone',
             'outlet_currency',
             'outlet_vat'
-        ]
+        )
 
         if outlet_vat_rate:
             if outlet_vat_rate > 100.00:
@@ -182,7 +182,7 @@ class OutletPreference(Preference):
         max_length=ID_LENGTH, primary_key=True, default=id_gen, editable=False
     )
     outlet = models.OneToOneField(
-            Outlet, on_delete=models.CASCADE, null=True)
+        Outlet, on_delete=models.CASCADE, null=True)
     outlet_timezone = models.ForeignKey(
         Timezone, on_delete=models.CASCADE)
     outlet_currency = models.ForeignKey(Currency, on_delete=models.CASCADE)

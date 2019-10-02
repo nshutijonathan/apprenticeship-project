@@ -6,8 +6,7 @@ from healthid.tests.test_fixtures.wallet import (
 from healthid.utils.messages.common_responses import (
     SUCCESS_RESPONSES)
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
-from healthid.tests.factories import (
-    CustomerCreditFactory, CurrencyFactory, CustomerFactory)
+from healthid.tests.factories import CustomerCreditFactory
 
 
 fake = Faker()
@@ -18,11 +17,7 @@ class TestCustomerCredit(BaseConfiguration):
 
     def setUp(self):
         super().setUp()
-        self.customer = CustomerFactory.create()
-        self.currency = CurrencyFactory.create()
         self.customer_credit = CustomerCreditFactory.create(
-            customer=self.customer,
-            credit_currency=self.currency,
             store_credit=0.0
         )
 

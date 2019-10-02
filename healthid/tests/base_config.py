@@ -15,7 +15,8 @@ from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
 from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import SalesPrompt
 from healthid.apps.stock.models import StockCountTemplate
-from healthid.apps.preference.models import Timezone, OutletPreference
+from healthid.apps.preference.models import (Timezone,
+                                             OutletPreference, Currency)
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 from healthid.apps.receipts.models import ReceiptTemplate
@@ -188,6 +189,8 @@ class BaseConfiguration(TestCase):
         self.another_master_admin_token = self.admin_login(
             self.login_another_master_admin)
         self.preference = OutletPreference.objects.filter().first()
+        self.currency = Currency.objects.filter(
+            id=self.preference.outlet_currency_id).first()
         self.second_outlet = self.create_outlet(self.second_outlet)
         OutletUser.objects.create(user=self.second_master_admin_user,
                                   outlet=self.second_outlet,

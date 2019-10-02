@@ -93,7 +93,7 @@ class EditCustomerWallet(graphene.Mutation):
             sales_person=user,
             credit=credit,
             current_store_credit=previous_value,
-            customer=customer_credit)
+            customer_account=customer_credit)
         with SaveContextManager(
                 credit_wallet,
                 model=StoreCreditWalletHistory) as credit_wallet:

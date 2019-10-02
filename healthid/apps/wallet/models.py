@@ -22,7 +22,7 @@ class StoreCreditWalletHistory(BaseModel):
     """
     Increments or Decrements the store credit.
     """
-    customer = models.ForeignKey(
+    customer_account = models.ForeignKey(
         CustomerCredit, on_delete=models.SET_NULL, null=True,
         related_name='credit')
     sales_person = models.ForeignKey(

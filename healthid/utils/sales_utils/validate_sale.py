@@ -109,15 +109,14 @@ class SalesValidator:
         outlet_id = kwargs.get('outlet_id')
         preferences = get_model_object(
             OutletPreference, 'outlet_id', outlet_id)
+        message = SALES_ERROR_RESPONSES['invalid_payment']
         if preferences.payment_method == 'both' and \
-                payment_method not in ['cash', 'card']:
-            raise GraphQLError(
-                "The payment method is not valid in this outlet")
+                payment_method not in ['cash', 'card', 'credit']:
+            raise GraphQLError(message)
         if preferences.payment_method != 'both' and \
-                payment_method != 'others':
+                payment_method not in ['others', 'credit']:
             if preferences.payment_method != payment_method:
-                raise GraphQLError(
-                    "The payment method is not valid in this outlet")
+                raise GraphQLError(message)
 
     def check_product_returnable(self):
         message = message = SALES_ERROR_RESPONSES['not_returnable']
