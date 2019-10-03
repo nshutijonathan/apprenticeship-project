@@ -15,6 +15,8 @@ from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.app_utils.validators import check_validity_of_ids
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
+from healthid.utils.product_utils.product_price_checker import \
+    round_off_selling_price
 
 
 class ProductCategory(BaseModel):
@@ -165,6 +167,8 @@ class Product(BaseModel):
                 selling_price = Decimal(self.avarage_unit_cost) * \
                     Decimal(1 + self.markup / 100)
 
+        selling_price = round_off_selling_price(selling_price)
+
         return selling_price
 
     @property
@@ -174,6 +178,9 @@ class Product(BaseModel):
         if self.vat_status:
             vat_rate = selling_price * Decimal(preference.vat_rate.rate)
             selling_price = selling_price + vat_rate
+
+        selling_price = round_off_selling_price(selling_price)
+
         return selling_price
 
     def get_proposed_edit(self, request_id):
@@ -228,14 +235,14 @@ class Product(BaseModel):
     @staticmethod
     def general_search(search_term):
         search_filter = (
-                Q(product_name__icontains=search_term) |
-                Q(description__icontains=search_term) |
-                Q(brand__icontains=search_term) |
-                Q(manufacturer__icontains=search_term) |
-                Q(product_category__name__icontains=search_term) |
-                Q(preferred_supplier__name__icontains=search_term) |
-                Q(sku_number__exact=search_term)
-            )
+            Q(product_name__icontains=search_term) |
+            Q(description__icontains=search_term) |
+            Q(brand__icontains=search_term) |
+            Q(manufacturer__icontains=search_term) |
+            Q(product_category__name__icontains=search_term) |
+            Q(preferred_supplier__name__icontains=search_term) |
+            Q(sku_number__exact=search_term)
+        )
         return search_filter
 
 
