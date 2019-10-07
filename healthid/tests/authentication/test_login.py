@@ -1,12 +1,40 @@
 from graphql_jwt.testcases import JSONWebTokenTestCase
 
 from healthid.apps.authentication.models import User
+from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.authentication.test_data import (
     login_mutation,
     login_user_query,
     test_users_query
 )
+from healthid.tests.test_fixtures.authentication import (
+    user_query, users_query
+)
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.messages.authentication_responses import (
+    AUTH_ERROR_RESPONSES)
+
+
+class UsersTests(BaseConfiguration):
+
+    def test_get_users(self):
+        response = self.query_with_token(
+            self.access_token, users_query)
+        self.assertIn('data', response)
+
+    def test_get_authenticated_user(self):
+        response = self.query_with_token(
+            self.access_token, user_query)
+
+        self.assertIn('data', response)
+        self.assertNotIn('errors', response)
+
+    def test_for_anonymous_user(self):
+        response = self.query_with_token(
+            "fake token", user_query)
+        message = AUTH_ERROR_RESPONSES["authentication_error_response"]
+        self.assertIn('errors', response)
+        self.assertEqual(message, response['errors'][0]['message'])
 
 
 class UserTests(JSONWebTokenTestCase):

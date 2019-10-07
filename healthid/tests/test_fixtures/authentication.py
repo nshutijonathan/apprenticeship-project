@@ -169,3 +169,75 @@ user = {
     'mobileNumber': "+256788088831",
     'password': "Password@1"
 }
+
+user_query = '''
+  query{
+    me{
+      id
+      email
+    }
+  }
+'''
+
+users_query = '''
+  query{
+    users{
+      id
+      email
+    }
+  }
+'''
+
+create_role = """
+            mutation createRole {{
+               createRole(input: {{
+                 name: "{name}"
+               }}) {{
+                 success
+                 role {{
+                   name
+                 }}
+               }}
+            }}
+                """
+
+get_role_by_id = """
+        query {{
+          role(id:"{id}") {{
+            id
+            name
+          }}
+        }}
+        """
+
+get_role_by_name = """
+        query {{
+          role(name:"{name}") {{
+            id
+            name
+          }}
+        }}
+        """
+
+get_roles = """
+        query {
+          roles{
+            id
+            name
+          }
+        }
+        """
+
+edit_role = """
+            mutation editRole {{
+           editRole (id:"{id}", input:{{
+              name:"Test Role"
+          }}) {{
+            success
+            role {{
+              name
+            }}
+          }}
+        }}
+
+        """

@@ -1,4 +1,10 @@
 from healthid.tests.base_config import BaseConfiguration
+from healthid.tests.test_fixtures.authentication import (
+    create_role,
+    get_role_by_id,
+    get_role_by_name,
+    edit_role,
+    get_roles)
 
 
 class GraphQLTestCase(BaseConfiguration):
@@ -11,57 +17,54 @@ class GraphQLTestCase(BaseConfiguration):
         self.assertEqual(resp["data"], expected, "Response has correct data")
 
     def test_create_role(self):
-        query_string = """
-            mutation createRole {
-               createRole(input: {
-                 name: "User"
-               }) {
-                 success
-                 role {
-                   name
-                 }
-               }
-            }
-                """
+        data = {
+            "name": "User"
+        }
         expected = {"createRole": {"success": True, "role": {"name": "User"}}}
         resp = self.query_with_token(
-            self.access_token_master, query_string)
+            self.access_token_master, create_role.format(
+                **data))
         self.assertResponseNoErrors(resp, expected)
 
-    def test_single_role(self):
-        query_string = f"""
-        query {{
-          role(id:"{self.role.id}") {{
-            id
-            name
-          }}
-        }}
-        """
+    def test_single_role_by_id(self):
+        role = {
+            "id": self.role.id
+        }
         resp = self.query_with_token(
-            self.access_token_master, query_string)
+            self.access_token_master, get_role_by_id.format(
+                **role
+            ))
         self.assertResponseNoErrors(
             resp, {"role": {"id": str(self.role.id),
                             "name": str(self.role.name)}}
         )
 
-    def test_edit_role(self):
-        query_string = f"""
-            mutation editRole {{
-           editRole (id:"{self.role.id}", input:{{
-              name:"Test Role"
-          }}) {{
-            success
-            role {{
-              name
-            }}
-          }}
-        }}
+    def test_single_role_by_name(self):
+        role = {
+            "name": self.role.name
+        }
+        response = self.query_with_token(
+            self.access_token_master, get_role_by_name.format(
+                **role))
+        self.assertNotIn('errors', response)
+        self.assertEqual(self.role.name, response['data']['role']['name'])
 
-        """
+    def test_all_roles(self):
+        response = self.query_with_token(
+            self.access_token_master, get_roles)
+        self.assertNotIn('errors', response)
+        self.assertIn('data', response)
+
+    def test_edit_role(self):
+        role = {
+            "id": self.role.id
+        }
         expected = {"editRole": {"success": True,
                                  "role": {"name": "Test Role"}}}
         resp = self.query_with_token(
-            self.access_token_master, query_string)
+            self.access_token_master, edit_role.format(
+                **role
+            ))
         self.assertResponseNoErrors(resp, expected)
 
     def test_delete_role(self):
