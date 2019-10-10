@@ -23,7 +23,9 @@ class SuppliersType(DjangoObjectType):
             'tier__name': ['exact', 'icontains', 'istartswith'],
             'payment_terms__name': ['exact', 'icontains', 'istartswith'],
             'credit_days': ['exact'],
-            'rating': ['exact']
+            'rating': ['exact'],
+            'name': ['exact', 'icontains', 'istartswith'],
+            'is_approved': ['exact']
         }
         interfaces = (graphene.relay.Node, )
     id = graphene.ID(required=True)
