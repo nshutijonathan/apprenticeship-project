@@ -3,7 +3,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import (
     register_user_query, user)
 from healthid.utils.messages.authentication_responses import\
-     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
+    AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 
 FRONTEND_URL = settings.FRONTEND_URL
@@ -24,8 +24,10 @@ class VerificationTestCase(BaseConfiguration):
         response = self.client.get(
             verification_link,
             content_type='application/json')
-        self.assertIn(f'{settings.FRONTEND_URL}/login', response.url)
-        self.assertEqual(302, response.status_code)
+        self.assertIn(
+            f'{settings.HTTP}://{settings.FRONTEND_URL}',
+            response.context[0]['link'])
+        self.assertEqual(200, response.status_code)
 
     def test_account_already_verified_user(self):
         response = self.addUser()

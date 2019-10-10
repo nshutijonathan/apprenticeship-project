@@ -11,7 +11,7 @@ from healthid.apps.authentication.models import User
 from healthid.utils.app_utils.validators import validate_password
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.messages.authentication_responses import\
-     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
+    AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 FRONTEND_URL = settings.FRONTEND_URL
 HTTP = settings.HTTP
@@ -19,16 +19,21 @@ HTTP = settings.HTTP
 
 def activate(request, uidb64, token):
     link = None
+    template_type = None
     check_token, user = decode_token(uidb64, token)
     if check_token and user:
         user.is_active = True
         user.save()
-        return redirect(f'{HTTP}://{FRONTEND_URL}/login')
+        template_type = 'Email Verification Succeeded'
+        message = AUTH_SUCCESS_RESPONSES["account_verification"]
+        link = f'{HTTP}://{FRONTEND_URL}'
+        status = 200  # success
 
     if not check_token and user:
         if user.is_active:
+            template_type = 'Your email account has been verified successfully'
             message = AUTH_SUCCESS_RESPONSES["account_verification"]
-            link = f'{HTTP}://{FRONTEND_URL}/login'
+            link = f'{HTTP}://{FRONTEND_URL}'
             status = 409  # conflict
         else:  # token may be expired
             message = AUTH_ERROR_RESPONSES["account_verification_fail"]
@@ -38,7 +43,7 @@ def activate(request, uidb64, token):
         message = AUTH_ERROR_RESPONSES["verification_link_corrupt"]
         status = 401
     context = {
-        'template_type': 'Email Verification Failed',
+        'template_type': template_type or 'Email Verification Failed',
         'small_text_detail': message,
         'link': link
     }
@@ -95,5 +100,5 @@ def decode_token(uidb64, token):
         user = User.objects.get(id=uid)
     except User.DoesNotExist:
         user = None
-    chek_token = account_activation_token.check_token(user, token)
-    return chek_token, user
+    check_token = account_activation_token.check_token(user, token)
+    return check_token, user
