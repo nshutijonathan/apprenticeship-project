@@ -39,4 +39,5 @@ SALES_ERROR_RESPONSES = {
     "invalid_discount": "Discount must be greater between 0 and 100",
     "wrong_currency": "Customer wallet currency must be the same as"
     " the outlet currency",
+    "already_marked_as_paid": "This consultation is already marked as paid",
 }

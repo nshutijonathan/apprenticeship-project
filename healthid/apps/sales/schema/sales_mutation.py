@@ -206,7 +206,7 @@ class ConsultationPayment(graphene.Mutation):
         outlet = customer_consultation.outlet
 
         if customer_consultation.paid:
-            raise GraphQLError('This consultation is already marked as paid')
+            raise GraphQLError(SALES_ERROR_RESPONSES["already_marked_as_paid"])
 
         price = customer_consultation.consultation_type.price_per_session
         new_sale = Sale(
