@@ -40,10 +40,6 @@ class AddSupplier:
 
         params = {'model': Suppliers, 'error_type': ValidationError}
         supplier_count = 0
-        # Makes single call to the DB to retrieve all emails
-        # for checking duplication
-        # in the csv upload since emails should be unique.
-        suppliers_info = Suppliers.objects.values_list('email', flat=True)
 
         for column in csv.reader(io_string):
             if len(column) < 13:
@@ -51,8 +47,11 @@ class AddSupplier:
             elif len(column) > 13:
                 raise ValidationError(ERROR_RESPONSES['csv_many_field'])
 
-            if column[1] not in suppliers_info:
-                # Checks for duplications and skips over them
+            if column[1] not in (
+                    Suppliers.objects.values_list('email', flat=True)):
+                # Makes calls to the DB to retrieve all emails
+                # for checking duplication and skips over them
+                # in the csv upload since emails should be unique.
 
                 city = get_model_object(
                     City, 'name', column[7], error_type=NotFound)

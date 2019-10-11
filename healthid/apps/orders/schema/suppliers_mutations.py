@@ -1,15 +1,25 @@
 import graphene
 
-from healthid.apps.orders.schema.mutations.suppliers.add_supplier import AddSupplier
-from healthid.apps.orders.schema.mutations.suppliers.approve_supplier import ApproveSupplier
-from healthid.apps.orders.schema.mutations.suppliers.delete_supplier import DeleteSupplier
-from healthid.apps.orders.schema.mutations.suppliers.edit_supplier import EditSupplier
-from healthid.apps.orders.schema.mutations.suppliers.edit_proposal import EditProposal
-from healthid.apps.orders.schema.mutations.suppliers.approve_edit_request import ApproveEditRequest
-from healthid.apps.orders.schema.mutations.suppliers.decline_edit_request import DeclineEditRequest
-from healthid.apps.orders.schema.mutations.suppliers.create_suppliernote import CreateSupplierNote
-from healthid.apps.orders.schema.mutations.suppliers.update_suppliernote import UpdateSupplierNote
-from healthid.apps.orders.schema.mutations.suppliers.delete_suppliernote import DeleteSupplierNote
+from healthid.apps.orders.schema.mutations.suppliers.add_supplier \
+    import AddSupplier
+from healthid.apps.orders.schema.mutations.suppliers.approve_supplier \
+    import ApproveSupplier
+from healthid.apps.orders.schema.mutations.suppliers.delete_supplier \
+    import DeleteSupplier
+from healthid.apps.orders.schema.mutations.suppliers.edit_supplier \
+    import EditSupplier
+from healthid.apps.orders.schema.mutations.suppliers.edit_proposal \
+    import EditProposal
+from healthid.apps.orders.schema.mutations.suppliers.approve_edit_request \
+    import ApproveEditRequest
+from healthid.apps.orders.schema.mutations.suppliers.decline_edit_request \
+    import DeclineEditRequest
+from healthid.apps.orders.schema.mutations.suppliers.create_suppliernote \
+    import CreateSupplierNote
+from healthid.apps.orders.schema.mutations.suppliers.update_suppliernote \
+    import UpdateSupplierNote
+from healthid.apps.orders.schema.mutations.suppliers.delete_suppliernote \
+    import DeleteSupplierNote
 
 
 class Mutation(graphene.ObjectType):
