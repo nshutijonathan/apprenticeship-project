@@ -241,3 +241,15 @@ edit_role = """
         }}
 
         """
+create_role_with_empty_name = """
+            mutation createRole {
+               createRole(input: {
+                 name: ""
+               }) {
+                 success
+                 role {
+                   name
+                 }
+               }
+            }
+                """

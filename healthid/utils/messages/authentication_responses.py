@@ -11,7 +11,8 @@ AUTH_SUCCESS_RESPONSES = {
                                    "in case you cannot trace it",
     "account_verification": "Your account is already verified,"
                             " Please click the button below to login",
-    "password_reset_success": "Your password was successfully reset."
+    "password_reset_success": "Your password was successfully reset.",
+    "create_role_success": "Successfully created a role: {}"
 }
 
 AUTH_ERROR_RESPONSES = {
@@ -40,5 +41,6 @@ AUTH_ERROR_RESPONSES = {
     "invalid_email_address": "{} is not a valid email address",
     "invalid_username": "valid username cannot be blank, "
                         "contain special characters "
-                        "or exceed 30 characters."
+                        "or exceed 30 characters.",
+    "empty_role_name": "Role Field is empty"
 }

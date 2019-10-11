@@ -4,7 +4,10 @@ from healthid.tests.test_fixtures.authentication import (
     get_role_by_id,
     get_role_by_name,
     edit_role,
-    get_roles)
+    get_roles,
+    create_role_with_empty_name)
+from healthid.utils.messages.authentication_responses import (
+    AUTH_ERROR_RESPONSES)
 
 
 class GraphQLTestCase(BaseConfiguration):
@@ -25,6 +28,13 @@ class GraphQLTestCase(BaseConfiguration):
             self.access_token_master, create_role.format(
                 **data))
         self.assertResponseNoErrors(resp, expected)
+
+    def test_create_role_with_empty_name(self):
+
+        expected_message = AUTH_ERROR_RESPONSES["empty_role_name"]
+        resp = self.query_with_token(
+            self.access_token_master, create_role_with_empty_name)
+        self.assertEqual(resp['errors'][0]['message'], expected_message)
 
     def test_single_role_by_id(self):
         role = {

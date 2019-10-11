@@ -10,7 +10,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 
 from healthid.utils.messages.authentication_responses import (
-    AUTH_ERROR_RESPONSES)
+    AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES)
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 import graphene
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
@@ -35,21 +35,20 @@ class CreateRole(graphene.Mutation):
 
     success = graphene.Boolean()
     role = graphene.Field(RoleType)
-    errors = graphene.List(graphene.String)
-    message = graphene.List(graphene.String)
+    message = graphene.String()
 
     @staticmethod
     @login_required
     @user_permission()
     def mutate(root, info, input=None):
         success = True
-        errors = ["Role Field is empty"]
-        if input.name != "":
+        if input.name.strip() != "":
             role = Role(name=input.name)
             with SaveContextManager(role, model=Role):
-                message = [f"Successfully created a role: {input.name}"]
+                message = AUTH_SUCCESS_RESPONSES["create_role_success"].format(
+                    input.name)
                 return CreateRole(success=success, role=role, message=message)
-        return CreateRole(errors=errors)
+        raise GraphQLError(AUTH_ERROR_RESPONSES["empty_role_name"])
 
 
 class UpdateUserRole(graphene.Mutation):
