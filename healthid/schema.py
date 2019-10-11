@@ -22,8 +22,8 @@ from healthid.apps.sales.schema import (sales_mutation, sales_schema,
                                         promotions_mutation, promotions_query,
                                         cart_mutation, cart_query, sales_query)
 from healthid.apps.events.schema import event_querys, event_mutations
-from healthid.apps.stock.schema import stock_mutation
-from healthid.apps.stock.schema import stock_query
+from healthid.apps.stock.schema.mutations import stock_mutation
+from healthid.apps.stock.schema.queries import stock_query
 from healthid.apps.customers.schema import customer_mutation, customer_query
 from healthid.apps.orders.schema import invoices_mutation
 from healthid.apps.wallet.schema import wallet_mutation, wallet_query

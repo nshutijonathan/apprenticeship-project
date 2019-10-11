@@ -1,5 +1,4 @@
 import graphene
-from graphene_django import DjangoObjectType
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
@@ -13,14 +12,10 @@ from healthid.utils.product_utils.batch_utils import (
     check_validity_of_ids, check_validity_of_quantity)
 from healthid.utils.stock_utils.validate_stock_transfer import validate
 from healthid.utils.messages.stock_responses import\
-      STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
+    STOCK_ERROR_RESPONSES, STOCK_SUCCESS_RESPONSES
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
-
-
-class StockTransferType(DjangoObjectType):
-    class Meta:
-        model = StockTransfer
+from healthid.apps.stock.schema.types import StockTransferType
 
 
 class OpenStockTransfer(graphene.Mutation):
@@ -80,28 +75,3 @@ class OpenStockTransfer(graphene.Mutation):
         success = [STOCK_SUCCESS_RESPONSES["stock_transfer_open_success"]]
         return OpenStockTransfer(
             stock_transfer=stock_transfer, success=success)
-
-
-class CloseStockTransfer(graphene.Mutation):
-    """Mutation to mark a transfer as complete
-    """
-
-    success = graphene.Field(graphene.String)
-
-    class Arguments:
-        transfer_number = graphene.String(required=True)
-
-    @login_required
-    def mutate(self, info, **kwargs):
-        user = info.context.user
-        destination_outlet = check_user_has_an_active_outlet(user)
-        transfer = StockTransfer.objects.filter(
-            id=kwargs['transfer_number'],
-            destination_outlet=destination_outlet).first()
-        if not transfer:
-            raise GraphQLError(STOCK_ERROR_RESPONSES["close_transfer_error"])
-        transfer.complete_status = False
-        transfer.save()
-
-        success = STOCK_SUCCESS_RESPONSES["stock_transfer_close_success"]
-        return CloseStockTransfer(success=success)
