@@ -20,6 +20,7 @@ from healthid.apps.preference.models import (Timezone,
 from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 from healthid.apps.receipts.models import ReceiptTemplate
+from healthid.apps.consultation.models import CustomerConsultation
 
 
 class BaseConfiguration(TestCase):
@@ -447,3 +448,13 @@ class BaseConfiguration(TestCase):
 
     def create_receipt_template(self):
         return ReceiptTemplate.objects.create(outlet=self.outlet)
+
+    def schedule_consultation(self):
+        consultation = CustomerConsultation.objects.create(
+            outlet=self.outlet,
+            event=self.event,
+            booked_by=self.user,
+            customer=self.customer_1
+
+        )
+        return consultation

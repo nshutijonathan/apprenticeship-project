@@ -51,7 +51,7 @@ class AddSupplier:
             elif len(column) > 13:
                 raise ValidationError(ERROR_RESPONSES['csv_many_field'])
 
-            if (column[1] not in suppliers_info or column[1]):
+            if column[1] not in suppliers_info:
                 # Checks for duplications and skips over them
 
                 city = get_model_object(

@@ -14,7 +14,9 @@ from healthid.utils.app_utils.database import get_model_object
 
 
 class Query(graphene.ObjectType):
-    bookings = graphene.List(CustomerConsultationType)
+    bookings = graphene.List(CustomerConsultationType,
+                             pageNumber=graphene.Int(),
+                             pageCount=graphene.Int())
     booking = graphene.Field(
         CustomerConsultationType,
         id=graphene.Int(),

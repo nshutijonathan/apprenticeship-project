@@ -16,7 +16,11 @@ from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
 class Query(graphene.ObjectType):
-    consultations = graphene.List(ConsultationCatalogueType)
+    consultations = graphene.List(
+        ConsultationCatalogueType,
+        page_number=graphene.Int(),
+        page_count=graphene.Int()
+    )
     consultation = graphene.Field(
         ConsultationCatalogueType,
         consultation_id=graphene.Int(),

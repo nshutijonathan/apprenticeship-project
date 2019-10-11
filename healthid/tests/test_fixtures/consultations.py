@@ -1,30 +1,30 @@
 create_consultations = '''
-    mutation {
+    mutation {{
         createConsultationItem (
         consultationName:"Bone marrow",
         description:"would like to seek medical advise regarding bone marrow",
-        outletId:6,
-        approvedDeliveryFormatIds:[2],
-        consultantRoleId:2,
+        businessId:"{business_id}",
+        approvedDeliveryFormats:["In_Person"],
+        consultantRole:"Doctor",
         minutesPerSession: 10,
         pricePerSession:30000
-        ){
-        consultation{
+        ){{
+        consultation{{
             id
             description
             consultationName
-        business{
+        business{{
             tradingName
-            }
-        }
+            }}
+        }}
         success
-    }
-    }
+    }}
+    }}
 '''
 
 retrieve_consultations = '''
 query {
-  consultations {
+  consultations{
         id
         description
         consultationName
@@ -32,9 +32,22 @@ query {
           tradingName
         }
   }
+  totalConsultationsPagesCount
 }
 '''
-
+retrieve_paginated_consultations = '''
+query {
+  consultations(pageCount:1, pageNumber:1) {
+        id
+        description
+        consultationName
+       business{
+          tradingName
+        }
+  }
+  totalConsultationsPagesCount
+}
+'''
 retrieve_consultation = '''
 query {{
   consultation(consultationId: {consultation_id}) {{
@@ -92,6 +105,105 @@ retrieve_booking = '''
       email
     }}
     id
+  }}
+}}
+'''
+
+book_consultation = '''
+mutation {{
+    bookConsultation(
+    customerId:{}
+    consultationTypeId:{}
+    outletId:{}
+    consultant:"Consultant"
+    status:"Now"
+    bookingDate:"2019-12-01"
+    ){{
+      bookConsultation {{
+        status
+      }}
+    }}
+}}
+'''
+
+update_consultation = '''
+mutation {{
+  updateConsultation(
+  consultationId:{}
+  bookingDate:"2020-01-02"
+  ) {{
+    updateConsultation {{
+      status
+      paid
+    }}
+  }}
+}}
+'''
+
+
+delete_booked_consultation = '''
+mutation{{
+  deleteBookedConsultation(
+    id:{id}
+  ) {{
+    message
+  }}
+}}
+'''
+
+query_all_bookings = '''
+  query {
+    bookings {
+      bookingDate
+      status
+    }
+  }
+'''
+
+query_all_paginated_bookings = '''
+  query {
+    bookings(pageNumber:1,pageCount:1) {
+      bookingDate
+      status
+    }
+    totalBookingsPagesCount
+  }
+'''
+
+edit_consultation_item = '''
+mutation {{
+  editConsultationItem(
+      consultationId:{},
+        description:"Consultation Description",
+  ) {{
+    consultation {{
+      id
+    }}
+  }}
+}}
+
+'''
+
+delete_consultation_item = '''
+mutation {{
+  deleteConsultationItem(id:{}) {{
+    message
+  }}
+}}
+
+'''
+
+
+add_medical_notes = '''
+mutation{{
+  addMedicalNotes(
+    consultationId:{},
+    author:"Authorname",
+    medicalNotes:"{}"
+  ) {{
+    addNotes {{
+      medicalNotes
+    }}
   }}
 }}
 '''
