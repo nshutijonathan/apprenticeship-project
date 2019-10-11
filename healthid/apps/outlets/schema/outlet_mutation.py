@@ -11,7 +11,7 @@ from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.outlet_utils.validators import validate_fields
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
-from healthid.apps.authentication.schema.auth_queries import UserType
+from healthid.apps.authentication.schema.queries.auth_queries import UserType
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_is_active_in_outlet
 

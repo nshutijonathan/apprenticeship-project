@@ -9,7 +9,7 @@ from healthid.apps.authentication.models import User
 from healthid.utils.auth_utils.tokens import account_activation_token
 from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.messages.authentication_responses import\
-     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
+    AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 DOMAIN = environ.get('DOMAIN') or getenv('DOMAIN')
 
 

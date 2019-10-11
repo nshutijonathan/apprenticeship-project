@@ -4,7 +4,7 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import User
-from healthid.apps.authentication.schema.auth_queries import UserType
+from healthid.apps.authentication.schema.queries.auth_queries import UserType
 from healthid.apps.business.models import Business
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)

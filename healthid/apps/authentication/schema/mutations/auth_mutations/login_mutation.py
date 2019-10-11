@@ -7,10 +7,10 @@ from graphql_jwt.utils import jwt_encode, jwt_payload
 from rest_framework.authtoken.models import Token
 
 from healthid.apps.authentication.models import User
-from healthid.apps.authentication.schema.auth_queries import UserType
+from healthid.apps.authentication.schema.queries.auth_queries import UserType
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.authentication_responses import\
-     AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
+    AUTH_ERROR_RESPONSES, AUTH_SUCCESS_RESPONSES
 
 
 class LoginUser(graphene.Mutation):

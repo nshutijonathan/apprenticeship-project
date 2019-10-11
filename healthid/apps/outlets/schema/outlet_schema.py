@@ -7,7 +7,7 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
-from healthid.apps.authentication.schema.auth_queries import UserType
+from healthid.apps.authentication.schema.queries.auth_queries import UserType
 
 
 class OutletType(DjangoObjectType):

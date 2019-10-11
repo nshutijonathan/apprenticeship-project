@@ -1,41 +1,14 @@
 import graphene
 import graphql_jwt
-from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.authentication.models import Role, User
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.authentication_responses import (
-     AUTH_ERROR_RESPONSES)
-from healthid.apps.outlets.models import Outlet
-
-
-class ActiveOutletType(DjangoObjectType):
-    class Meta:
-        model = Outlet
-
-
-class UserType(DjangoObjectType):
-    active_outlet = graphene.Field(ActiveOutletType)
-
-    class Meta:
-        model = User
-        exclude_fields = ['password']
-
-    def resolve_active_outlet(self, info, **kwargs):
-        """
-        get's outlet a user is active in
-
-        Returns:
-            obj: outlet user is active in
-        """
-        return self.active_outlet
-
-
-class RoleType(DjangoObjectType):
-    class Meta:
-        model = Role
+    AUTH_ERROR_RESPONSES)
+from healthid.apps.authentication.schema.types.user_type import UserType
+from healthid.apps.authentication.schema.types.role_type import RoleType
 
 
 class Query(graphene.AbstractType):
