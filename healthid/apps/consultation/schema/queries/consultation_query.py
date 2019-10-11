@@ -74,19 +74,14 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_consultation(self, info, **kwargs):
         consultation_id = kwargs.get("consultation_id")
+        consultation = get_model_object(
+            ConsultationCatalogue, 'id', consultation_id)
         user = info.context.user
         outlet = get_model_object(Outlet, 'id', user.active_outlet.id)
         business_id = outlet.business_id
-        if consultation_id > 0:
-            consultation = get_model_object(
-                ConsultationCatalogue, 'id', consultation_id)
-            if consultation.business.id != business_id:
-                consultation_query_error =\
-                    CONSULTATION_ERROR_RESPONSES[
-                        "consultation_doesnot_exist_error"]
-                raise GraphQLError(consultation_query_error)
-            return consultation
-        consultation_error =\
-            CONSULTATION_ERROR_RESPONSES[
-                "invalid_id"].format("Consultation")
-        raise GraphQLError(consultation_error)
+        if consultation.business.id != business_id:
+            consultation_query_error = \
+                CONSULTATION_ERROR_RESPONSES[
+                    "consultation_doesnot_exist_error"]
+            raise GraphQLError(consultation_query_error)
+        return consultation

@@ -4,9 +4,10 @@ import graphql_jwt
 from healthid.apps.authentication.schema import (AuthMutation, AuthQuery,
                                                  ObtainJSONWebToken)
 from healthid.apps.business.schema import business_mutation, business_query
-from healthid.apps.consultation.schema import (consultation_catalogue_mutation,
-                                               consultation_query,
-                                               schedule_consultation_query)
+from healthid.apps.consultation.schema.mutations import \
+    consultation_catalogue_mutation
+from healthid.apps.consultation.schema.\
+    queries import (consultation_query, schedule_consultation_query)
 from healthid.apps.notifications.schema import (notification_mutations,
                                                 notification_queries)
 from healthid.apps.orders.schema import (SuppliersMutation, SuppliersQuery,

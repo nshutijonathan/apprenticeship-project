@@ -5,10 +5,12 @@ from healthid.apps.consultation.models import ConsultationCatalogue
 from healthid.apps.consultation.schema.consultation_schema import (
     ConsultationCatalogueType)
 
-from healthid.apps.consultation.schema.schedule_consultation_mutation import \
-    BookConsultation, UpdateConsultation, DeleteBookedConsultation
-from healthid.apps.consultation.schema.medical_notes_mutation import (
-    AddMedicalNotes)
+from healthid.apps.consultation.schema.mutations.\
+    schedule_consultation_mutation import (BookConsultation,
+                                           UpdateConsultation,
+                                           DeleteBookedConsultation)
+from healthid.apps.consultation.schema.mutations.\
+    medical_notes_mutation import AddMedicalNotes
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission

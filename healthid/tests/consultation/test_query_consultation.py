@@ -67,12 +67,13 @@ class TestQueryConsultation(BaseConfiguration):
         self.assertEqual(response['errors'][0]['message'], expected_message)
 
     def test_consultation_id_doesnot_exist(self):
+        consultation_invalid_id = 0
         response = self.query_with_token(
             self.access_token, retrieve_consultation.format(
-                consultation_id=0))
-        expected_message = CONSULTATION_ERROR_RESPONSES[
-            "invalid_id"].format("Consultation")
-        self.assertEqual(response['errors'][0]['message'], expected_message)
+                consultation_id=consultation_invalid_id))
+        expected_message = CONSULTATION_ERROR_RESPONSES["invalid_id"].format(
+            consultation_invalid_id)
+        self.assertIn(expected_message, response['errors'][0]['message'])
 
     def test_query_booking(self):
         booked_consultation = self.schedule_consultation()
