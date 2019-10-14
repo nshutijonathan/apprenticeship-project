@@ -1,5 +1,3 @@
-from graphql import GraphQLError
-
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.authentication import \
     update_user_role_query, add_user_business_query

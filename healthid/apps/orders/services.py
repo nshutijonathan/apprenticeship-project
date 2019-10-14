@@ -47,6 +47,7 @@ class SupplierOrderEmailSender:
         supplier_order_details (QuerySet): a queryset for
         supplier order details
     """
+
     def __init__(self, supplier_order_details):
         self.supplier_order_details = supplier_order_details
 
