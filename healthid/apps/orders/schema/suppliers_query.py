@@ -98,7 +98,9 @@ class Query(graphene.AbstractType):
     def resolve_all_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        suppliers_set = Suppliers.objects.filter(parent=None).order_by('id')
+        user_id = info.context.user.id
+        suppliers_set = Suppliers.objects.filter(
+            user_id=user_id).order_by('id')
         if page_count or page_number:
             suppliers = pagination_query(
                 suppliers_set, page_count, page_number)

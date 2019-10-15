@@ -181,7 +181,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
         response = self.query_with_token(
             self.access_token_master,
             all_suppliers_custom_paginated.format(pageCount=5, pageNumber=1))
-        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
 
     def test_retrieve_approved_suppliers_custom_pagination(self):
         SuppliersFactory.create_batch(size=13, is_approved=True)
