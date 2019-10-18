@@ -177,6 +177,9 @@ class Query(graphene.AbstractType):
                 message = ORDERS_ERROR_RESPONSES["supplier_search_key_error"]
                 raise GraphQLError(message)
 
+            kwargs[key] = kwargs[key].strip() \
+                if key == "name__icontains" else kwargs[key]
+
         supplier = Suppliers.objects.filter(**kwargs, parent=None)
         if not supplier:
             message = ORDERS_ERROR_RESPONSES[

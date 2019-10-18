@@ -159,7 +159,7 @@ class Query(graphene.AbstractType):
     def resolve_products(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        search = kwargs.get('search')
+        search = (kwargs.get('search') or '').strip()
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
         products_set = Product.all_products.for_outlet(
