@@ -9,7 +9,9 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
                                                     suppliers_query,
                                                     supplier_query_by_id,
-                                                    supplier_query_by_name)
+                                                    supplier_query_by_name,
+                                                    email_invalid,
+                                                    mobile_invalid)
 from healthid.views import HandleCSV
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from rest_framework.test import APIClient
@@ -117,6 +119,20 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         response = self.query_with_token(self.access_token, supplier_mutation)
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
+
+    def test_invalid_email_supplier(self):
+        response = self.query_with_token(self.access_token, email_invalid)
+        message = ORDERS_ERROR_RESPONSES["invalid_supplier_email"]
+        self.assertEqual(
+            message,
+            response['errors'][0]['message'])
+
+    def test_invalid_mobile_supplier(self):
+        response = self.query_with_token(self.access_token, mobile_invalid)
+        message = ORDERS_ERROR_RESPONSES["invalid_supplier_phone"]
+        self.assertEqual(
+            message,
+            response['errors'][0]['message'])
 
     def test_csv_file_upload(self):
         path = os.path.join(self.base_path, 'test.csv')

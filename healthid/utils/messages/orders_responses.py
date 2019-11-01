@@ -48,5 +48,7 @@ ORDERS_ERROR_RESPONSES = {
     "close_order_invalid_user": "Cannot close order in outlet you're "
                                 "not active in",
     "invalid_supplier_field": "Please provide the right field of "
-                                "supplier name or id"
+                                "supplier name or id",
+    "invalid_supplier_email": "Please input a valid email",
+    "invalid_supplier_phone": "Please input a valid phone"
 }

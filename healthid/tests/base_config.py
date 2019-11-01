@@ -77,6 +77,16 @@ class BaseConfiguration(TestCase):
             "mobile_number": "+256770777777",
             "password": "Password123"
         }
+        self.invalid_email_user = {
+            "email": "john.dogmail.com",
+            "mobile_number": "+256770777777",
+            "password": "Password123"
+        }
+        self.invalid_mobile_user = {
+            "email": "john.edo@gmail.com",
+            "mobile_number": "0777777",
+            "password": "Password123"
+        }
         self.new_manager = {
             "email": "ephraim@gmail.com",
             "mobile_number": "+256770777000",

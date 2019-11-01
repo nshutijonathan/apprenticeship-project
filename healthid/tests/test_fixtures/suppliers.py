@@ -28,6 +28,66 @@ supplier_mutation = '''
             }
 '''
 
+email_invalid = '''
+        mutation{
+            addSupplier(input:{
+                name: "shadik.",
+                email: "emailntale.com",
+                mobileNumber:"+256702260027",
+                addressLine1:"address",
+                addressLine2:"addressline2",
+                lga: "lga",
+                tierId: 1,
+                cityId: 1
+                rating:5,
+                creditDays:4,
+                logo:"logo",
+                paymentTermsId: 1,
+                commentary: "no comment"
+
+            }){
+                supplier{
+                id
+                supplierId
+                city{
+                    name
+                }
+                supplierId
+                }
+            }
+            }
+'''
+
+mobile_invalid = '''
+        mutation{
+            addSupplier(input:{
+                name: "shadik.",
+                email: "emai@lntale.com",
+                mobileNumber:"02260027",
+                addressLine1:"address",
+                addressLine2:"addressline2",
+                lga: "lga",
+                tierId: 1,
+                cityId: 1
+                rating:5,
+                creditDays:4,
+                logo:"logo",
+                paymentTermsId: 1,
+                commentary: "no comment"
+
+            }){
+                supplier{
+                id
+                supplierId
+                city{
+                    name
+                }
+                supplierId
+                }
+            }
+            }
+'''
+
 suppliers_query = '''
         query{
             allSuppliers{
