@@ -75,3 +75,17 @@ def validate_date(string_date):
     """
     valid_date = make_aware(parser.parse(string_date))
     return valid_date
+
+
+def validate_expire_months(month):
+    """
+    Validates expiration months
+
+    Arguments:
+        month {integer} -- [1 to 12]
+    """
+    if not month or month < 0 or month > 12:
+        expire_months = 12
+    else:
+        expire_months = month
+    return expire_months

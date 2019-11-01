@@ -328,6 +328,15 @@ query{
 }
 '''
 
+near_expired_product_query = '''
+query{
+    nearExpiredProducts {
+        id
+        productName
+    }
+}
+'''
+
 create_product_category = '''
     mutation {{
     createProductCategory(

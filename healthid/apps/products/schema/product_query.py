@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 import graphene
 from django.core.exceptions import ValidationError
@@ -20,6 +21,7 @@ from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
+from healthid.utils.app_utils.validators import validate_expire_months
 
 
 @convert_django_field.register(TaggableManager)
@@ -66,7 +68,7 @@ class ProductType(DjangoObjectType):
             'sku_number': ['exact'],
             'tags__name': ['exact', 'icontains', 'istartswith']
         }
-        interfaces = (graphene.relay.Node, )
+        interfaces = (graphene.relay.Node,)
 
     def resolve_product_quantity(self, info, **kwargs):
         return self.quantity
@@ -78,7 +80,7 @@ class ProductType(DjangoObjectType):
     def resolve_pre_tax_retail_price(self, info, **kwargs):
         return self.pre_tax_retail_price
 
-    def resolve_unit_cost(self,  info, **kwargs):
+    def resolve_unit_cost(self, info, **kwargs):
         return self.avarage_unit_cost
 
     def resolve_autofill_quantity(self, info, **kwargs):
@@ -128,7 +130,7 @@ class Query(graphene.AbstractType):
         SurveyType, id=graphene.String(required=True))
     user_product_requests = graphene.List(ProductType)
     approved_quantities = graphene.List(QuantityType)
-    declined_quantities = graphene. List(QuantityType)
+    declined_quantities = graphene.List(QuantityType)
 
     product_autofill = graphene.List(ProductType)
     product = graphene.Field(
@@ -153,7 +155,11 @@ class Query(graphene.AbstractType):
         ProductCategoryType, outlet_id=graphene.Int(required=True))
     measurement_unit = graphene.List(MeasurementUnitType)
     total_products_pages_count = graphene.Int()
-    pagination_result = None
+    products_total_number = graphene.Int()
+    near_expired_products = graphene.List(ProductType,
+                                          page_count=graphene.Int(),
+                                          page_number=graphene.Int(),
+                                          expire_month=graphene.Int())
 
     @login_required
     def resolve_products(self, info, **kwargs):
@@ -196,6 +202,21 @@ class Query(graphene.AbstractType):
         if not Query.pagination_result:
             return 0
         return Query.pagination_result[1]
+
+    @login_required
+    def resolve_products_total_number(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of items for a specific pagination response
+        :Note: During querying, productsTotalNumber query field should
+        strictly be called after the products query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[2]
 
     @login_required
     def resolve_filter_products(self, info, **kwargs):
@@ -250,6 +271,32 @@ class Query(graphene.AbstractType):
             Query.pagination_result = approved_products
             return approved_products[0]
         paginated_response = pagination_query(approved_products_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
+
+    @login_required
+    def resolve_near_expired_products(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
+        expire_month = validate_expire_months(kwargs.get('expire_month'))
+        today_date = datetime.now()
+        expire_range = today_date + relativedelta(months=+expire_month)
+        user = info.context.user
+        outlet = check_user_has_an_active_outlet(user)
+        near_expired_products_set = Product.objects \
+            .for_outlet(outlet.id) \
+            .filter(nearest_expiry_date__range=(today_date, expire_range)) \
+            .order_by('id')
+        if page_count or page_number:
+            approved_products = pagination_query(
+                near_expired_products_set, page_count, page_number)
+            Query.pagination_result = approved_products
+            return approved_products[0]
+        paginated_response = pagination_query(near_expired_products_set,
                                               PAGINATION_DEFAULT[
                                                   "page_count"],
                                               PAGINATION_DEFAULT[

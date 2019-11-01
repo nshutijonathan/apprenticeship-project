@@ -5,7 +5,8 @@ from healthid.tests.test_fixtures.products import (
     approve_proposed_edits, approved_product_query, backup_supplier,
     create_product, create_product_2, decline_proposed_edits, delete_product,
     product_query, proposed_edits_query, proposed_product_query,
-    supplier_mutation, update_a_product_loyalty_weight, update_loyalty_weight,
+    near_expired_product_query, supplier_mutation,
+    update_a_product_loyalty_weight, update_loyalty_weight,
     update_product, create_new_product)
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.products_responses import \
@@ -168,7 +169,7 @@ class TestCreateProduct(BaseConfiguration):
             approve_proposed_edits.format(
                 product_id=self.product.id, edit_request_id=edit_request_id))
         self.assertIn(SUCCESS_RESPONSES[
-                      "approval_success"].format(
+            "approval_success"].format(
             "Edit request"), response['data'][
             'approveProposedEdits']['message'])
         self.assertIn('data', response)
@@ -184,5 +185,10 @@ class TestCreateProduct(BaseConfiguration):
             decline_proposed_edits.format(
                 product_id=self.product.id, edit_request_id=edit_request_id))
         self.assertIn(PRODUCTS_SUCCESS_RESPONSES[
-                      "edit_request_decline"].format("Cold cap"),
+                          "edit_request_decline"].format("Cold cap"),
                       response['data']['declineProposedEdits']['message'])
+
+    def test_near_expire_product_query(self):
+        response = self.query_with_token(
+            self.access_token, near_expired_product_query)
+        self.assertIn('nearExpiredProducts', response['data'])
