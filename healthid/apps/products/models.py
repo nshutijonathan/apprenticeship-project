@@ -162,7 +162,8 @@ class Product(BaseModel):
                     expiry_date=self.nearest_expiry_date
                 ).order_by('date_received').first()
                 selling_price = selling_batch.unit_cost * \
-                    Decimal(1 + self.markup / 100)
+                    Decimal(1 + self.markup / 100)\
+                    if selling_batch else selling_price
             if not self.auto_price and self.sales_price is None:
                 selling_price = Decimal(self.avarage_unit_cost) * \
                     Decimal(1 + self.markup / 100)
@@ -291,7 +292,7 @@ class BatchInfo(BaseModel):
         in a batch.
         """
         original_quantity = Quantity.get_original_quantities(batch=self)
-        return original_quantity.quantity_remaining
+        return original_quantity.quantity_remaining if original_quantity else 0
 
     @property
     def proposed_quantity(self):
@@ -300,7 +301,7 @@ class BatchInfo(BaseModel):
         in a batch.
         """
         proposed_quantity = Quantity.get_proposed_quantities(batch=self)
-        return proposed_quantity.quantity_remaining or None
+        return proposed_quantity.quantity_remaining if proposed_quantity else 0
 
 
 class Quantity(BaseModel):

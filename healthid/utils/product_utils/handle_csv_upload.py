@@ -88,17 +88,17 @@ class HandleCsvValidations(object):
         if column_header == batch_record_format:
             for batch_record in csv.reader(batch_info_csv):
                 product_id = get_model_object(
-                            Product,
-                            'product_name',
-                            batch_record[0],
-                            error_type=NotFound
-                            ).id
+                    Product,
+                    'product_name',
+                    batch_record[0],
+                    error_type=NotFound
+                ).id
                 supplier_id = get_model_object(
-                            Suppliers,
-                            'name',
-                            batch_record[1],
-                            error_type=NotFound
-                            ).id
+                    Suppliers,
+                    'name',
+                    batch_record[1],
+                    error_type=NotFound
+                ).id
 
                 # check if batch expiry date occurs before delivery date.
                 # 'batch_record[3]' and 'batch_record[2]' represent the
@@ -107,7 +107,7 @@ class HandleCsvValidations(object):
                     raise ValidationError(
                         PRODUCTS_ERROR_RESPONSES["batch_expiry_error"].format
                         (batch_record[0])
-                        )
+                    )
 
                 # converts a 'True' or 'False' string from the
                 # 'Delivery Promptness' CSV column into a Python boolean.
@@ -120,7 +120,7 @@ class HandleCsvValidations(object):
                 else:
                     raise ValidationError(
                         PRODUCTS_ERROR_RESPONSES["batch_bool_error"]
-                        )
+                    )
 
                 batch_info_args = {
                     'product_id': product_id,
