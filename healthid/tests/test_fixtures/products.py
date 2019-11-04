@@ -37,7 +37,7 @@ supplier_mutation = '''
                 lga: "lga",
                 tierId: 1,
                 cityId: 1
-                rating:5,
+                countryId:1,
                 creditDays:4,
                 logo:"logo",
                 paymentTermsId: 1,
@@ -96,7 +96,7 @@ backup_supplier = '''
                 lga: "lga",
                 tierId: 1,
                 cityId: 1
-                rating:5,
+                countryId:1,
                 creditDays:4,
                 logo:"logo",
                 paymentTermsId: 1,

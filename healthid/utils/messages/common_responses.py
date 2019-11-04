@@ -26,5 +26,7 @@ ERROR_RESPONSES = {
     "invalid_values": "{} contains invalid values",
     "wrong_param": "Please provide a valid parameter in the url",
     "csv_missing_field": "csv file is missing some column(s)",
-    "csv_many_field": "csv file has more than the required column(s)"
+    "csv_many_field": "csv file has more than the required column(s)",
+    "country_city_mismatch": "Country {} doesnot have City {}",
+    "csv_field_error": "Fields marked with * are mandatory"
 }

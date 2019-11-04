@@ -176,6 +176,7 @@ class SuppliersFactory(factory.DjangoModelFactory):
     address_line_2 = "This & That Street"
     lga = "NO idea"
     city = factory.SubFactory(CityFactory)
+    country = factory.SubFactory(CountryFactory)
     tier = factory.SubFactory(TierFactory)
     logo = "http://unkownurl.something"
     commentary = "no comment"

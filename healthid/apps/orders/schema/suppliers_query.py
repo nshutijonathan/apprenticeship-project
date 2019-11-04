@@ -23,7 +23,7 @@ class SuppliersType(DjangoObjectType):
             'tier__name': ['exact', 'icontains', 'istartswith'],
             'payment_terms__name': ['exact', 'icontains', 'istartswith'],
             'credit_days': ['exact'],
-            'rating': ['exact'],
+            'country__name': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
             'is_approved': ['exact']
         }

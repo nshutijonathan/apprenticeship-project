@@ -9,7 +9,7 @@ supplier_mutation = '''
                 lga: "lga",
                 tierId: 1,
                 cityId: 1
-                rating:5,
+                countryId:1,
                 creditDays:4,
                 logo:"logo",
                 paymentTermsId: 1,
@@ -38,8 +38,7 @@ email_invalid = '''
                 addressLine2:"addressline2",
                 lga: "lga",
                 tierId: 1,
-                cityId: 1
-                rating:5,
+                cityId: 1,
                 creditDays:4,
                 logo:"logo",
                 paymentTermsId: 1,
@@ -68,8 +67,7 @@ mobile_invalid = '''
                 addressLine2:"addressline2",
                 lga: "lga",
                 tierId: 1,
-                cityId: 1
-                rating:5,
+                cityId: 1,
                 creditDays:4,
                 logo:"logo",
                 paymentTermsId: 1,
@@ -155,7 +153,7 @@ edit_request = '''
             lga: "lga",
             tierId:1,
             cityId: 1
-            rating:5,
+            countryId:1,
             creditDays:4,
             logo:"logo",
             paymentTermsId:1,
@@ -181,7 +179,7 @@ edit_proposal = '''
             addressLine1:"DreamVille",
             addressLine2:"addressline2",
             lga: "lga",
-            rating:5,
+            countryId:1,
             creditDays:4,
             logo:"logo",
             commentary: "no comment"
@@ -223,7 +221,7 @@ decline_request = '''
 '''
 filter_suppliers = '''
         query{
-          filterSuppliers(rating: 5){
+          filterSuppliers(country_Name: "Uganda"){
             edges{
               node{
                 id
@@ -236,7 +234,7 @@ filter_suppliers = '''
 
 empty_search = '''
         query{
-          filterSuppliers(rating: 9){
+          filterSuppliers(country_Name: "Kenya"){
             edges{
               node{
                 id

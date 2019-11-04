@@ -38,6 +38,7 @@ class ApproveEditRequest(graphene.Mutation):
         [dict_object.pop(key) for key in pop_list]
         dict_object['user_id'] = dict_object.pop('user')
         dict_object['city_id'] = dict_object.pop('city')
+        dict_object['country_id'] = dict_object.pop('country')
         dict_object['tier_id'] = dict_object.pop('tier')
         dict_object['payment_terms_id'] = dict_object.pop('payment_terms')
         supplier = get_model_object(Suppliers, 'id', parent_id)

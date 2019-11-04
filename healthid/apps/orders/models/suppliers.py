@@ -1,7 +1,7 @@
 from django.db import models
 
 from healthid.apps.authentication.models import User
-from healthid.apps.outlets.models import City, Outlet
+from healthid.apps.outlets.models import City, Outlet, Country
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
 
@@ -26,7 +26,7 @@ class Suppliers(BaseModel):
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, unique=True, null=True)
     mobile_number = models.CharField(max_length=100)
-    rating = models.IntegerField(null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     lga = models.CharField(max_length=255)

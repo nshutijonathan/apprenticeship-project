@@ -358,6 +358,7 @@ class BaseConfiguration(TestCase):
         payment_terms = \
             PaymentTerms.objects.create(name="Mobile Banking")
         city = City.objects.get(name="Chiclayo")
+        country = Country.objects.get(name="Peru")
         tier = Tier.objects.create(name="exporter")
 
         return Suppliers.objects.create(
@@ -365,6 +366,7 @@ class BaseConfiguration(TestCase):
             email='sportdirect@mail.com',
             mobile_number='+254745345342',
             city=city,
+            country=country,
             tier=tier,
             payment_terms=payment_terms,
             user=user)

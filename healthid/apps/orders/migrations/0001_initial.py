@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('email', models.EmailField(max_length=100, unique=True)),
                 ('mobile_number', models.CharField(max_length=100)),
-                ('rating', models.IntegerField(null=True)),
+                ('country', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='outlets.Country')),
                 ('address_line_1', models.CharField(max_length=255)),
                 ('address_line_2', models.CharField(blank=True, max_length=255, null=True)),
                 ('lga', models.CharField(max_length=255)),

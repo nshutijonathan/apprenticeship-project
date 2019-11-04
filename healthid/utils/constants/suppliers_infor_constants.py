@@ -2,7 +2,7 @@ SUPPLIERS_INCLUDE_CSV_FIELDS = [
     'name',
     'email',
     'mobile_number',
-    'rating',
+    'country',
     'address_line_1',
     'address_line_2',
     'lga',

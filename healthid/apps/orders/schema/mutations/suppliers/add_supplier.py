@@ -19,7 +19,7 @@ class SuppliersInput(graphene.InputObjectType):
     lga = graphene.String()
     city_id = graphene.Int()
     tier_id = graphene.Int()
-    rating = graphene.Int()
+    country_id = graphene.Int()
     credit_days = graphene.Int()
     logo = graphene.String()
     payment_terms_id = graphene.Int()
@@ -39,7 +39,7 @@ class AddSupplier(graphene.Mutation):
         lga(str): name of the supplier's local goverment area
         city_id(int): id of the supplier city location
         tier_id(int): id of the supplier's category
-        rating(int): supplier rating
+        country_id(int): supplier country
         credit_days(int): average number of days expected to settle outstanding
                           payments to the supplier
         logo(str): image URL for the supplier logo
