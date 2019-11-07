@@ -30,7 +30,7 @@ from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import (
     PRODUCTS_SUCCESS_RESPONSES
-    )
+)
 
 
 class HandleCSV(APIView):
@@ -75,7 +75,7 @@ class HandleCSV(APIView):
                 }
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
-                next(io_string)
+                user = request.user
                 quantity_added = handle_csv(io_string=io_string)
                 message = {
                     "success": "Successfully added products",
@@ -96,7 +96,7 @@ class HandleCSV(APIView):
                 message = {
                     "success": PRODUCTS_SUCCESS_RESPONSES[
                         "batch_upload_success"
-                        ]
+                    ]
                 }
                 return Response(message, status.HTTP_201_CREATED)
         except Exception as e:

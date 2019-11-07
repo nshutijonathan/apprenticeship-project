@@ -1,2 +1,2 @@
-product_category,product_name,measurement_unit,description,brand,manufacturer,vat_status,preferred_supplier,backup_supplier,tags
-prescription,panadolextra,tablets,first treatment people try for mild to moderate pain,panadol,Harmon Northrop Morse,VAT,shadik.,shadik.,painkillers
+Name,Description, Brand,Manufacturer,Dispensing size,preferred supplier,Backup supplier,Category,Loyalty weight,VAT status,tags,Product image
+panadolextra,first treatment people try for mild to moderate pain,panadol,Harmon Northrop Morse,tablets,email@ntale.com,email@ntale.com,prescription,1,VAT,Null,Null

@@ -6,10 +6,11 @@ from graphql_jwt.testcases import JSONWebTokenTestCase
 from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import supplier_mutation
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.messages.products_responses import (
     PRODUCTS_SUCCESS_RESPONSES
-    )
+)
 from healthid.views import HandleCSV
 
 
@@ -43,10 +44,28 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
-
         self.assertEqual(response.status_code, 201)
         self.assertIn('success', response.data)
         self.assertIn('noOfProductsAdded', response.data)
+
+    def test_invalid_csv_file_upload(self):
+        factory = RequestFactory()
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(base_path, 'invalid_product.csv')
+        file = open(path, 'rb')
+        request = factory.post(
+            reverse('handle_csv', args=['products']), {'file': file},
+            **self.auth_headers)
+        view = HandleCSV.as_view()
+        response = view(request, param='products')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('row-1', response.data)
+        self.assertIn('columns', response.data)
+        self.assertEqual(response.data.get('row-1')[0],
+                         ERROR_RESPONSES['required_field'].format('name'))
+        self.assertEqual(response.data.get('columns')[0],
+                         ERROR_RESPONSES['not_allowed_field']
+                         .format('not allowed column'))
 
     def test_successful_batch_upload(self):
         factory = RequestFactory()

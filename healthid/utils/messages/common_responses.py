@@ -14,6 +14,7 @@ ERROR_RESPONSES = {
     "invalid_field_error": "Please input a valid {}",
     "empty_field_error": "{} cannot be empty",
     "required_field": "{} is required!",
+    "not_allowed_field": "{} is not allowed!",
     "duplication_error": "{}, already exists!",
     "authorization_error": "You do not have permission to perform this action",
     "invalid_login_credentials": "Please, enter valid credentials",

@@ -11,46 +11,71 @@ from healthid.utils.product_utils.product import \
     generate_reorder_points_and_max
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.product_utils.batch_utils import batch_info_instance
+from healthid.utils.product_utils.validate_products_csv_upload import\
+    validate_products_csv_upload
 
 
 class HandleCsvValidations(object):
     def handle_csv_upload(self, io_string):
+        """
+        Parses products information from an appropriately formatted CSV file
+        and save them.
+
+        arguments:
+            io_string(obj): 'io.StringIO' object containing a list
+                            of products in CSV format
+
+        returns:
+            int: the number of saved products
+        """
         params = {'model': Product, 'error_type': ValidationError}
         product_count = 0
 
+        products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
 
-        for row in csv.reader(io_string):
-            if len(row) != 10:
-                message = {"error": "csv file missing column(s)"}
-                raise ValidationError(message)
+        for row in products:
+            product_category = get_model_object(ProductCategory,
+                                                'name__iexact',
+                                                row['category'],
+                                                error_type=NotFound)
+            supplier = get_model_object(Suppliers,
+                                        'email__iexact',
+                                        row['preferred supplier'],
+                                        error_type=NotFound)
+            backup_supplier = get_model_object(Suppliers,
+                                               'email__iexact',
+                                               row['backup supplier'],
+                                               error_type=NotFound)
+            measurement_unit = get_model_object(MeasurementUnit,
+                                                'name__iexact',
+                                                row['dispensing size'],
+                                                error_type=NotFound)
+            vat_status = row['vat status'].lower() == 'vat' or False\
+                if row['vat status']\
+                else product_category.is_vat_applicable
 
-            product_category = get_model_object(
-                ProductCategory, 'name', row[0], error_type=NotFound)
-            supplier = get_model_object(
-                Suppliers, 'name', row[7], error_type=NotFound)
-            backup_supplier = get_model_object(
-                Suppliers, 'name', row[8], error_type=NotFound)
-            measurement_unit = get_model_object(
-                MeasurementUnit, 'name', row[2], error_type=NotFound)
-            if row[1] not in product_names:
+            loyalty_weight = row['loyalty weight']\
+                if str(row['loyalty weight']).isdigit()\
+                else product_category.loyalty_weight
+
+            if row['name'] not in product_names and product_category.outlet_id:
                 product_instance = Product(
                     product_category_id=product_category.id,
-                    outlet=product_category.outlet,
-                    product_name=row[1],
+                    outlet_id=product_category.outlet_id,
+                    product_name=row['name'],
                     measurement_unit_id=measurement_unit.id,
-                    description=row[3],
-                    brand=row[4],
-                    manufacturer=row[5],
-                    vat_status=True if row[6].lower() == 'vat' else False,
+                    description=row['description'],
+                    brand=row['brand'],
+                    manufacturer=row['manufacturer'],
+                    vat_status=vat_status,
                     preferred_supplier_id=supplier.id,
                     backup_supplier_id=backup_supplier.id,
-                    tags=row[9])
+                    tags=row['tags'],
+                    loyalty_weight=loyalty_weight)
+
                 with SaveContextManager(product_instance, **params):
-                    pass
-
-                product_count += 1
-
+                    product_count += 1
         return product_count
 
     def handle_batch_csv_upload(self, user, batch_info_csv):
