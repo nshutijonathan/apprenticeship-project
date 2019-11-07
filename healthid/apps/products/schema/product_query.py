@@ -160,6 +160,10 @@ class Query(graphene.AbstractType):
                                           page_count=graphene.Int(),
                                           page_number=graphene.Int(),
                                           expire_month=graphene.Int())
+    near_expired_batches = graphene.List(BatchInfoType,
+                                         page_count=graphene.Int(),
+                                         page_number=graphene.Int(),
+                                         expire_month=graphene.Int())
 
     @login_required
     def resolve_products(self, info, **kwargs):
@@ -362,6 +366,12 @@ class BatchQuery(graphene.AbstractType):
     product_batch_info = graphene.List(
         BatchInfoType, id=graphene.Int(required=True))
     proposed_quantity_edits = graphene.List(QuantityType)
+    total_batches_pages_count = graphene.Int()
+    batches_total_number = graphene.Int()
+    near_expired_batches = graphene.List(BatchInfoType,
+                                         page_count=graphene.Int(),
+                                         page_number=graphene.Int(),
+                                         expire_month=graphene.Int())
 
     @login_required
     def resolve_all_batch_info(self, info):
@@ -419,3 +429,52 @@ class BatchQuery(graphene.AbstractType):
     def resolve_declined_quantities(self, info):
         return Quantity.objects.filter(
             parent_id__isnull=True, request_declined=True)
+
+    @login_required
+    def resolve_near_expired_batches(self, info, **kwargs):
+        page_count = kwargs.get('page_count') or \
+                     PAGINATION_DEFAULT["page_count"]
+        page_number = kwargs.get('page_number') or \
+                      PAGINATION_DEFAULT["page_number"]
+        expire_month = validate_expire_months(kwargs.get('expire_month'))
+        today_date = datetime.now()
+        expire_range = today_date + relativedelta(months=+expire_month)
+        near_expired_batches_set = BatchInfo.objects \
+            .filter(expiry_date__range=(today_date, expire_range)) \
+            .order_by('expiry_date')
+
+        near_expired_batches = pagination_query(near_expired_batches_set,
+                                                page_count,
+                                                page_number)
+        Query.pagination_result = near_expired_batches
+        return near_expired_batches[0]
+
+    @login_required
+    def resolve_total_batches_pages_count(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of pages for a specific pagination response
+        :Note: During querying, totaLProductsPagesCount query field should
+        strictly be called after the products query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[1]
+
+    @login_required
+    def resolve_batches_total_number(self, info, **kwargs):
+        """
+        :param info:
+        :param kwargs:
+        :return: Total number of items for a specific pagination response
+        :Note: During querying, productsTotalNumber query field should
+        strictly be called after the products query when the pagination
+        is being applied, this is due to GraphQL order of resolver methods
+        execution.
+        """
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[2]

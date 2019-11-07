@@ -102,3 +102,12 @@ mutation deleteBatchInfo {{
   }}
 }}
 '''
+
+near_expired_batches = '''
+query {
+ nearExpiredBatches {
+    id
+    expiryDate
+}
+}
+'''

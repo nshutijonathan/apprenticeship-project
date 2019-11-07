@@ -2,7 +2,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.batch_info \
     import batch_info_query, update_batch_info, \
     query_product_batch_info, single_batch_info, \
-    all_batch_info, delete_batch_info
+    all_batch_info, delete_batch_info, near_expired_batches
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
@@ -93,7 +93,7 @@ class TestBatchInfo(BaseConfiguration):
 
         self.assertIn('data', resp)
         self.assertIn(PRODUCTS_ERROR_RESPONSES[
-                      "inexistent_batchinfo"].format(batch_info_id),
+                          "inexistent_batchinfo"].format(batch_info_id),
                       resp['errors'][0]['message'])
 
     def test_delete_batch_info(self):
@@ -101,3 +101,8 @@ class TestBatchInfo(BaseConfiguration):
         resp = self.query_with_token(self.access_token_master,
                                      delete_batch_info.format(**batch_info))
         self.assertIn('data', resp)
+
+    def test_near_expired_batches(self):
+        response = self.query_with_token(
+            self.access_token, near_expired_batches)
+        self.assertIn('nearExpiredBatches', response['data'])
