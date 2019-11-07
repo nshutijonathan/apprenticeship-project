@@ -20,6 +20,8 @@ from healthid.apps.orders.schema.mutations.suppliers.update_suppliernote \
     import UpdateSupplierNote
 from healthid.apps.orders.schema.mutations.suppliers.delete_suppliernote \
     import DeleteSupplierNote
+from healthid.apps.orders.schema.mutations.suppliers.rate_supplier \
+    import RateSupplier
 
 
 class Mutation(graphene.ObjectType):
@@ -33,3 +35,4 @@ class Mutation(graphene.ObjectType):
     create_suppliernote = CreateSupplierNote.Field()
     update_suppliernote = UpdateSupplierNote.Field()
     delete_suppliernote = DeleteSupplierNote.Field()
+    rate_supplier = RateSupplier.Field()

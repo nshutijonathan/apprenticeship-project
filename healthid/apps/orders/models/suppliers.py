@@ -56,3 +56,8 @@ class SupplierNote(BaseModel):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='note_creator')
     note = models.TextField(default="user note about this supplier")
+
+
+class SupplierRating(BaseModel):
+    supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
+    rating = models.IntegerField(null=False, default=0)

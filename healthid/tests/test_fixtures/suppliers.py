@@ -403,6 +403,26 @@ suppliers_notes_custom_pagination = '''
 
 '''
 
+rate_supplier = '''
+mutation{{
+  rateSupplier(supplierId:"{supplier_id}", deliveryPromptness:\
+  {delivery_promptness},serviceQuality:{service_quality}){{
+    message
+    supplierRating{{
+      id
+      rating
+      supplier{{
+        name
+        email
+      }}
+    }}
+  }}
+}}
+'''
+
+get_supplier_rating = '''query{{supplierRating(\
+  supplierId: "{supplier_id}")}}'''
+
 
 def supplier_notes(supplier_id):
     return (f'''query{{suppliersNote(id: "{supplier_id}"){{id}}}}''')

@@ -8,7 +8,7 @@ from django.conf import settings
 from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          OrderDetails, Suppliers,
                                          SupplierNote, PaymentTerms,
-                                         Tier)
+                                         Tier, SupplierRating)
 from healthid.apps.products.models import (ProductCategory, Product,
                                            MeasurementUnit,
                                            BatchInfo, Quantity)
@@ -488,3 +488,10 @@ class StoreCreditWalletHistoryFactory(factory.DjangoModelFactory):
     credit = fake.random_int(min=1)
     debit = fake.random_int(min=1)
     current_store_credit = fake.random_int(min=1)
+
+
+class SupplierRatingFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = SupplierRating
+
+    supplier = factory.SubFactory(SuppliersFactory)

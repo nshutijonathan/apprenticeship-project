@@ -433,9 +433,9 @@ class BatchQuery(graphene.AbstractType):
     @login_required
     def resolve_near_expired_batches(self, info, **kwargs):
         page_count = kwargs.get('page_count') or \
-                     PAGINATION_DEFAULT["page_count"]
-        page_number = kwargs.get('page_number') or \
-                      PAGINATION_DEFAULT["page_number"]
+            PAGINATION_DEFAULT["page_count"]
+        page_number = kwargs.get(
+            'page_number') or PAGINATION_DEFAULT["page_number"]
         expire_month = validate_expire_months(kwargs.get('expire_month'))
         today_date = datetime.now()
         expire_range = today_date + relativedelta(months=+expire_month)

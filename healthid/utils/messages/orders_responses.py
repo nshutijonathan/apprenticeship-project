@@ -50,5 +50,8 @@ ORDERS_ERROR_RESPONSES = {
     "invalid_supplier_field": "Please provide the right field of "
                                 "supplier name or id",
     "invalid_email": "Please input a valid email",
-    "invalid_mobile": "Please input a valid phone"
+    "invalid_mobile": "Please input a valid phone",
+    "invalid_supplier_email": "Please input a valid email",
+    "invalid_supplier_phone": "Please input a valid phone",
+    "invalid_rating": "The {} should be between 0 and {}",
 }

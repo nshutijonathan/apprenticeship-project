@@ -1,3 +1,4 @@
+from django.db.models import Avg
 import graphene
 from graphene.utils.resolve_only_args import resolve_only_args
 from graphene_django import DjangoObjectType
@@ -6,7 +7,10 @@ from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.models import (Suppliers,
-                                         SupplierNote, Tier, PaymentTerms)
+                                         SupplierNote,
+                                         Tier,
+                                         PaymentTerms,
+                                         SupplierRating)
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
@@ -54,6 +58,11 @@ class PaymentTermsType(DjangoObjectType):
         model = PaymentTerms
 
 
+class SupplierRatingType(DjangoObjectType):
+    class Meta:
+        model = SupplierRating
+
+
 class Query(graphene.AbstractType):
     """
     Query data related to the 'Suppliers' model
@@ -93,6 +102,9 @@ class Query(graphene.AbstractType):
                                    id=graphene.String(required=True))
     total_suppliers_pages_count = graphene.Int()
     pagination_result = None
+
+    supplier_rating = graphene.Float(
+        supplier_id=graphene.String(required=True))
 
     @user_permission('Operations Admin')
     def resolve_all_suppliers(self, info, **kwargs):
@@ -211,3 +223,13 @@ class Query(graphene.AbstractType):
                                                   "page_number"])
         Query.pagination_result = paginated_response
         return paginated_response[0]
+
+    @login_required
+    def resolve_supplier_rating(self, info, **kwargs):
+        supplier_id = kwargs.get("supplier_id")
+        rating = SupplierRating.objects.filter(
+            supplier_id=supplier_id).aggregate(Avg('rating'))
+        try:
+            return round(rating['rating__avg'], 1)
+        except TypeError:
+            return 0
