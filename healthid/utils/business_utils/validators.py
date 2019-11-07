@@ -1,6 +1,6 @@
 from graphql import GraphQLError
 
-from healthid.utils.app_utils.validators import validate_email
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.messages.business_responses import BUSINESS_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
@@ -12,7 +12,7 @@ class ValidateBusiness:
     def validate_business(self, **business_fields):
         '''Method to validate the business attributes
         '''
-        validate_email(business_fields['business_email'])
+        validator.validate_email(business_fields['business_email'])
         if not (business_fields['trading_name'] and
                 business_fields['legal_name']):
             raise GraphQLError(

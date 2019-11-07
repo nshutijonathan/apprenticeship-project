@@ -49,6 +49,6 @@ ORDERS_ERROR_RESPONSES = {
                                 "not active in",
     "invalid_supplier_field": "Please provide the right field of "
                                 "supplier name or id",
-    "invalid_supplier_email": "Please input a valid email",
-    "invalid_supplier_phone": "Please input a valid phone"
+    "invalid_email": "Please input a valid email",
+    "invalid_mobile": "Please input a valid phone"
 }

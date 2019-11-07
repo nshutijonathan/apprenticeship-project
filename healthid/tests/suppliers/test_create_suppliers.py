@@ -122,14 +122,15 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
 
     def test_invalid_email_supplier(self):
         response = self.query_with_token(self.access_token, email_invalid)
-        message = ORDERS_ERROR_RESPONSES["invalid_supplier_email"]
+        message = ORDERS_ERROR_RESPONSES["invalid_email"]
         self.assertEqual(
             message,
             response['errors'][0]['message'])
 
     def test_invalid_mobile_supplier(self):
         response = self.query_with_token(self.access_token, mobile_invalid)
-        message = ORDERS_ERROR_RESPONSES["invalid_supplier_phone"]
+        msg_format = "mobile number (ex. +2346787646)"
+        message = ERROR_RESPONSES['invalid_field_error'].format(msg_format)
         self.assertEqual(
             message,
             response['errors'][0]['message'])

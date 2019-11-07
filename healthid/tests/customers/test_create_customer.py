@@ -25,7 +25,7 @@ class TestCustomerCreation(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             create_customer.format(**self.create_customer_data))
-        expected_message = "special characters not allowed"
+        expected_message = "Special characters not allowed"
         self.assertEqual(
             expected_message,
             response['errors'][0]['message'])

@@ -6,7 +6,7 @@ from healthid.apps.orders.models import Suppliers, SupplierNote
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.orders.schema.suppliers_query import (
     SuppliersType, SupplierNoteType)
-from healthid.utils.app_utils.validators import special_cahracter_validation
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
 from healthid.utils.app_utils.database import (
@@ -45,7 +45,7 @@ class CreateSupplierNote(graphene.Mutation):
         user = info.context.user
         outlet_ids = kwargs.get("outlet_ids")
         note = kwargs.get("note")
-        special_cahracter_validation(note)
+        validator.special_character_validation(note)
         if len(note.split()) < 2:
             raise GraphQLError(
                 ORDERS_ERROR_RESPONSES["supplier_note_length_error"])

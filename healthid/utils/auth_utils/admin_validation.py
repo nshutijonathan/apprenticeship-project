@@ -5,7 +5,7 @@ from graphql import GraphQLError
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.authentication_responses import\
       AUTH_ERROR_RESPONSES
-from healthid.utils.auth_utils.validations import ValidateUser
+from healthid.utils.app_utils.validator import validator
 
 
 class ValidateAdmin:
@@ -27,9 +27,9 @@ class ValidateAdmin:
             "username": self._validate_name(username),
             "email": self._validate_secondary_email(email),
             "secondary_email": self._validate_secondary_email(secondary_email),
-            "mobile_number": ValidateUser().validate_mobile_number(
+            "mobile_number": validator.validate_mobile(
                              mobile_number),
-            "secondary_phone_number": ValidateUser().validate_mobile_number(
+            "secondary_phone_number": validator.validate_mobile(
                 secondary_phone_number)
         }
 

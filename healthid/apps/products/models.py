@@ -13,7 +13,7 @@ from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.managers import ProductManager, QuantityManager
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
-from healthid.utils.app_utils.validators import check_validity_of_ids
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.product_utils.product_price_checker import \
     round_off_selling_price
@@ -230,7 +230,8 @@ class Product(BaseModel):
         product_batches = self.batch_info.filter(query)
         product_batch_ids = product_batches.values_list('id', flat=True)
         message = PRODUCTS_ERROR_RESPONSES['inexistent_batches']
-        check_validity_of_ids(batch_ids, product_batch_ids, message=message)
+        validator.check_validity_of_ids(
+            batch_ids, product_batch_ids, message=message)
         return product_batches
 
     @staticmethod

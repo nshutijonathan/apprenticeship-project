@@ -1,7 +1,5 @@
 from graphql import GraphQLError
-from healthid.utils.auth_utils.validations import ValidateUser
-from healthid.utils.app_utils.validators import (special_cahracter_validation,
-                                                 validate_email)
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.messages.customer_responses import CUSTOMER_ERROR_RESPONSES
 
 
@@ -30,13 +28,13 @@ def validate_customer_fields(customer, **kwargs):
     emails_to_validate = ["email", "emergency_contact_email"]
     for key, value in kwargs.items():
         if key in fields_to_validate:
-            special_cahracter_validation(value)
+            validator.special_character_validation(value)
             if value.strip() == "":
                 raise GraphQLError(CUSTOMER_ERROR_RESPONSES[
                                    "first_name_error"].format(key))
         if key in emails_to_validate:
-            validate_email(value)
+            validator.validate_email(value)
         if key in numbers_to_validate:
-            ValidateUser().validate_mobile_number(value)
+            validator.validate_mobile(value)
         setattr(customer, key, value)
     return customer

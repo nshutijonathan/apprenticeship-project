@@ -4,10 +4,7 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.schema.suppliers_query import (SuppliersType)
 from healthid.apps.orders.models import Suppliers
 from healthid.utils.app_utils.database import (SaveContextManager)
-from healthid.utils.app_utils.validators import \
-    validate_email, validate_mobile
-from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
-from graphql import GraphQLError
+from healthid.utils.app_utils.validator import validator
 
 
 class SuppliersInput(graphene.InputObjectType):
@@ -60,15 +57,8 @@ class AddSupplier(graphene.Mutation):
     def mutate(cls, root, info, input=None):
         user = info.context.user
         supplier = Suppliers()
-
-        if validate_email(input.email) is None:
-            raise GraphQLError(ORDERS_ERROR_RESPONSES["\
-                invalid_supplier_email"])
-        if validate_mobile(input.mobile_number) is None:
-            raise GraphQLError(ORDERS_ERROR_RESPONSES["\
-                invalid_supplier_phone"])
-        if input.credit_days == 0:
-            input['payment_terms_id'] = 1
+        input['email'] = validator.validate_email(input.email)
+        input['mobile_number'] = validator.validate_mobile(input.mobile_number)
         for (key, value) in input.items():
             setattr(supplier, key, value)
         supplier.user = user

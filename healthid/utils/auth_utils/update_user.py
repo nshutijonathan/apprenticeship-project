@@ -5,8 +5,7 @@ from graphql import GraphQLError
 
 from healthid.apps.outlets.models import Outlet
 from healthid.utils.app_utils.database import get_model_object
-
-from .validations import ValidateUser
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
@@ -44,17 +43,17 @@ class UpdateUser:
         def wrapper(*args, **kwargs):
             if kwargs.get('mobile_number') is not None:
                 mobile_number = kwargs.get('mobile_number')
-                ValidateUser().validate_mobile_number(mobile_number)
+                validator.validate_mobile(mobile_number)
             if kwargs.get('password') is not None:
                 password_input = kwargs.get('password')
                 new_password = password_input[0]['new_password']
-                ValidateUser().validate_password(new_password)
+                validator.validate_password(new_password)
             if kwargs.get('email') is not None:
                 email = kwargs.get('email')
-                ValidateUser().validate_email(email)
+                validator.validate_email(email)
             if kwargs.get('username') is not None:
                 username = kwargs.get('username')
-                ValidateUser().validate_username(username)
+                validator.validate_username(username)
 
             if kwargs.get('outlet_id') is not None:
                 outlets = kwargs.get('outlet_id')

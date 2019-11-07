@@ -6,7 +6,7 @@ from healthid.apps.outlets.models import Outlet
 from healthid.apps.business.models import Business
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.app_utils.id_generator import ID_LENGTH, id_gen
-from healthid.utils.app_utils.validators import validate_empty_field
+from healthid.utils.app_utils.validator import validator
 from healthid.utils.auth_utils.decorator import user_permission
 
 
@@ -155,7 +155,7 @@ class Preference(BaseModel):
         if 'payment_method' in kwargs:
             payment_method = kwargs[
                 "payment_method"] = payment_method.replace(' ', '')
-            validate_empty_field('Payment method', payment_method)
+            validator.validate_empty_field('Payment method', payment_method)
 
         if payment_method and payment_method not in cash_methods:
             raise GraphQLError('Invalid payment method option')

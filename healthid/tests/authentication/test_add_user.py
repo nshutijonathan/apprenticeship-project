@@ -90,12 +90,10 @@ class TestAddUser(BaseConfiguration):
             'roleId': self.role.id
 
         }
-
+        example = "mobile number (ex. +2346787646)"
         resp = self.query_with_token(
             self.access_token_master, add_user_query.format(**user_data))
-        self.assertIn(ERROR_RESPONSES[
-                      "invalid_field_error"
-                      ].format("mobile number (ex. +2346787646)"),
+        self.assertIn(ERROR_RESPONSES["invalid_field_error"].format(example),
                       resp['errors'][0]['message'])
 
     def test_existing_email(self):
