@@ -66,7 +66,6 @@ class ProductType(DjangoObjectType):
             'is_approved': ['exact'],
             'product_name': ['exact', 'icontains', 'istartswith'],
             'sku_number': ['exact'],
-            'id': ['exact'],
             'tags__name': ['exact', 'icontains', 'istartswith']
         }
         interfaces = (graphene.relay.Node,)
