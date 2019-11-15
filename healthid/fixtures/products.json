@@ -44,6 +44,7 @@
                 "auto_price": false,
                 "loyalty_weight": 0,
                 "parent": null,
+                "outlet": 1,
                 "is_active": true}},
     {"model": "products.product",
      "pk": 3,
@@ -64,6 +65,7 @@
                 "auto_price": false,
                 "loyalty_weight": 0,
                 "parent": null,
+                "outlet": 1,
                 "is_active": true}},
     {"model": "products.product",
      "pk": 8,
@@ -84,4 +86,5 @@
                 "auto_price": false,
                 "loyalty_weight": 0,
                 "parent": null,
+                "outlet": 1,
                 "is_active": true}}]

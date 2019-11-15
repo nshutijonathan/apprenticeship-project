@@ -1,6 +1,5 @@
 from django.db import models
 from django.db.models.signals import post_save
-
 from healthid.apps.authentication.models import User
 from healthid.models import BaseModel
 from healthid.settings import pusher

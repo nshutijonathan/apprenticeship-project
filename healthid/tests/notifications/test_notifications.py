@@ -17,15 +17,11 @@ class NotificationTests(BaseConfiguration):
             'supplier_id': self.supplier.id,
             'expiry_date': '2020-02-10',
         }
-        # create a batch with low quantity product to
-        # trigger notification.
         self.query_with_token(
             self.access_token_master, batch_info_query.format(
                 **self.batch_data))
-
         self.response = self.query_with_token(
             self.access_token_master, view_notifications)
-
         self.id = self.response['data']['notifications'][0]['id']
         self.non_existent_id = "ThanosSnapped123"
 

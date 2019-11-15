@@ -2,13 +2,13 @@ import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.conf import settings
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
 from healthid.apps.stock.models import StockCountTemplate
 
 from healthid.utils.product_utils.batch_expiries import \
-    notify_about_expired_products
+    notify_about_expired_products, notify_pusher_about_expired_products
 from healthid.utils.stock_utils.stock_count_alert import \
     generate_stock_counts_notifications, schedule_templates
 from healthid.utils.product_utils.product_expiry import \
@@ -23,33 +23,17 @@ generate_promotion_interval = os.environ.get('GENERATE_PROMOTION_INTERVAL',
 
 sched = BackgroundScheduler()
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(notify_about_expired_products,
+                  'interval', minutes=int(time_interval))
+scheduler.add_job(check_for_expiry_products, 'interval',
+                  minutes=int(generate_promotion_interval))
+scheduler.add_job(inventory_check, 'cron',
+                  day_of_week='sun', hour=23, minute=50)
+scheduler.add_job(notify_pusher_about_expired_products, 'cron',
+                  day_of_week='mon', hour=9, minute=30)
 
-@receiver(post_save, sender=StockCountTemplate)
-def start_job(sender, instance, **kwargs):
-    """
-    Triggers job scheduling on the first mutation
-    stocktemplate
-    """
-    if 'created' in kwargs:
-        if not kwargs['created'] and instance.unique:
-            start_schedule_templates()
-
-
-def start():
-    """
-    Method to start the scheduled jobs
-    """
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(notify_about_expired_products, 'interval',
-                      minutes=int(time_interval))
-    scheduler.add_job(check_for_expiry_products,
-                      'interval',
-                      minutes=int(generate_promotion_interval))
-    scheduler.add_job(inventory_check, 'cron',
-                      day_of_week='sun',
-                      hour=23,
-                      minute=50)
-    scheduler.start()
+scheduler.start()
 
 
 def alert_counting():

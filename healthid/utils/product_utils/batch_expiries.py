@@ -1,8 +1,7 @@
 import threading
 from datetime import datetime
-
+from dateutil.relativedelta import relativedelta
 from django.template.loader import render_to_string
-
 from healthid.apps.products.models import BatchInfo
 from healthid.utils.notifications_utils.handle_notifications import notify
 
@@ -59,3 +58,50 @@ def trigger_notification(expired_batches):
             outlet_master_admins, message,
             event_name, subject, html_body, ))
         thread.start()
+
+
+def generate_expiry_notification(expired_batches):
+    '''Method to trigger a notification to users
+    '''
+    expired_products = []
+    outlet_user = []
+    for batch in expired_batches:
+        outlet = batch['batch'].product.outlet
+        for user in outlet.active_outlet_users:
+            outlet_user.append(user)
+        message = {
+            'id': batch['batch'].id,
+            'batch': batch['batch'].batch_no,
+            'product': batch['batch'].product.product_name,
+            'outlet': batch['batch'].product.outlet.name,
+            'days_to_expiry': batch["days_to_expiry"]
+        }
+        expired_products.append(message)
+    event_name = 'expiry-notification-event'
+    thread = threading.Thread(target=notify(
+        outlet_user, expired_products,
+        event_name, ))
+    thread.start()
+
+
+def notify_pusher_about_expired_products():
+    '''Method to extract expired batches from the database
+    '''
+    expired_batches = []
+    today = datetime.today().date()
+    twelve_months = today + relativedelta(months=+12)
+    batches = BatchInfo.objects.all()
+    if batches:
+        for batch in batches:
+            expiry_date = batch.expiry_date
+            days_to_expiry = (today - expiry_date).days
+            if expiry_date <= twelve_months:
+                batch = {
+                    'batch': batch,
+                    'days_to_expiry': days_to_expiry
+                }
+                expired_batches.append(batch)
+    thread = threading.Thread(
+        target=generate_expiry_notification(expired_batches),
+        daemon=True)
+    thread.start()
