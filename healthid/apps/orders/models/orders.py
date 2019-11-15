@@ -67,9 +67,6 @@ class OrderDetails(BaseModel):
     price = models.DecimalField(blank=True, null=True,
                                 max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    supplier_order_number = models.CharField(
-        max_length=50, null=True, editable=False
-    )
     @classmethod
     def check_if_duplicate(self, order_id, order_detail_object, supplier=None):
         """
@@ -107,8 +104,6 @@ class OrderDetails(BaseModel):
 
             if not check_duplicate:
                 detail_object.supplier_id = supplier_id
-                detail_object.supplier_order_number = \
-                    str(detail_object.order.order_number) + '-' + supplier_id
                 detail_object_list.append(detail_object)
                 created_order = detail_object
             else:

@@ -1,30 +1,21 @@
-# specify a base image
-FROM ubuntu:latest
+# Using the official python 3.7 docker image provided
+FROM python:3.7
 
-
-LABEL version="1.0"
-LABEL maintainer="olumide ogundele <olumideralph@gmail.com>"
-LABEL project.name="healthID"
-
-# set environment variables
+# Setting up the PYTHONUNBUFFERED env variable
 ENV PYTHONUNBUFFERED 1
 
+# ADD REQUIREMENTS AND ENV FILES TO WORKING DIR AND PREPARE FOR INSTALLATION
+RUN mkdir /src
+WORKDIR /src
 
-# set the current directory to build the app
-WORKDIR /usr/health_id
+COPY requirements.txt /src
+RUN pip install -r requirements.txt 
 
-# install the dependencies required to run the app
-RUN apt-get update  -y && apt-get install -y \
-    libpq-dev \
-    python3-pip -y
+COPY . /src
+RUN ./test_script.sh
 
-RUN pip3 install psycopg2 weasyprint gunicorn
-
-# copy the file containing the app dependencies
-COPY ./requirements.txt ./
-
-# install all the dependencies
-RUN pip3 install -r requirements.txt
-
-# copy the remaining project
-COPY ./ ./
+# EXPOSE THE PORT TO USE
+EXPOSE 8000 
+EXPOSE 5432
+# RUN THE TESTS
+CMD ["python", "manage.py", "test"]

@@ -48,7 +48,6 @@ mutation{{
     message
     orderDetails{{
       id
-      supplierOrderNumber
       product{{
         id
       }}
@@ -71,7 +70,6 @@ mutation{{
     message
     orderDetails{{
       id
-      supplierOrderNumber
       product{{
         id
       }}
@@ -97,7 +95,6 @@ mutation{{
     message
     orderDetails{{
       id
-      supplierOrderNumber
       product{{
         id
       }}
@@ -120,7 +117,6 @@ mutation{{
     message
     orderDetails{{
       id
-      supplierOrderNumber
       product{{
         id
       }}
