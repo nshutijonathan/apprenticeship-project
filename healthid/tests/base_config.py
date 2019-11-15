@@ -10,7 +10,7 @@ from healthid.apps.orders.models import (Order, PaymentTerms, SupplierNote,
                                          Suppliers, Tier)
 from healthid.apps.outlets.models import (
     City, Country, Outlet, OutletKind, OutletUser)
-from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.apps.profiles.models import Profile
 from healthid.apps.sales.models import SalesPrompt
@@ -174,7 +174,7 @@ class BaseConfiguration(TestCase):
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
         self.outlet = self.create_outlet(self.outlet)
-        self.measurement_unit = self.create_measurement_unit()
+        self.dispensing_size = self.create_dispensing_size()
         self.product_category = self.create_product_category()
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
@@ -371,8 +371,8 @@ class BaseConfiguration(TestCase):
             payment_terms=payment_terms,
             user=user)
 
-    def create_measurement_unit(self):
-        return MeasurementUnit.objects.create(name='kilogram')
+    def create_dispensing_size(self):
+        return DispensingSize.objects.create(name='kilogram')
 
     def create_product_category(self):
         return ProductCategory.objects.create(name='Drinks',
@@ -383,7 +383,7 @@ class BaseConfiguration(TestCase):
             product_name=product_name,
             sales_price=100,
             product_category=self.product_category,
-            measurement_unit=self.measurement_unit,
+            dispensing_size=self.dispensing_size,
             preferred_supplier=self.supplier,
             backup_supplier=self.supplier,
             outlet=self.outlet,

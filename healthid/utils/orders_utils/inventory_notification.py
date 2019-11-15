@@ -53,7 +53,7 @@ def product_below_stock(outlet, outlet_products, is_cron_job=True):
         if not reorder_max:
             reorder_max = outlet.outletpreference.reorder_max
 
-        remaining_stock = product.quantity
+        remaining_stock = product.quantity_in_stock
         sales_velocity = SalesVelocity(
             product_id=product.id,
             outlet_id=product.outlet_id

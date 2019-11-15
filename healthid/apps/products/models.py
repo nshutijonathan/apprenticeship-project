@@ -41,7 +41,7 @@ class ProductCategory(BaseModel):
         unique_together = (("name", "outlet"))
 
 
-class MeasurementUnit(BaseModel):
+class DispensingSize(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
@@ -65,8 +65,8 @@ class Product(BaseModel):
     product_category = models.ForeignKey(
         ProductCategory, on_delete=models.CASCADE)
     product_name = models.CharField(max_length=244, null=False)
-    measurement_unit = models.ForeignKey(
-        MeasurementUnit, on_delete=models.CASCADE)
+    dispensing_size = models.ForeignKey(
+        DispensingSize, on_delete=models.CASCADE)
     sku_number = models.CharField(max_length=100, null=True)
     is_approved = models.BooleanField(default=False)
     description = models.TextField()
@@ -121,7 +121,7 @@ class Product(BaseModel):
             "manufacturer",
             "outlet",
             "description",
-            "measurement_unit"))
+            "dispensing_size"))
 
     @property
     def get_tags(self):
@@ -134,15 +134,15 @@ class Product(BaseModel):
         return f"<{self.product_name}>"
 
     @property
-    def quantity(self):
+    def quantity_in_stock(self):
         """
-        Get the total quantity of a given product.
+        Get the total quantity in stock of a given product.
         """
         return sum([batch.quantity for batch in self.batch_info.all()])
 
     @property
     def autofill_quantity(self):
-        return self.reorder_max - self.quantity
+        return self.reorder_max - self.quantity_in_stock
 
     @property
     def avarage_unit_cost(self):
@@ -209,8 +209,8 @@ class Product(BaseModel):
             'backup_supplier')
         product_dict['product_category_id'] = product_dict.pop(
             'product_category')
-        product_dict['measurement_unit_id'] = product_dict.pop(
-            'measurement_unit')
+        product_dict['dispensing_size_id'] = product_dict.pop(
+            'dispensing_size')
         product_dict.pop('id')
         for key, value in product_dict.items():
             if value is not None:

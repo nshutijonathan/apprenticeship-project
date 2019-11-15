@@ -33,13 +33,13 @@ class ApproveProducts(BaseConfiguration):
 
     def test_approve_product_with_invalid_id(self):
         """test for approving  product with invalid id """
-        invalid_id = 10
+        invalid_id = 1000
         response = self.query_with_token(
             self.access_token_master,
             products.approve_product.format(product_id=invalid_id))
         self.assertNotIn("success", response)
         self.assertIn("errors", response)
-        self.assertIn("Product with id 10 does not exist.",
+        self.assertIn("Product with id 1000 does not exist.",
                       response['errors'][0]['message'])
 
     def test_approve_already_approved_product(self):

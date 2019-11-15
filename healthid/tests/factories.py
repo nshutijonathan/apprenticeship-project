@@ -10,7 +10,7 @@ from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          SupplierNote, PaymentTerms,
                                          Tier, SupplierRating)
 from healthid.apps.products.models import (ProductCategory, Product,
-                                           MeasurementUnit,
+                                           DispensingSize,
                                            BatchInfo, Quantity)
 from healthid.apps.authentication.models import Role
 from healthid.apps.consultation.models import (
@@ -185,10 +185,10 @@ class SuppliersFactory(factory.DjangoModelFactory):
     is_approved = False
 
 
-class MeasurementUnitFactory(factory.DjangoModelFactory):
+class DispensingSizeFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = MeasurementUnit
+        model = DispensingSize
 
     name = factory.Sequence(lambda x: "Unit %d" % x)
 
@@ -208,7 +208,7 @@ class ProductFactory(factory.DjangoModelFactory):
 
     product_category = factory.SubFactory(ProductCategoryFactory)
     product_name = factory.Sequence(lambda x: "Product %d" % x)
-    measurement_unit = factory.SubFactory(MeasurementUnitFactory)
+    dispensing_size = factory.SubFactory(DispensingSizeFactory)
     sku_number = factory.Sequence(lambda x: "000%d" % x)
     description = "blah blah blah"
     brand = "Brand1"

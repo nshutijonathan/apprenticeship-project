@@ -6,8 +6,8 @@ from healthid.apps.products.models import Product, ProductCategory
 from healthid.apps.products.schema.batch_info_mutation import (
     ApproveProposedQuantity, CreateBatchInfo, DeleteBatchInfo, ProposeQuantity,
     UpdateBatchInfo)
-from healthid.apps.products.schema.measurement_unit_mutation import (
-    CreateMeasurementUnit, DeleteMeasurementUnit, EditMeasurementUnit)
+from healthid.apps.products.schema.dispensing_size_mutation import (
+    CreateDispensingSize, DeleteDispensingSize, EditDispensingSize)
 from healthid.apps.products.schema.price_survey_mutations import (
     CreatePriceCheckSurvey, DeletePriceCheckSurvey, UpdatePriceCheckSurvey)
 from healthid.apps.products.schema.product_category_mutation import (
@@ -24,7 +24,7 @@ from healthid.utils.product_utils.product_query import ProductQuery
 from healthid.utils.product_utils.set_price import SetPrice
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.products_responses import\
-     PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
+    PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
 
 
 class ProductInput(graphene.InputObjectType):
@@ -44,7 +44,7 @@ class CreateEditProduct(graphene.Mutation):
         product_category_id(int): The product category id
         brand(str): The brand associated with the product
         manufacturer(str): The product manufacturer
-        measurement_unit_id(int): The id of the measurement units the product
+        dispensing_size_id(int): The id of the dispensing size the product
                                   is to be served in
         preferred_supplier_id(str): The id of the preferred supplier of the
                                     product
@@ -75,7 +75,7 @@ class CreateEditProduct(graphene.Mutation):
         product_category_id = graphene.Int(required=True)
         brand = graphene.String(required=True)
         manufacturer = graphene.String(required=True)
-        measurement_unit_id = graphene.Int(required=True)
+        dispensing_size_id = graphene.Int(required=True)
         preferred_supplier_id = graphene.String()
         backup_supplier_id = graphene.String()
         vat_status = graphene.Boolean(required=True)
@@ -123,7 +123,7 @@ class UpdateProduct(CreateEditProduct):
         product_category_id = graphene.Int()
         brand = graphene.String()
         manufacturer = graphene.String()
-        measurement_unit_id = graphene.Int()
+        dispensing_size_id = graphene.Int()
         vat_status = graphene.Boolean()
         loyalty_weight = graphene.Int()
 
@@ -171,11 +171,11 @@ class DeleteProduct(graphene.Mutation):
         product = get_model_object(Product, 'id', id)
         if product.is_approved:
             raise GraphQLError(
-                  PRODUCTS_ERROR_RESPONSES["approve_deletion_error"])
+                PRODUCTS_ERROR_RESPONSES["approve_deletion_error"])
         product.delete(user)
 
         return DeleteProduct(
-               success=SUCCESS_RESPONSES["deletion_success"].format("Product"))
+            success=SUCCESS_RESPONSES["deletion_success"].format("Product"))
 
 
 class ApproveProduct(graphene.Mutation):
@@ -204,8 +204,8 @@ class ApproveProduct(graphene.Mutation):
             Product, 'id', id, manager_query=Product.all_products)
         if product.is_approved:
             raise GraphQLError(
-               PRODUCTS_ERROR_RESPONSES[
-                   "product_approval_duplication"].format(id))
+                PRODUCTS_ERROR_RESPONSES[
+                    "product_approval_duplication"].format(id))
         product.is_approved = True
         product.save()
         success = [
@@ -241,13 +241,13 @@ class ApproveProposedEdits(graphene.Mutation):
         product_id = kwargs.get('product_id')
         request_id = kwargs.get('edit_request_id')
         message = PRODUCTS_ERROR_RESPONSES[
-                  "inexistent_proposed_edit"].format(request_id)
+            "inexistent_proposed_edit"].format(request_id)
 
         product = get_model_object(Product, 'id', product_id)
         product.approve_proposed_edit(request_id)
 
         message = [SUCCESS_RESPONSES["approval_success"].format(
-                                                         "Edit request")]
+            "Edit request")]
         return ApproveProposedEdits(product=product, message=message)
 
 
@@ -286,7 +286,7 @@ class DeclineProposedEdits(graphene.Mutation):
 
         product_name = edit_request.product_name
         msg = PRODUCTS_SUCCESS_RESPONSES[
-              "edit_request_decline"].format(product_name)
+            "edit_request_decline"].format(product_name)
         return DeclineProposedEdits(message=msg, edit_request=edit_request)
 
 
@@ -363,7 +363,7 @@ class UpdateLoyaltyWeight(graphene.Mutation):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
             raise GraphQLError(
-                  PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
+                PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
         product_category_id = kwargs.get("product_category_id")
         products = ProductQuery().query_product_category(product_category_id)
         category = get_model_object(ProductCategory, 'id', product_category_id)
@@ -403,7 +403,7 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
         loyalty_value = kwargs.get("loyalty_value")
         if loyalty_value < 1:
             raise GraphQLError(
-                  PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
+                PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
         product_id = kwargs.get("id")
         product = get_model_object(Product, 'id', product_id)
         product.loyalty_weight = loyalty_value
@@ -445,10 +445,10 @@ class ActivateProduct(ActivateDeactivateProducts):
     def mutate(self, info, **kwargs):
         product_ids = kwargs.get('product_ids')
         error_msg = PRODUCTS_ERROR_RESPONSES[
-                    "product_activation_error"].format(product_ids)
+            "product_activation_error"].format(product_ids)
         products = activate_deactivate_products(product_ids, False, error_msg)
         success = PRODUCTS_SUCCESS_RESPONSES[
-                  "product_activation_success"].format(product_ids)
+            "product_activation_success"].format(product_ids)
         return ActivateProduct(success=success, products=products)
 
 
@@ -463,10 +463,10 @@ class DeativateProduct(ActivateDeactivateProducts):
     def mutate(self, info, **kwargs):
         product_ids = kwargs.get('product_ids')
         error_msg = PRODUCTS_ERROR_RESPONSES[
-                    "product_deactivation_error"].format(product_ids)
+            "product_deactivation_error"].format(product_ids)
         products = activate_deactivate_products(product_ids, True, error_msg)
         success = PRODUCTS_SUCCESS_RESPONSES[
-                  "product_deactivation_success"].format(product_ids)
+            "product_deactivation_success"].format(product_ids)
         return DeativateProduct(success=success, products=products)
 
 
@@ -486,11 +486,11 @@ class Mutation(graphene.ObjectType):
     deactivate_product = DeativateProduct.Field()
     activate_product = ActivateProduct.Field()
     create_product_category = CreateProductCategory.Field()
-    create_measurement_unit = CreateMeasurementUnit.Field()
+    create_dispensing_size = CreateDispensingSize.Field()
     edit_product_category = EditProductCategory.Field()
     delete_product_category = DeleteProductCategory.Field()
-    edit_measurement_unit = EditMeasurementUnit.Field()
-    delete_measurement_unit = DeleteMeasurementUnit.Field()
+    edit_dispensing_size = EditDispensingSize.Field()
+    delete_dispensing_size = DeleteDispensingSize.Field()
     create_price_check_survey = CreatePriceCheckSurvey.Field()
     delete_price_check_survey = DeletePriceCheckSurvey.Field()
     update_price_check_survey = UpdatePriceCheckSurvey.Field()

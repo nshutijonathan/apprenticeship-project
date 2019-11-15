@@ -118,7 +118,8 @@ class InitiateStockCount(graphene.Mutation):
                     'email': str(info.context.user.email),
                     'quantity_counted': str(stock_count.quantity_counted),
                     'variance_reason': str(stock_count.variance_reason),
-                    'product_quantity': str(stock_count.product.quantity)
+                    'product_quantity':
+                    str(stock_count.product.quantity_in_stock)
                 }
                 notify(
                     users=users_instance,

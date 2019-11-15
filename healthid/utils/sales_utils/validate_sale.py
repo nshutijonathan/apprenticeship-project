@@ -28,7 +28,7 @@ class SalesValidator:
             self.product_queryset, key=lambda x: self.product_ids.index(x.id))
 
         self.products_db_quantity = [
-            product.quantity for product in self.sorted_queryset]
+            product.quantity_in_stock for product in self.sorted_queryset]
 
     def get_products(self):
         message = "Sale must have at least 1 product"

@@ -11,7 +11,7 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from taggit.managers import TaggableManager
 
-from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity, Survey)
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
@@ -48,13 +48,13 @@ class ProductCategoryType(DjangoObjectType):
         model = ProductCategory
 
 
-class MeasurementUnitType(DjangoObjectType):
+class DispensingSizeType(DjangoObjectType):
     class Meta:
-        model = MeasurementUnit
+        model = DispensingSize
 
 
 class ProductType(DjangoObjectType):
-    product_quantity = graphene.Int()
+    quantity_in_stock = graphene.Int()
     autofill_quantity = graphene.Int()
     sales_price = graphene.Float()
     pre_tax_retail_price = graphene.Float()
@@ -70,8 +70,8 @@ class ProductType(DjangoObjectType):
         }
         interfaces = (graphene.relay.Node,)
 
-    def resolve_product_quantity(self, info, **kwargs):
-        return self.quantity
+    def resolve_quantity_in_stock(self, info, **kwargs):
+        return self.quantity_in_stock
 
     @resolve_only_args
     def resolve_sales_price(self):
@@ -153,7 +153,7 @@ class Query(graphene.AbstractType):
     deactivated_products = graphene.List(ProductType)
     product_categories = graphene.List(
         ProductCategoryType, outlet_id=graphene.Int(required=True))
-    measurement_unit = graphene.List(MeasurementUnitType)
+    dispensing_size = graphene.List(DispensingSizeType)
     total_products_pages_count = graphene.Int()
     products_total_number = graphene.Int()
     near_expired_products = graphene.List(ProductType,
@@ -328,8 +328,8 @@ class Query(graphene.AbstractType):
         return ProductCategory.objects.filter(outlet_id=outlet_id)
 
     @login_required
-    def resolve_measurement_unit(self, info):
-        return MeasurementUnit.objects.all()
+    def resolve_dispensing_size(self, info):
+        return DispensingSize.objects.all()
 
     @login_required
     def resolve_price_check_surveys(self, info):
@@ -352,7 +352,7 @@ class Query(graphene.AbstractType):
         outlet = check_user_has_an_active_outlet(user)
         product_list = []
         for product in Product.objects.for_outlet(outlet.id):
-            if product.quantity < product.reorder_point:
+            if product.quantity_in_stock < product.reorder_point:
                 product_list.append(product)
         return product_list
 

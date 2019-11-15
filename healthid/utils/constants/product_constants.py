@@ -1,5 +1,5 @@
 PRODUCT_INCLUDE_CSV_FIELDS = ['product_name', 'description',
-                              'product_category', 'measurement_unit',
+                              'product_category', 'dispensing_size',
                               'brand', 'manufacturer',
                               'preferred_supplier', 'backup_supplier',
                               'vat_status', 'tags']

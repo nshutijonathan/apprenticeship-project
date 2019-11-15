@@ -3,7 +3,7 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.orders.models.suppliers import Suppliers
-from healthid.apps.products.models import (BatchInfo, MeasurementUnit, Product,
+from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
@@ -47,10 +47,10 @@ class HandleCsvValidations(object):
                                                'email__iexact',
                                                row['backup supplier'],
                                                error_type=NotFound)
-            measurement_unit = get_model_object(MeasurementUnit,
-                                                'name__iexact',
-                                                row['dispensing size'],
-                                                error_type=NotFound)
+            dispensing_size = get_model_object(DispensingSize,
+                                               'name__iexact',
+                                               row['dispensing size'],
+                                               error_type=NotFound)
             vat_status = row['vat status'].lower() == 'vat' or False\
                 if row['vat status']\
                 else product_category.is_vat_applicable
@@ -64,7 +64,7 @@ class HandleCsvValidations(object):
                     product_category_id=product_category.id,
                     outlet_id=product_category.outlet_id,
                     product_name=row['name'],
-                    measurement_unit_id=measurement_unit.id,
+                    dispensing_size_id=dispensing_size.id,
                     description=row['description'],
                     brand=row['brand'],
                     manufacturer=row['manufacturer'],

@@ -350,7 +350,7 @@ mutation reconcileStock{{
                       isClosed
                     }}
             product{{
-                productQuantity
+                quantityInStock
                 id
                 batchInfo{{
                     id

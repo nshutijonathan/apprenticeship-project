@@ -1,23 +1,23 @@
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.products import create_measuremt_unit
 from healthid.utils.messages.common_responses import\
-     SUCCESS_RESPONSES, ERROR_RESPONSES
+    SUCCESS_RESPONSES, ERROR_RESPONSES
 
 
-class TestMeasurementUnit(BaseConfiguration):
+class TestDispensingSize(BaseConfiguration):
     """
     class handles all tests for meaurement units
     """
 
-    def test_create_measurement_unit(self):
+    def test_create_dispensing_size(self):
         """
         test meaurement creation
         """
         reponse = self.query_with_token(self.access_token_master,
                                         create_measuremt_unit)
         self.assertIn(SUCCESS_RESPONSES[
-                      "creation_success"].format("Measurement Unit"),
-                      reponse['data']['createMeasurementUnit']['message'])
+                      "creation_success"].format("Dispensing Size"),
+                      reponse['data']['createDispensingSize']['message'])
         self.assertIn('data', reponse)
         self.assertNotIn('errors', reponse)
 
@@ -26,10 +26,10 @@ class TestMeasurementUnit(BaseConfiguration):
         test duplicate  meauremnt unit
         """
         self.query_with_token(self.access_token_master, create_measuremt_unit)
-        duplicate_measurement = self.query_with_token(self.access_token_master,
-                                                      create_measuremt_unit)
+        duplicate_dispensing = self.query_with_token(
+            self.access_token_master, create_measuremt_unit)
         self.assertIn(ERROR_RESPONSES[
                       "duplication_error"].format(
-                                        "MeasurementUnit with name tablets"),
-                      duplicate_measurement['errors'][0]['message'])
-        self.assertIn('errors', duplicate_measurement)
+            "DispensingSize with name tablets"),
+            duplicate_dispensing['errors'][0]['message'])
+        self.assertIn('errors', duplicate_dispensing)

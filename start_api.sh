@@ -16,7 +16,7 @@ python3 manage.py loaddata healthid/fixtures/business.json &&
 python3 manage.py loaddata healthid/fixtures/consultation_data.json &&
 python3 manage.py loaddata healthid/fixtures/countries.json && 
 python3 manage.py loaddata healthid/fixtures/event_types.json && 
-python3 manage.py loaddata healthid/fixtures/measurement_unit.json && 
+python3 manage.py loaddata healthid/fixtures/dispensing_size.json && 
 python3 manage.py loaddata healthid/fixtures/outlets.json && 
 python3 manage.py loaddata healthid/fixtures/product_category.json && 
 python3 manage.py loaddata healthid/fixtures/promotion.json && 

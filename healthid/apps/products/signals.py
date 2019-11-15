@@ -78,11 +78,11 @@ def notify_quantity(sender, instance, created, **kwargs):
         outlet_users = product.outlet.active_outlet_users
 
         # notify all outlet users.
-        if product.quantity < quantity_threshold:
+        if product.quantity_in_stock < quantity_threshold:
             message = PRODUCTS_SUCCESS_RESPONSES[
                 "low_quantity_alert"].format(
                 product.product_name,
-                product.quantity)
+                product.quantity_in_stock)
             notify(outlet_users, message, event_name='product_quantity')
 
 

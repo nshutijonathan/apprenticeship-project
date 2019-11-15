@@ -5,7 +5,7 @@ create_product = '''
             createProduct(
                 productCategoryId:1,
                 productName :"panadol",
-                measurementUnitId :1,
+                dispensingSizeId :1,
                 description :"first treatment people try for mild to moderate pain",  # noqa E501
                 brand :"ventolinllke",
                 manufacturer:"Harmon Northrop",
@@ -62,7 +62,7 @@ mutation {{
     createProduct(
         productCategoryId:1,
         productName :"gfcds",
-        measurementUnitId :1,
+        dispensingSizeId :1,
         description :"first treatment people try for mild to moderate pain",
         brand :"ventolinllke mklllll",
         manufacturer:"vbn",
@@ -137,7 +137,7 @@ def create_product_2(supplier_id, backup_id, user, outlet):
     return Product.objects.create(
         product_category_id=1,
         product_name='Panadol',
-        measurement_unit_id=1,
+        dispensing_size_id=1,
         description='first treatment people try',
         brand='ventolinllke',
         manufacturer="Harmon Northrop",
@@ -156,7 +156,7 @@ def create_new_product(name, description, brand, manufacturer,
     return Product.objects.create(
         product_category=category,
         product_name=name,
-        measurement_unit_id=1,
+        dispensing_size_id=1,
         description=description,
         brand=brand,
         manufacturer=manufacturer,
@@ -386,11 +386,11 @@ delete_product_category = '''
 '''
 create_measuremt_unit = '''
         mutation {
-        createMeasurementUnit(
+        createDispensingSize(
             name:"tablets"
 
         ){
-        measurementUnit{
+        dispensingSize{
             id
             name
         }
@@ -402,14 +402,14 @@ create_measuremt_unit = '''
 
 '''
 
-edit_measurement_unit = '''
+edit_dispensing_size = '''
     mutation {
-        editMeasurementUnit(
+        editDispensingSize(
         id:6,
             name:"syrup"
 
         ){
-        measuremntUnit{
+        dispensingSize{
             id
             name
         }
