@@ -114,9 +114,9 @@ class AddOrderDetails:
             order_details.order = order
             order_details.product = product
             if not quantity:
-                order_details.quantity = product.autofill_quantity
+                order_details.ordered_quantity = product.autofill_quantity
             else:
-                order_details.quantity = next(quantity)
+                order_details.ordered_quantity = next(quantity)
             object_list.append(order_details)
         return object_list
 

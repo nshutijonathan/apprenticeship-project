@@ -23,7 +23,7 @@ class TestSupplierOrderDetails(BaseConfiguration):
         return order
 
     def create_order_details(self, order):
-        return OrderDetails.objects.create(product=self.product, quantity=5,
+        return OrderDetails.objects.create(product=self.product, ordered_quantity=5,
                                            supplier=self.supplier, order=order)
 
     def test_add_product_with_specific_quantity(self):
@@ -35,7 +35,7 @@ class TestSupplierOrderDetails(BaseConfiguration):
         product_quantity = (
             response['data']['addOrderDetails']
             ['suppliersOrderDetails'][0]['orderDetails']
-            [0]['quantity']
+            [0]['orderedQuantity']
         )
         self.assertEquals(product_quantity, 5)
 
@@ -59,12 +59,12 @@ class TestSupplierOrderDetails(BaseConfiguration):
         initial_product_quantity = (
             initial_order['data']['addOrderDetails']
             ['suppliersOrderDetails'][0]['orderDetails']
-            [0]['quantity']
+            [0]['orderedQuantity']
         )
         final_product_quantity = (
             repeat_order['data']['addOrderDetails']
             ['suppliersOrderDetails'][0]['orderDetails']
-            [0]['quantity']
+            [0]['orderedQuantity']
         )
         self.assertEquals(initial_product_quantity, 5)
         self.assertEquals(final_product_quantity, 250)
@@ -80,7 +80,7 @@ class TestSupplierOrderDetails(BaseConfiguration):
         )
         order_detail_id = OrderDetails.objects.get(
             product=self.product.id,
-            quantity=5,
+            ordered_quantity=5,
             order_id=self.order.id
         ).id
         self.query_with_token(
@@ -91,7 +91,7 @@ class TestSupplierOrderDetails(BaseConfiguration):
         )
         does_exist = OrderDetails.objects.filter(
             product=self.product.id,
-            quantity=5,
+            ordered_quantity=5,
             order_id=self.order.id
         ).exists()
         self.assertEquals(does_exist, False)

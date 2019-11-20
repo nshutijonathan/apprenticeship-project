@@ -248,7 +248,7 @@ class OrderDetailsFactory(factory.DjangoModelFactory):
         model = OrderDetails
 
     product = factory.SubFactory(ProductFactory)
-    quantity = 3
+    ordered_quantity = 3
     supplier = factory.SubFactory(SuppliersFactory)
     price = 1000.00
     order = factory.SubFactory(OrderFactory)

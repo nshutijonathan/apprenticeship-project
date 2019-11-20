@@ -61,12 +61,16 @@ class OrderDetails(BaseModel):
         max_length=9, primary_key=True, default=id_gen, editable=False
     )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    ordered_quantity = models.IntegerField()
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE,
                                  null=True)
     price = models.DecimalField(blank=True, null=True,
                                 max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    supplier_order_number = models.CharField(
+        max_length=50, null=True, editable=False
+    )
+
     @classmethod
     def check_if_duplicate(self, order_id, order_detail_object, supplier=None):
         """
@@ -104,6 +108,8 @@ class OrderDetails(BaseModel):
 
             if not check_duplicate:
                 detail_object.supplier_id = supplier_id
+                detail_object.supplier_order_number = \
+                    str(detail_object.order.order_number) + '-' + supplier_id
                 detail_object_list.append(detail_object)
                 created_order = detail_object
             else:
@@ -112,7 +118,7 @@ class OrderDetails(BaseModel):
                     product__id=detail_object.product_id,
                     supplier__id=supplier_id
                 )
-                current_order_detail.quantity = detail_object.quantity
+                current_order_detail.ordered_quantity = detail_object.ordered_quantity
                 current_order_detail.save()
                 created_order = current_order_detail
 

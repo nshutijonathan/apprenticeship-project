@@ -124,7 +124,7 @@ mutation{{
     suppliersOrderDetails{{
       id
       orderDetails {{
-        quantity
+        orderedQuantity
       }}
     }}
   }}
@@ -159,7 +159,7 @@ query {{
       product {{
         productName
       }}
-      quantity
+      orderedQuantity
       supplier {{
         name
       }}
@@ -183,7 +183,7 @@ query {{
       product {{
         productName
       }}
-      quantity
+      orderedQuantity
       supplier {{
         name
       }}
