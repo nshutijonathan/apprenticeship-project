@@ -62,5 +62,6 @@ PRODUCTS_ERROR_RESPONSES = {
     "batch_bool_error": "Please ensure eiether 'True' or 'False' is "
                         "entered in the 'Delivery Promptness' column.",
     "batch_expiry_error": "The batch for product '{}' has expired. "
-                          "Please check its expiry and delivery dates."
+                          "Please check its expiry and delivery dates.",
+    "promotion_generated_success": "{}, generated successfully!"
 }

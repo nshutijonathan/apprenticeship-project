@@ -37,3 +37,11 @@ query{
   }
 }
 '''
+
+generate_recommended_promos = '''
+mutation{{
+  createRecommendedPromotion(outletId:{outlet_id}){{
+    success
+  }}
+}}
+'''

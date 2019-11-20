@@ -1,6 +1,10 @@
 import graphene
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
+
+from healthid.apps.products.models import Product
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -11,13 +15,14 @@ from healthid.apps.sales.models import (
     Promotion, PromotionType as PromotionTypeModel
 )
 from healthid.utils.sales_utils.validators import (
-    validate_fields, add_products_to_promotion
+    validate_fields, add_products_to_promotion,
+    set_recommended_promotion
 )
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_is_active_in_outlet
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
-from healthid.utils.messages.sales_responses import\
-     SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES
+from healthid.utils.messages.sales_responses import \
+    SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES
 
 
 class CreatePromotionType(graphene.Mutation):
@@ -49,7 +54,7 @@ class CreatePromotionType(graphene.Mutation):
         promotion_type = PromotionTypeModel(name=name)
         with SaveContextManager(promotion_type, **params) as promotion_type:
             success = SUCCESS_RESPONSES[
-                      "creation_success"].format("Promotion Type")
+                "creation_success"].format("Promotion Type")
             return CreatePromotionType(
                 success=success, promotion_type=promotion_type)
 
@@ -98,8 +103,44 @@ class CreatePromotion(graphene.Mutation):
             promotion = add_products_to_promotion(promotion, product_ids)
             return CreatePromotion(
                 success=SUCCESS_RESPONSES[
-                        "creation_success"].format("Promotion"),
+                    "creation_success"].format("Promotion"),
                 promotion=promotion)
+
+
+class CreateRecommendedPromotion(graphene.Mutation):
+    """
+    Create a recommended promotion for an outlet.
+
+    args:
+        outlet_id(int): the id of the outlets that will apply the promotion
+                        and discounts
+
+    returns:
+        success(str): success message confirming promotion creation
+        promotion(obj): 'Promotion' object containing details of
+                        the newly created promotion.
+    """
+
+    class Arguments:
+        outlet_id = graphene.Int(required=True)
+
+    success = graphene.String()
+
+    @login_required
+    @user_permission('Manager')
+    def mutate(self, info, **kwargs):
+        outlet_id = kwargs.get('outlet_id')
+        user = info.context.user
+        check_user_is_active_in_outlet(user, outlet_id=outlet_id)
+        today_date = datetime.now()
+        twelve_month = today_date + relativedelta(months=+12)
+        near_expired_products = Product.objects \
+            .for_outlet(outlet_id) \
+            .filter(nearest_expiry_date__range=(today_date, twelve_month))
+        promotion_set = set_recommended_promotion(Promotion,
+                                                  near_expired_products)
+        return CreateRecommendedPromotion(
+            success='Promotion set on {} product(s)'.format(promotion_set))
 
 
 class UpdatePromotion(graphene.Mutation):
@@ -144,12 +185,12 @@ class UpdatePromotion(graphene.Mutation):
         product_ids = \
             kwargs.pop('product_ids') if kwargs.get('product_ids') else []
         validate_fields(Promotion(), **kwargs)
-        for(key, value) in kwargs.items():
+        for (key, value) in kwargs.items():
             setattr(promotion, key, value)
         with SaveContextManager(promotion, model=Promotion) as promotion:
             promotion = add_products_to_promotion(promotion, product_ids)
             return UpdatePromotion(success=SUCCESS_RESPONSES[
-                                        "update_success"].format("Promotion"),
+                "update_success"].format("Promotion"),
                                    promotion=promotion)
 
 
@@ -180,8 +221,8 @@ class DeletePromotion(graphene.Mutation):
         check_user_is_active_in_outlet(user, outlet=promotion.outlet)
         promotion.delete(user)
         return DeletePromotion(
-               success=SUCCESS_RESPONSES[
-                       "deletion_success"].format("Promotion"))
+            success=SUCCESS_RESPONSES[
+                "deletion_success"].format("Promotion"))
 
 
 class ApprovePromotion(graphene.Mutation):
@@ -223,3 +264,4 @@ class Mutation(graphene.ObjectType):
     delete_promotion = DeletePromotion.Field()
     create_promotion_type = CreatePromotionType.Field()
     approve_promotion = ApprovePromotion.Field()
+    create_recommended_promotion = CreateRecommendedPromotion.Field()

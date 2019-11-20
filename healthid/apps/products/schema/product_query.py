@@ -144,7 +144,9 @@ class Query(graphene.AbstractType):
         sales_price=graphene.Int(),
         nearest_expiry_date=graphene.String(),
         tags=graphene.List(graphene.String))
-
+    near_expired_products = graphene.List(ProductType,
+                                          page_count=graphene.Int(),
+                                          page_number=graphene.Int())
     batch_expiries = graphene.Field(
         product_batch_info,
         start_date=graphene.String(),

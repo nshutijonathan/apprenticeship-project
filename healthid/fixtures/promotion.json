@@ -147,6 +147,46 @@
     }
   },
   {
+    "model": "sales.promotiontype",
+    "pk": "123456790",
+    "fields": {
+      "name": "Recommended"
+    }
+  },
+  {
+    "model": "sales.promotion",
+    "pk": "1",
+    "fields": {
+      "title": "6 to 12 months",
+      "promotion_type_id": "123456790",
+      "description": "6 to 12 months of expiration",
+      "discount": 20,
+      "outlet_id": 1
+    }
+  },
+  {
+    "model": "sales.promotion",
+    "pk": "2",
+    "fields": {
+      "title": "3 to 6 months",
+      "promotion_type_id": "123456790",
+      "description": "3 to 6 months of expiration",
+      "discount": 30,
+      "outlet_id": 1
+    }
+  },
+  {
+    "model": "sales.promotion",
+    "pk": "3",
+    "fields": {
+      "title": "Less than a month",
+      "promotion_type_id": "123456790",
+      "description": "Less than a month of expiration",
+      "discount": 40,
+      "outlet_id": 1
+    }
+  },
+  {
     "model": "products.dispensingsize",
     "pk": 1,
     "fields": {
