@@ -1,4 +1,5 @@
 import os
+from rest_framework import status
 from django.core.management import call_command
 from django.test import RequestFactory
 from django.urls import reverse
@@ -34,7 +35,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         }
         call_command('loaddata', 'healthid/fixtures/product_csv')
 
-    def test_csv_file_upload(self):
+    def test_csv_file_upload_products(self):
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(base_path, 'product.csv')
@@ -44,11 +45,23 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('success', response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('message', response.data)
         self.assertIn('noOfProductsAdded', response.data)
+        self.assertGreater(response.data['noOfProductsAdded'], 0)
 
-    def test_invalid_csv_file_upload(self):
+        # duplicated products
+        file = open(path, 'rb')
+        request_two = factory.post(
+            reverse('handle_csv', args=['products']), {'file': file},
+            **self.auth_headers)
+        view_two = HandleCSV.as_view()
+        response_two = view_two(request_two, param='products')
+        self.assertEqual(response_two.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('duplicatedProducts', response_two.data)
+        self.assertGreater(len(response_two.data['duplicatedProducts']), 0)
+
+    def test_invalid_csv_file_upload_products(self):
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(base_path, 'invalid_product.csv')
@@ -58,7 +71,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('row-1', response.data)
         self.assertIn('columns', response.data)
         self.assertEqual(response.data.get('row-1')[0],

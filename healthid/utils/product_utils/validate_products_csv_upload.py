@@ -18,18 +18,23 @@ def validate_products_csv_upload(io_string):
     [row_count, csv_columns, products, csv_errors] = [0, [], [], {}]
     valid_columns = {
         'name': 'required',
+        'product name': 'required',
         'description': 'required',
         'brand': 'required',
         'manufacturer': 'required',
         'dispensing size': 'required',
+        'measurement unit': 'required',
         'preferred supplier': 'required',
         'backup supplier': 'required',
         'category': 'required',
+        'product category': 'required',
         'loyalty weight': 'not required',
         'vat status': 'not required',
         'tags': 'not required',
-        'product image': 'not required',
+        'image': 'not required',
+        'product image': 'not required'
     }
+
     for row in csv.reader(io_string):
         csv_columns = list(map(lambda column: column.lower().strip(), row))
         break

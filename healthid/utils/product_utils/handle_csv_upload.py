@@ -9,6 +9,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.product_utils.product import \
     generate_reorder_points_and_max
+from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.validate_products_csv_upload import\
@@ -29,15 +30,17 @@ class HandleCsvValidations(object):
             int: the number of saved products
         """
         params = {'model': Product, 'error_type': ValidationError}
-        product_count = 0
+        [product_count, duplicated_products] = [0, []]
 
         products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
 
         for row in products:
+            product_name = row.get('name') or row.get('product name')
             product_category = get_model_object(ProductCategory,
                                                 'name__iexact',
-                                                row['category'],
+                                                row.get('category') or row.get(
+                                                    'product category'),
                                                 error_type=NotFound)
             supplier = get_model_object(Suppliers,
                                         'email__iexact',
@@ -49,7 +52,8 @@ class HandleCsvValidations(object):
                                                error_type=NotFound)
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
-                                               row['dispensing size'],
+                                               row.get('dispensing size') or
+                                               row.get('measurement unit'),
                                                error_type=NotFound)
             vat_status = row['vat status'].lower() == 'vat' or False\
                 if row['vat status']\
@@ -59,11 +63,12 @@ class HandleCsvValidations(object):
                 if str(row['loyalty weight']).isdigit()\
                 else product_category.loyalty_weight
 
-            if row['name'] not in product_names and product_category.outlet_id:
+            if product_name \
+                    not in product_names and product_category.outlet_id:
                 product_instance = Product(
                     product_category_id=product_category.id,
                     outlet_id=product_category.outlet_id,
-                    product_name=row['name'],
+                    product_name=product_name,
                     dispensing_size_id=dispensing_size.id,
                     description=row['description'],
                     brand=row['brand'],
@@ -72,11 +77,19 @@ class HandleCsvValidations(object):
                     preferred_supplier_id=supplier.id,
                     backup_supplier_id=backup_supplier.id,
                     tags=row['tags'],
+                    image=row.get('image') or row.get('product image'),
                     loyalty_weight=loyalty_weight)
 
                 with SaveContextManager(product_instance, **params):
                     product_count += 1
-        return product_count
+            else:
+                duplicated_products.append(
+                    ERROR_RESPONSES['duplication_error'].
+                    format(row.get('name') or row.get('product name')))
+        return {
+            'product_count': product_count,
+            'duplicated_products': duplicated_products
+        }
 
     def handle_batch_csv_upload(self, user, batch_info_csv):
         """

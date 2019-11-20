@@ -76,12 +76,18 @@ class HandleCSV(APIView):
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
                 user = request.user
-                quantity_added = handle_csv(io_string=io_string)
+                result = handle_csv(io_string=io_string)
                 message = {
-                    "success": "Successfully added products",
-                    "noOfProductsAdded": quantity_added,
+                    "message": ("Products successfully added"
+                                if result['product_count']
+                                else "No new products added"),
+                    "noOfProductsAdded": result['product_count'],
+                    "duplicatedProducts": result['duplicated_products'],
                 }
-                return Response(message, status.HTTP_201_CREATED)
+                return Response(message,
+                                status.HTTP_201_CREATED
+                                if result['product_count']
+                                else status.HTTP_400_BAD_REQUEST)
             if param == 'customers':
                 next(io_string)
                 customers_added = handle_customer_csv_upload(io_string)
