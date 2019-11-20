@@ -40,6 +40,7 @@ class AddSupplier:
 
         params = {'model': Suppliers, 'error_type': ValidationError}
         supplier_count = 0
+        duplicated_suppliers = []
         for column in csv.reader(io_string):
             if len(column) < 13:
                 raise ValidationError(ERROR_RESPONSES['csv_missing_field'])
@@ -102,4 +103,7 @@ class AddSupplier:
                     supplier.outlet.add(outlet)
                     pass
                 supplier_count += 1
-        return supplier_count
+            else:
+                duplicated_suppliers = [*duplicated_suppliers, column[1]]
+        return {'supplier_count': supplier_count,
+                'duplicated_suppliers': duplicated_suppliers}

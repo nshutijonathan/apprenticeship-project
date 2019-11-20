@@ -67,12 +67,23 @@ class HandleCSV(APIView):
             if param == 'suppliers':
                 next(io_string)
                 user = request.user
-                supplier_count = handle_supplier_csv(
+                res = handle_supplier_csv(
                     user=user, io_string=io_string)
+                added_suppliers = res['supplier_count']
                 message = {
                     "success": "Successfully added supplier(s)",
-                    "noOfSuppliersAdded": supplier_count,
+                    "noOfSuppliersAdded": res['supplier_count'],
+                    "duplicatedSuppliers": res['duplicated_suppliers'],
                 }
+                if added_suppliers == 0:
+                    return Response(
+                        {
+                            "message":
+                            "No supplier has been added due to duplication",
+                            "duplicatedSuppliers": res['duplicated_suppliers']
+                        },
+                        status.HTTP_400_BAD_REQUEST
+                    )
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
                 user = request.user

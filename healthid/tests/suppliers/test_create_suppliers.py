@@ -141,6 +141,14 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         response = self.view(request, param='suppliers')
         self.assertEqual(response.status_code, 201)
         self.assertIn('success', response.data)
+        # test dupplication
+        request = self.handle_csv_request(path)
+        response = self.view(request, param='suppliers')
+        expectedDupplications = ['email@ntale.com',
+                                 'email@shadik.com']  # in test.csv file
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data['duplicatedSuppliers'], expectedDupplications)
 
     def test_invalid_csv_data(self):
         path = os.path.join(self.base_path, 'invalid_csv.csv')
