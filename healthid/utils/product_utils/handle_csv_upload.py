@@ -44,27 +44,28 @@ class HandleCsvValidations(object):
                                                 error_type=NotFound)
             supplier = get_model_object(Suppliers,
                                         'email__iexact',
-                                        row['preferred supplier'],
+                                        row.get('preferred supplier'),
                                         error_type=NotFound,
                                         label='email')
             backup_supplier = get_model_object(Suppliers,
                                                'email__iexact',
-                                               row['backup supplier'],
+                                               row.get('backup supplier'),
                                                error_type=NotFound,
                                                label='email')
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
                                                row.get('dispensing size') or
                                                row.get('measurement unit'),
-                                               error_type=NotFound)
-            vat_status = row['vat status'].lower() == 'vat' or False\
-                if row['vat status']\
+                                               error_type=NotFound,
+                                               label='Dispensing size')
+            vat_status = row.get('vat status').lower() == 'vat' or False\
+                if row.get('vat status')\
                 else product_category.is_vat_applicable
 
-            loyalty_weight = row['loyalty weight']\
-                if str(row['loyalty weight']).isdigit()\
+            loyalty_weight = row.get('loyalty weight')\
+                if str(row.get('loyalty weight')).isdigit()\
                 else product_category.loyalty_weight
-
+            image = row.get('image') or row.get('product image')
             if product_name \
                     not in product_names and product_category.outlet_id:
                 product_instance = Product(
@@ -72,14 +73,14 @@ class HandleCsvValidations(object):
                     outlet_id=product_category.outlet_id,
                     product_name=product_name,
                     dispensing_size_id=dispensing_size.id,
-                    description=row['description'],
-                    brand=row['brand'],
-                    manufacturer=row['manufacturer'],
+                    description=row.get('description') or '',
+                    brand=row.get('brand') or '',
+                    manufacturer=row.get('manufacturer') or '',
                     vat_status=vat_status,
                     preferred_supplier_id=supplier.id,
                     backup_supplier_id=backup_supplier.id,
-                    tags=row['tags'],
-                    image=row.get('image') or row.get('product image'),
+                    tags=row.get('tags') or '',
+                    image=image or '',
                     loyalty_weight=loyalty_weight)
 
                 with SaveContextManager(product_instance, **params):

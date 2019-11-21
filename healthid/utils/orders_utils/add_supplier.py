@@ -22,28 +22,28 @@ class AddSupplier:
         """
 
         params = {'model': Suppliers, 'error_type': ValidationError}
-        [supplier_count, row_count] = [0, 0]
+        [supplier_count, row_count, error] = [0, 0, '']
         duplicated_suppliers = []
         suppliers = validate_suppliers_csv_upload(io_string)
 
         for row in suppliers:
             row_count += 1
-            if row['email'] not in (
+            if row.get('email') not in (
                     Suppliers.objects.values_list('email', flat=True)):
 
                 city = get_model_object(City,
                                         'name__iexact',
-                                        row['city'],
+                                        row.get('city'),
                                         error_type=NotFound,
                                         label='name')
                 country = get_model_object(Country,
                                            'name__iexact',
-                                           row['country'],
+                                           row.get('country'),
                                            error_type=NotFound,
                                            label='name')
                 tier = get_model_object(Tier,
                                         'name__iexact',
-                                        row['tier'],
+                                        row.get('tier'),
                                         error_type=NotFound,
                                         label='name')
                 user_id = get_model_object(User,
@@ -51,17 +51,26 @@ class AddSupplier:
                                            user.pk,
                                            error_type=NotFound)
 
-                credit_days = int(row['credit days'] or 0)
+                credit_days = int(row.get('credit days') or 0)
                 payment_terms = get_model_object(PaymentTerms,
                                                  'name__iexact',
-                                                 row['payment terms'],
+                                                 row.get('payment terms'),
                                                  error_type=NotFound,
                                                  label='name')
 
                 # check payment_terms
-                if credit_days == 0 and row['payment terms'] == 'on credit':
-                    raise ValidationError(
-                        ERROR_RESPONSES['payment_terms'].format(row_count))
+                if int(credit_days) > 0 and \
+                        row.get('payment terms').lower() == 'cash on delivery':
+                    error = ERROR_RESPONSES['payment_terms_cash_on_deliver'].\
+                        format(row_count)
+
+                elif int(credit_days) == 0 and \
+                        row.get('payment terms').lower() == 'on credit':
+                    error = ERROR_RESPONSES['payment_terms_on_credit'].format(
+                        row_count)
+
+                if error:
+                    raise ValidationError({'error': error})
 
                 if city.country.name != country.name:
                     raise ValidationError(
@@ -69,17 +78,17 @@ class AddSupplier:
                         .format(country.name, city.name))
 
                 suppliers_instance = Suppliers(
-                    name=row['name'],
-                    email=row['email'],
-                    mobile_number=row['mobile number'],
+                    name=row.get('name'),
+                    email=row.get('email'),
+                    mobile_number=row.get('mobile number'),
                     country=country,
-                    address_line_1=row['address line 1'],
-                    address_line_2=row['address line 2'],
-                    lga=row['lga'],
+                    address_line_1=row.get('address line 1'),
+                    address_line_2=row.get('address line 2'),
+                    lga=row.get('lga'),
                     city=city,
                     tier=tier,
-                    logo=row['logo'],
-                    commentary=row['commentary'],
+                    logo=row.get('logo'),
+                    commentary=row.get('commentary'),
                     payment_terms=payment_terms,
                     credit_days=credit_days,
                     user=user_id,
@@ -93,6 +102,7 @@ class AddSupplier:
                 supplier_count += 1
             else:
                 duplicated_suppliers.append(
-                    ERROR_RESPONSES['duplication_error'].format(row['email']))
+                    ERROR_RESPONSES['duplication_error'].format(
+                        row.get('email')))
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}
