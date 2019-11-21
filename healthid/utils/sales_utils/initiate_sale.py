@@ -1,4 +1,5 @@
 import math
+from healthid.apps.products.models import Quantity
 
 
 def initiate_sale(sold_product_instances, sold_products, sale, sale_detail,
@@ -17,40 +18,27 @@ def initiate_sale(sold_product_instances, sold_products, sale, sale_detail,
     products = zip(sold_product_instances, sold_products)
     sale_details = []
     sold_products_loyalty_points = []
-    for sold_product, product_detail in products:
-        product_category = sold_product.product_category
-        loyalty_points = (product_detail.price / product_category.amount_paid) * sold_product.loyalty_weight  # noqa
-        sold_products_loyalty_points.append(math.floor(loyalty_points))
-        batches = sold_product.batch_info.filter(
-            batch_quantities__quantity_remaining__gt=0).order_by('expiry_date')
-        product_quantity = product_detail.quantity
-        for batch in batches:
-            batch_quantity = batch.quantity
-            quantity = batch.batch_quantities.filter(is_approved=True).first()
-            if product_quantity <= batch_quantity:
-                quantity.quantity_remaining = batch_quantity \
-                    - product_quantity
-                quantity.save()
-                batch_quantity_history = batch_history(
-                    batch_info=batch, sale=sale, product=sold_product,
-                    quantity_taken=product_quantity)
-                batch_quantity_history.save()
-                break
-            else:
-                quantity.quantity_remaining = 0
-                quantity.save()
-                product_quantity -= batch_quantity
 
-                batch_quantity_history = batch_history(
-                    batch_info=batch, sale=sale, product=sold_product,
-                    quantity_taken=batch_quantity)
-                batch_quantity_history.save()
+    for sold_product, product_detail in products:
+        product_category = sold_product.product.product_category
+        loyalty_points = (product_detail.price / product_category.amount_paid) * sold_product.product.loyalty_weight  # noqa
+        sold_products_loyalty_points.append(math.floor(loyalty_points))
+        batch_quantity = Quantity.objects.filter(
+            batch_id=sold_product.id).first()
+
+        batch_quantity.quantity_remaining -= product_detail.quantity
+        batch_quantity.save()
+        product_quantity = product_detail.quantity
+        batch_quantity_history = batch_history(
+            batch_info=sold_product, sale=sale, product=sold_product.product,
+            quantity_taken=product_quantity)
+        batch_quantity_history.save()
 
         detail = sale_detail(quantity=product_detail.quantity,
                              discount=product_detail.discount,
                              price=product_detail.price,
                              note=product_detail.note,
-                             product=sold_product,
+                             product=sold_product.product,
                              sale=sale)
         sale_details.append(detail)
 

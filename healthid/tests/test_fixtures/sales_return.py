@@ -5,7 +5,7 @@ mutation{{
     returnAmount:6000
     returnNote: "bad product"
     refundCompensationType: Cash
-  returnedProducts:[{{productId: {product_id},
+  returnedBatches:[{{batchId: "{batch_id}",
     quantity: 1, price: 3000,
     resellable: false,
     returnReason: ExpiredProduct}}]

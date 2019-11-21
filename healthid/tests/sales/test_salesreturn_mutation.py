@@ -6,7 +6,8 @@ from healthid.tests.test_fixtures.sales_return import \
     initiate_sales_return_query, approve_sales_return
 from healthid.tests.factories import (
     SaleFactory, OutletFactory, ProductFactory, ReceiptTemplateFactory,
-    ReceiptFactory, SaleReturnFactory, SaleReturnDetailFactory)
+    ReceiptFactory, SaleReturnFactory, SaleReturnDetailFactory,
+    BatchInfoFactory)
 from healthid.tests.base_config import BaseConfiguration
 
 faker = Faker()
@@ -18,17 +19,18 @@ class TestCreateSaleReturn(BaseConfiguration):
         self.sale = SaleFactory()
         self.outlet = OutletFactory()
         self.product = ProductFactory()
+        self.batch = BatchInfoFactory()
         self.receipt_template = ReceiptTemplateFactory(outlet=self.outlet)
         self.receipt = ReceiptFactory(
             receipt_template=self.receipt_template, sale=self.sale)
         self.sales_return = SaleReturnFactory(
             outlet=self.outlet, sale=self.sale)
         self.sales_return_detail = SaleReturnDetailFactory(
-            product=self.product, sales_return=self.sales_return)
+            batch=self.batch, sales_return=self.sales_return)
 
         self.sales_return_data = {
             'outlet_id': self.outlet.id,
-            'product_id': self.product.id,
+            'batch_id': self.batch.id,
             'sale_id': self.sale.id
         }
         self.approve_sales_return_data = {
@@ -69,14 +71,14 @@ class TestCreateSaleReturn(BaseConfiguration):
         """
         test sales return initiation failure with non existing product
         """
-        self.sales_return_data['product_id'] = 0
+        self.sales_return_data['batch_id'] = 0
         resp = self.query_with_token(
             self.access_token, initiate_sales_return_query.format(
                 **self.sales_return_data))
         self.assertIn('errors', resp)
         self.assertEqual(
             resp['errors'][0]['message'],
-            "There are no Product(s) matching IDs: 0."
+            "There are no BatchInfo(s) matching IDs: 0."
         )
 
     def test_returnable_days(self):
@@ -128,7 +130,7 @@ class TestCreateSaleReturn(BaseConfiguration):
     def test_already_approved_sales_return(self):
         self.sales_return_detail = \
             SaleReturnDetailFactory(is_approved=True,
-                                    product=self.product,
+                                    batch=self.batch,
                                     sales_return=self.sales_return)
 
         self.approve_sales_return_data['sales_return_id'] = \

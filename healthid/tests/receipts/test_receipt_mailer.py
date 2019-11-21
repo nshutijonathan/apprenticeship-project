@@ -3,7 +3,6 @@ from healthid.tests.receipts.base import ReceiptBaseCase
 from healthid.tests.test_fixtures.receipts import mail_receipt
 from healthid.tests.test_fixtures.sales import (create_sale,
                                                 create_anonymous_sale)
-from healthid.utils.sales_utils.validators import remove_quotes
 from healthid.utils.messages.receipts_responses import (
     RECEIPT_SUCCESS_RESPONSES, RECEIPT_ERROR_RESPONSES)
 
@@ -15,8 +14,6 @@ class TestReceiptMailer(ReceiptBaseCase):
         self.create_customer_data.pop('loyalty_member')
         self.customer = Profile.objects.create(
             **self.create_customer_data)
-        self.product_details = {"productId": self.product.id,
-                                "quantity": 4, "discount": 0, "price": 21}
         self.sales_data = {
             "discount_total": 48.5,
             "amount_to_pay": 20,
@@ -25,7 +22,10 @@ class TestReceiptMailer(ReceiptBaseCase):
             "payment_method": "cash",
             "outlet_id": self.outlet.id,
             "sub_total": 33,
-            "products": '[{}]'.format(remove_quotes(self.product_details))
+            "batchId": self.batch_info.id,
+            "quantity": 4,
+            "discount": 0,
+            "price": 21,
         }
 
     def test_mail_receipt_without_customer(self):

@@ -4,8 +4,8 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.sales import (create_sale,
                                                 query_sales_history,
                                                 query_sale_history,
-                                                all_sales_history_query)
-from healthid.utils.sales_utils.validators import remove_quotes
+                                                all_sales_history_query,
+                                                create_sale_with_empty_batches)
 from healthid.utils.messages.sales_responses import (
     SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES)
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
@@ -31,10 +31,6 @@ class TestCreateSale(BaseConfiguration):
         self.product_batch = BatchInfoFactory(product=self.product_2)
         self.quantity_2 = QuantityFactory(quantity_remaining=200,
                                           batch=self.product_batch)
-        self.product_details = {"productId": self.product_2.id,
-                                "quantity": faker.random_int(min=1, max=5),
-                                "discount": faker.random_int(min=0, max=10),
-                                "price": faker.random_int(min=10, max=40)}
         self.sales_data = {
             "discount_total": faker.random_int(min=1, max=100),
             "amount_to_pay": faker.random_int(min=1, max=10000),
@@ -44,7 +40,10 @@ class TestCreateSale(BaseConfiguration):
             "outlet_id": self.preference.outlet_id,
             "customer_id": self.customer_2.id,
             "sub_total": faker.random_int(min=1, max=10000),
-            "products": '[{}]'.format(remove_quotes(self.product_details))
+            "batchId": self.product_batch.id,
+            "quantity": faker.random_int(min=1, max=5),
+            "discount": faker.random_int(min=0, max=10),
+            "price": faker.random_int(min=10, max=40),
         }
 
     def test_invalid_discount(self):
@@ -64,12 +63,12 @@ class TestCreateSale(BaseConfiguration):
                          "Amount should be greater than 1")
 
     def test_empty_product_list(self):
-        self.sales_data["products"] = []
         response = self.query_with_token(
-            self.access_token, create_sale.format(**self.sales_data))
+            self.access_token,
+            create_sale_with_empty_batches.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
-                         "Sale must have at least 1 product")
+                         "Sale must have at least 1 batch")
 
     def test_invalid_change_due(self):
         self.sales_data["change_due"] = -399
@@ -87,45 +86,41 @@ class TestCreateSale(BaseConfiguration):
         self.assertEqual(response['errors'][0]['message'],
                          "The paid amount should be greater than 1")
 
-    def test_non_existing_product(self):
-        self.product_details["productId"] = 10000
-        self.sales_data['products'] = remove_quotes(self.product_details)
+    def test_non_existing_batch(self):
+        self.sales_data["batchId"] = 10000
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          ERROR_RESPONSES['no_matching_ids']
-                         .format('Product', 10000))
+                         .format('BatchInfo', 10000))
 
     def test_invalid_product_discount(self):
-        self.product_details["discount"] = -12
-        self.sales_data['products'] = remove_quotes(self.product_details)
+        self.sales_data["discount"] = -12
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          SALES_ERROR_RESPONSES['negative_discount']
-                         .format(self.product_2.id))
+                         .format(self.sales_data['batchId']))
 
     def test_less_stock_than_actual_sale(self):
-        self.product_details["quantity"] = 500
-        self.sales_data['products'] = remove_quotes(self.product_details)
+        self.sales_data["quantity"] = 500
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          SALES_ERROR_RESPONSES['less_quantities']
-                         .format(self.product_2.id))
+                         .format(self.sales_data['batchId']))
 
     def test_invalid_price(self):
-        self.product_details["price"] = -21
-        self.sales_data['products'] = remove_quotes(self.product_details)
+        self.sales_data["price"] = -21
         response = self.query_with_token(
             self.access_token, create_sale.format(**self.sales_data))
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          SALES_ERROR_RESPONSES['negative_integer']
-                         .format(self.product_2.id))
+                         .format(self.sales_data['batchId']))
 
     def test_create_sale_successfully(self):
         self.create_receipt_template()

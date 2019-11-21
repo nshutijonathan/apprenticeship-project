@@ -451,7 +451,7 @@ class SaleReturnDetailFactory(factory.DjangoModelFactory):
     return_reason = "Expired Product"
     resellable = True
     is_approved = False
-    product = factory.SubFactory(ProductFactory)
+    batch = factory.SubFactory(BatchInfoFactory)
     sales_return = factory.SubFactory(SaleReturn)
 
 

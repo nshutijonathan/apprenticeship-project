@@ -125,11 +125,12 @@ class DeleteSalesPrompt(graphene.Mutation):
                 "deletion_success"].format("Sales prompt"))
 
 
-class Products(graphene.InputObjectType):
+class Batches(graphene.InputObjectType):
     """
     This class defines necessary fields of a product to be sold
     """
-    product_id = graphene.Int()
+    batch_id = graphene.ID()
+    # product_id = graphene.Int()
     quantity = graphene.Int()
     discount = graphene.Float()
     price = graphene.Float()
@@ -148,7 +149,7 @@ class CreateSale(graphene.Mutation):
     class Arguments:
         customer_id = graphene.String()
         outlet_id = graphene.Int(required=True)
-        products = graphene.List(Products, required=True)
+        batches = graphene.List(Batches, required=True)
         discount_total = graphene.Float(graphene.Float, required=True)
         sub_total = graphene.Float(graphene.Float, required=True)
         amount_to_pay = graphene.Float(graphene.Float, required=True)
@@ -252,7 +253,8 @@ class ReturnedProducts(graphene.InputObjectType):
     """
     This class defines necessary fields of a product to be returned
     """
-    product_id = graphene.Int(required=True)
+    batch_id = graphene.ID(required=True)
+    # product_id = graphene.Int(required=True)
     quantity = graphene.Int(required=True)
     price = graphene.Float(required=True)
     resellable = graphene.Boolean(required=True)
@@ -269,7 +271,7 @@ class InitiateSaleReturn(graphene.Mutation):
 
     class Arguments:
         sale_id = graphene.Int(required=True)
-        returned_products = graphene.List(ReturnedProducts, required=True)
+        returned_batches = graphene.List(ReturnedProducts, required=True)
         outlet_id = graphene.Int(required=True)
         return_amount = graphene.Float(required=True)
         return_note = graphene.String()

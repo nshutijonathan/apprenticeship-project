@@ -150,8 +150,8 @@ class Sale(BaseModel):
         Arguments:
             kwargs: information about sale
         """
-        sold_products = kwargs.get('products')
-        sales_validator = SalesValidator(sold_products)
+        sold_batches = kwargs.get('batches')
+        sales_validator = SalesValidator(sold_batches)
         sales_validator.check_sales_fields_validity(**kwargs)
         sales_validator.check_validity_of_ids()
         sales_validator.check_product_discount()
@@ -183,7 +183,7 @@ class Sale(BaseModel):
 
         customer_id = kwargs.get('customer_id')
         outlet_id = kwargs.get('outlet_id')
-        sold_products = kwargs.get('products')
+        sold_batches = kwargs.get('batches')
         discount_total = kwargs.get('discount_total')
         sub_total = kwargs.get('sub_total')
         amount_to_pay = kwargs.get('amount_to_pay')
@@ -193,9 +193,8 @@ class Sale(BaseModel):
         notes = kwargs.get('notes')
 
         outlet = get_model_object(Outlet, "id", outlet_id)
-
-        sold_product_instances = Sale._validate_sales_details(self, **kwargs)
-
+        sold_product_instances = Sale._validate_sales_details(
+            self, **kwargs)
         sale = Sale(sales_person=sales_person,
                     outlet=outlet,
                     payment_method=payment_method,
@@ -233,7 +232,7 @@ class Sale(BaseModel):
         with SaveContextManager(sale) as sale:
             loyalty_points_earned = initiate_sale(
                 sold_product_instances,
-                sold_products,
+                sold_batches,
                 sale,
                 SaleDetail,
                 BatchHistory)
@@ -327,7 +326,7 @@ class SaleReturn(BaseModel):
         customer = sales_instance.customer
         outlet_instance = get_model_object(
             Outlet, 'id', kwargs.get('outlet_id'))
-        return_validator = SalesValidator(kwargs.get('returned_products'))
+        return_validator = SalesValidator(kwargs.get('returned_batches'))
         return_validator.check_product_returnable()
         return_validator.check_product_dates_for_return(
             outlet_instance, sales_instance)
@@ -339,16 +338,16 @@ class SaleReturn(BaseModel):
         with SaveContextManager(sales_return, model=SaleReturn)as sales_return:
             pass
         sale_return_detail_list = []
-        for product in kwargs.get('returned_products'):
-            product_instance = get_model_object(
-                Product, 'id', product.product_id)
+        for batch in kwargs.get('returned_batches'):
+            batch_instance = get_model_object(
+                BatchInfo, 'id', batch.batch_id)
             sales_return_detail = SaleReturnDetail(
-                product=product_instance,
+                batch=batch_instance,
                 sales_return=sales_return,
-                quantity=product.quantity,
-                price=product.price,
-                resellable=product.resellable,
-                return_reason=product.return_reason
+                quantity=batch.quantity,
+                price=batch.price,
+                resellable=batch.resellable,
+                return_reason=batch.return_reason
             )
             sale_return_detail_list.append(sales_return_detail)
         SaleReturnDetail.objects.bulk_create(sale_return_detail_list)
@@ -366,10 +365,9 @@ class SaleReturn(BaseModel):
         for returned_sale in returned_sales:
             returned_sale_detail = get_model_object(
                 SaleReturnDetail, 'id', returned_sale)
-
-            batch_histories = BatchHistory.objects.filter(
-                sale_id=sales_id,
-                product_id=returned_sale_detail.product_id)
+            batch_histories = BatchHistory.objects.\
+                filter(sale_id=sales_id,
+                       batch_info_id=returned_sale_detail.batch_id)
 
             returned_quantity = returned_sale_detail.quantity
 
@@ -384,21 +382,13 @@ class SaleReturn(BaseModel):
         for batch_history in batch_histories:
             batch = get_model_object(BatchInfo, 'id',
                                      batch_history.batch_info.id)
-            batch_quantity = batch.quantity
 
             quantity = batch.batch_quantities.filter(
                 is_approved=True).first()
 
             if returned_sale_detail.resellable:
-                if returned_quantity > batch_history.quantity_taken:
-                    quantity.quantity_remaining = \
-                        batch_quantity + batch_history.quantity_taken
-                    quantity.save()
-                    returned_quantity -= batch_history.quantity_taken
-                else:
-                    quantity.quantity_remaining = \
-                        batch_quantity + returned_quantity
-                    quantity.save()
+                quantity.quantity_remaining += returned_quantity
+                quantity.save()
             returned_sale_detail.is_approved = True
             returned_sale_detail.done_by = user
             returned_sale_detail.save()
@@ -410,14 +400,14 @@ class SaleReturnDetail(BaseModel):
     """
     Defines return detail model
     Attributes:
-        product(obj): Holds a reference to products to be returned
+        batch(obj): Holds a reference to the batch to be returned
         sales_return(obj): Holds a sale return reference to this product
         quantity(int):  Holds the quantity to be sold of a product
         price(float): Holds the price for each product
         return_reason(str): Holds enum return reason about the product
         is_approved(bool): Holds boolean for particular product return approved
     """
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    batch = models.ForeignKey(BatchInfo, on_delete=models.SET_NULL, null=True)
     sales_return = models.ForeignKey(
         SaleReturn, on_delete=models.SET_NULL, null=True)
     quantity = models.IntegerField()

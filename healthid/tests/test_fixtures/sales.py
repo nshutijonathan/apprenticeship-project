@@ -216,7 +216,40 @@ mutation {{
       subTotal: {sub_total},
       changeDue: {change_due},
       paidAmount: {paid_amount},
-      products: {products}
+      batches: [
+          {{
+              batchId: "{batchId}",
+              quantity: {quantity},
+              discount: {discount},
+              price: {price}
+          }}
+        ]
+      )
+      {{
+    sale {{
+      id
+      createdAt
+    }}
+    receipt {{
+      id
+    }}
+    message
+  }}
+}}
+'''
+
+create_sale_with_empty_batches = '''
+mutation {{
+  createSale(
+      discountTotal: {discount_total},
+      amountToPay: {amount_to_pay},
+      paymentMethod:"{payment_method}",
+      customerId:"{customer_id}"
+      outletId: {outlet_id}
+      subTotal: {sub_total},
+      changeDue: {change_due},
+      paidAmount: {paid_amount},
+      batches: []
       )
       {{
     sale {{
@@ -242,7 +275,14 @@ mutation {{
       subTotal: {sub_total},
       changeDue: {change_due},
       paidAmount: {paid_amount},
-      products: {products}
+      batches: [
+          {{
+              batchId: "{batchId}",
+              quantity: {quantity},
+              discount: {discount},
+              price: {price}
+          }}
+        ]
       )
       {{
     sale {{
