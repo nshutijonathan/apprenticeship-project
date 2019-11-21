@@ -23,8 +23,10 @@ class TestSupplierOrderDetails(BaseConfiguration):
         return order
 
     def create_order_details(self, order):
-        return OrderDetails.objects.create(product=self.product, ordered_quantity=5,
-                                           supplier=self.supplier, order=order)
+        return OrderDetails.objects.create(product=self.product,
+                                           ordered_quantity=5,
+                                           supplier=self.supplier,
+                                           order=order)
 
     def test_add_product_with_specific_quantity(self):
         response = self.query_with_token(

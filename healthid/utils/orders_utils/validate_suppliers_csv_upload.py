@@ -1,40 +1,37 @@
 import csv
 from rest_framework.exceptions import ValidationError
 
+from healthid.utils.app_utils.validators import validate_mobile
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 
 
-def validate_products_csv_upload(io_string):
+def validate_suppliers_csv_upload(io_string):
     """
-        Validate products info from an appropriately formatted CSV file.
+        Validate suppliers info from an appropriately formatted CSV file.
 
         arguments:
             io_string(obj): 'io.StringIO' object containing a list
-                            of products in CSV format
+                            of suppliers in CSV format
 
         returns:
-            array: a list of products
+            array: a list of suppliers
         """
-    [row_count, csv_columns, products, csv_errors] = [0, [], [], {}]
+    [row_count, csv_columns, suppliers, csv_errors] = [0, [], [], {}]
     valid_columns = {
         'name': 'required',
-        'product name': 'required',
-        'description': 'required',
-        'brand': 'required',
-        'manufacturer': 'required',
-        'dispensing size': 'required',
-        'measurement unit': 'required',
-        'preferred supplier': 'required',
-        'backup supplier': 'required',
-        'category': 'required',
-        'product category': 'required',
-        'loyalty weight': 'not required',
-        'vat status': 'not required',
-        'tags': 'not required',
-        'image': 'not required',
-        'product image': 'not required'
+        'email': 'required',
+        'mobile number': 'required',
+        'address line 1': 'not required',
+        'address line 2': 'not required',
+        'lga': 'not required',
+        'city': 'required',
+        'tier': 'not required',
+        'country': 'required',
+        'logo': 'not required',
+        'commentary': 'not required',
+        'payment terms': 'required',
+        'credit days': 'not required',
     }
-
     for row in csv.reader(io_string):
         csv_columns = list(map(lambda column: column.lower().strip(), row))
         break
@@ -50,7 +47,7 @@ def validate_products_csv_upload(io_string):
 
     for row in csv.reader(io_string):
         row_count += 1
-        [i, product, row_errors] = [0, {}, {}]
+        [i, supplier, row_errors] = [0, {}, {}]
         while i < len(row):
             if valid_columns.get(csv_columns[i]) == 'required' and not row[i]:
                 row_errors = {
@@ -58,11 +55,19 @@ def validate_products_csv_upload(io_string):
                     csv_columns[i]: ERROR_RESPONSES['required_field'].format(
                         csv_columns[i])
                 }
+            # validate phone number
+            if csv_columns[i] == 'mobile number':
+                is_mobile_number_validate = validate_mobile(row[i])
+                row_errors = row_errors if is_mobile_number_validate else {
+                    **row_errors,
+                    csv_columns[i]: (ERROR_RESPONSES['invalid_mobile_number'].
+                                     format(row[i]))
+                }
 
-            product = {
-                **product,
+            supplier = {
+                **supplier,
                 csv_columns[i]: row[i]
-            } if csv_columns[i] else product
+            } if csv_columns[i] else supplier
 
             i += 1
 
@@ -74,9 +79,9 @@ def validate_products_csv_upload(io_string):
             ]
         } if len(row_errors) else csv_errors
 
-        products = [*products, product]
+        suppliers = [*suppliers, supplier]
 
-    if len(csv_columns) < 10 or len(csv_columns) > 12:
+    if len(csv_columns) < 13 or len(csv_columns) > 13:
         message = {
             'error': ERROR_RESPONSES['csv_missing_field']
             if len(csv_columns) < 13 else ERROR_RESPONSES['csv_many_field']
@@ -86,4 +91,4 @@ def validate_products_csv_upload(io_string):
     if len(csv_errors):
         raise ValidationError(csv_errors)
 
-    return products
+    return suppliers

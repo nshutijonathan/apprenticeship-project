@@ -45,11 +45,13 @@ class HandleCsvValidations(object):
             supplier = get_model_object(Suppliers,
                                         'email__iexact',
                                         row['preferred supplier'],
-                                        error_type=NotFound)
+                                        error_type=NotFound,
+                                        label='email')
             backup_supplier = get_model_object(Suppliers,
                                                'email__iexact',
                                                row['backup supplier'],
-                                               error_type=NotFound)
+                                               error_type=NotFound,
+                                               label='email')
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
                                                row.get('dispensing size') or

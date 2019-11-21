@@ -118,7 +118,8 @@ class OrderDetails(BaseModel):
                     product__id=detail_object.product_id,
                     supplier__id=supplier_id
                 )
-                current_order_detail.ordered_quantity = detail_object.ordered_quantity
+                current_order_detail.ordered_quantity = \
+                    detail_object.ordered_quantity
                 current_order_detail.save()
                 created_order = current_order_detail
 

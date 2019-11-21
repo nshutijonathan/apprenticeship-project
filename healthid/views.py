@@ -65,7 +65,6 @@ class HandleCSV(APIView):
         io_string = io.StringIO(data_set)
         try:
             if param == 'suppliers':
-                next(io_string)
                 user = request.user
                 res = handle_supplier_csv(
                     user=user, io_string=io_string)

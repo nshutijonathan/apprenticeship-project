@@ -11,9 +11,10 @@ class ErrorHandler():
             raise error_type({'error': message})
         raise GraphQLError(message)
 
-    def db_object_do_not_exists(self, model, field, value, error_type=None):
+    def db_object_do_not_exists(self, model, field, value, error_type=None,
+                                label=None):
         # Database objectDoesNotExist error
-        message = f'{model} with { field } { value } does not exist.'
+        message = f'{model} with {label or field} {value} does not exist.'
         if error_type is not None:
             raise error_type({'error': message})
         raise GraphQLError(message)
@@ -21,7 +22,7 @@ class ErrorHandler():
     def unique_constraint_violation(self, model, error_type=None):
         # Database duplicate key error
         message =\
-         f'An item with similar fields exists in the {model} table.'
+            f'An item with similar fields exists in the {model} table.'
         if error_type:
             raise error_type({'error': message})
         raise GraphQLError(message)

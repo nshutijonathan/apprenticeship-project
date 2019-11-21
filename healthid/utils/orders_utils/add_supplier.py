@@ -1,16 +1,15 @@
-import csv
-
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.orders.models.suppliers import PaymentTerms, Suppliers, Tier
 from healthid.apps.outlets.models import City, Country
-from healthid.utils.app_utils.validators import validate_mobile
 from healthid.apps.authentication.models import User
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
+    validate_suppliers_csv_upload
 
 
 class AddSupplier:
@@ -20,78 +19,67 @@ class AddSupplier:
         the information in the csv rows through the SaveContextManager,
         :param io_string:
         :return total number csv rows uploaded into the DB:
-        The columns of the csv file must be in a PARTICULAR order to ease
-        the upload process
-        The exact ordering expected of the csv would be:
-        Column [0] -> name
-        Column [1] -> email
-        Column [2] -> mobile_number
-        Column [3] -> country
-        Column [4] -> address_line_1
-        Column [5] -> address_line_2
-        Column [6] -> lga
-        Column [7] -> city
-        Column [8] -> tier
-        Column [9] -> logo
-        Column [10] -> commentary
-        Column [11] -> payment_terms
-        Column [12] -> credit_days
         """
 
         params = {'model': Suppliers, 'error_type': ValidationError}
-        supplier_count = 0
+        [supplier_count, row_count] = [0, 0]
         duplicated_suppliers = []
-        for column in csv.reader(io_string):
-            if len(column) < 13:
-                raise ValidationError(ERROR_RESPONSES['csv_missing_field'])
-            elif len(column) > 13:
-                raise ValidationError(ERROR_RESPONSES['csv_many_field'])
-            for idx in range(5):
-                if column[idx] in (None, ''):
-                    raise ValidationError(ERROR_RESPONSES['csv_field_error'])
-            if column[7] in (None, '') or column[8] in (None, ''):
-                raise ValidationError(ERROR_RESPONSES['csv_field_error'])
-            if column[1] not in (
+        suppliers = validate_suppliers_csv_upload(io_string)
+
+        for row in suppliers:
+            row_count += 1
+            if row['email'] not in (
                     Suppliers.objects.values_list('email', flat=True)):
-                # Makes calls to the DB to retrieve all emails
-                # for checking duplication and skips over them
-                # in the csv upload since emails should be unique.
 
-                city = get_model_object(
-                    City, 'name', column[7], error_type=NotFound)
-                country = get_model_object(
-                    Country, 'name',
-                    column[3].title(), error_type=NotFound)
-                tier = get_model_object(
-                    Tier, 'name', column[8], error_type=NotFound)
-                user_id = get_model_object(
-                    User, 'id', user.pk, error_type=NotFound)
+                city = get_model_object(City,
+                                        'name__iexact',
+                                        row['city'],
+                                        error_type=NotFound,
+                                        label='name')
+                country = get_model_object(Country,
+                                           'name__iexact',
+                                           row['country'],
+                                           error_type=NotFound,
+                                           label='name')
+                tier = get_model_object(Tier,
+                                        'name__iexact',
+                                        row['tier'],
+                                        error_type=NotFound,
+                                        label='name')
+                user_id = get_model_object(User,
+                                           'id',
+                                           user.pk,
+                                           error_type=NotFound)
 
-                credit_days = int(column[12])
-                if credit_days == 0:
-                    payment_terms = get_model_object(
-                        PaymentTerms, 'name',
-                        'cash on delivery', error_type=NotFound)
-                else:
-                    payment_terms = get_model_object(
-                        PaymentTerms, 'name', 'on credit', error_type=NotFound)
+                credit_days = int(row['credit days'] or 0)
+                payment_terms = get_model_object(PaymentTerms,
+                                                 'name__iexact',
+                                                 row['payment terms'],
+                                                 error_type=NotFound,
+                                                 label='name')
+
+                # check payment_terms
+                if credit_days == 0 and row['payment terms'] == 'on credit':
+                    raise ValidationError(
+                        ERROR_RESPONSES['payment_terms'].format(row_count))
+
                 if city.country.name != country.name:
                     raise ValidationError(
                         ERROR_RESPONSES['country_city_mismatch']
                         .format(country.name, city.name))
-                phone_number = validate_mobile(column[2])
+
                 suppliers_instance = Suppliers(
-                    name=column[0],
-                    email=column[1],
-                    mobile_number=phone_number,
+                    name=row['name'],
+                    email=row['email'],
+                    mobile_number=row['mobile number'],
                     country=country,
-                    address_line_1=column[4],
-                    address_line_2=column[5],
-                    lga=column[6],
+                    address_line_1=row['address line 1'],
+                    address_line_2=row['address line 2'],
+                    lga=row['lga'],
                     city=city,
                     tier=tier,
-                    logo=column[9],
-                    commentary=column[10],
+                    logo=row['logo'],
+                    commentary=row['commentary'],
                     payment_terms=payment_terms,
                     credit_days=credit_days,
                     user=user_id,
@@ -104,6 +92,7 @@ class AddSupplier:
                     pass
                 supplier_count += 1
             else:
-                duplicated_suppliers = [*duplicated_suppliers, column[1]]
+                duplicated_suppliers.append(
+                    ERROR_RESPONSES['duplication_error'].format(row['email']))
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}

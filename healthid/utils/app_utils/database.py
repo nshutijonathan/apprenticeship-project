@@ -114,7 +114,9 @@ def get_model_object(model, column_name, column_value, **kwargs):
     except ObjectDoesNotExist:
         message = kwargs.get('message', None)
         error_type = kwargs.get('error_type', None)
+        label = kwargs.get('label', None)
         if message is not None:
             errors.custom_message(message, error_type=error_type)
         errors.db_object_do_not_exists(
-            model.__name__, column_name, column_value, error_type=error_type)
+            model.__name__, column_name, column_value, error_type=error_type,
+            label=label)

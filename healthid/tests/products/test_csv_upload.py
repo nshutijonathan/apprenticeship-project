@@ -71,10 +71,10 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('row-1', response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('rows', response.data)
         self.assertIn('columns', response.data)
-        self.assertEqual(response.data.get('row-1')[0],
+        self.assertEqual(response.data.get('rows')[0].get('1')['name'],
                          ERROR_RESPONSES['required_field'].format('name'))
         self.assertEqual(response.data.get('columns')[0],
                          ERROR_RESPONSES['not_allowed_field']

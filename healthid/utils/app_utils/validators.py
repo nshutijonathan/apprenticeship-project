@@ -93,14 +93,9 @@ def validate_expire_months(month):
 
 def validate_mobile(mobile):
     """
-    Validate a string on mobile numbe
+    Validate mobile number
 
     Arguments:
         mobile_number {string} -- [string mobile number format]
     """
-    mobile = mobile.strip()
-
-    if re.match(r'(^[+0-9]{1,3})*([0-9]{10,11}$)',
-                mobile) is None:
-        raise GraphQLError('Please input a valid phone'.format(mobile))
-    return mobile
+    return re.match(r'(^[+0-9]{1,3})*([0-9]{10,11}$)', str(mobile).strip())

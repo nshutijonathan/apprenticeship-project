@@ -144,8 +144,10 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         # test dupplication
         request = self.handle_csv_request(path)
         response = self.view(request, param='suppliers')
-        expectedDupplications = ['email@ntale.com',
-                                 'email@shadik.com']  # in test.csv file
+        expectedDupplications = [
+            ERROR_RESPONSES['duplication_error'].format('email@ntale.com'),
+            ERROR_RESPONSES['duplication_error'].format('email@shadik.com')
+        ]  # in test.csv file
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data['duplicatedSuppliers'], expectedDupplications)
@@ -154,8 +156,14 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         path = os.path.join(self.base_path, 'invalid_csv.csv')
         request = self.handle_csv_request(path)
         response = self.view(request, param='suppliers')
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('error', str(response.data))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('rows', response.data)
+        self.assertIn('columns', response.data)
+        self.assertEqual(response.data.get('rows')[0].get('1')['email'],
+                         ERROR_RESPONSES['required_field'].format('email'))
+        self.assertEqual(response.data.get('columns')[0],
+                         ERROR_RESPONSES['not_allowed_field']
+                         .format('nameeee'))
 
     def test_invalid_csv_with_missing_column(self):
         path = os.path.join(self.base_path, 'missing_column.csv')
@@ -163,7 +171,7 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         response = self.view(request, param='suppliers')
         self.assertEqual(response.status_code, 400)
         self.assertIn(ERROR_RESPONSES["csv_missing_field"],
-                      str(response.data[0]))
+                      str(response.data['error']))
 
     def test_invalid_csv_with_more_column(self):
         path = os.path.join(self.base_path, 'more_column.csv')
@@ -171,7 +179,7 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         response = self.view(request, param='suppliers')
         self.assertEqual(response.status_code, 400)
         self.assertIn(ERROR_RESPONSES["csv_many_field"],
-                      str(response.data[0]))
+                      str(response.data['error']))
 
     def test_empty_suppliers_csv_export_succeeds(self):
         self.url = reverse('export_csv_file', kwargs={'param': 'suppliers'})
