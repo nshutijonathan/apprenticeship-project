@@ -3,7 +3,7 @@ from healthid.apps.orders.models.orders import SupplierOrderDetails
 from healthid.utils.app_utils.database import SaveContextManager
 
 
-def create_suppliers_order_details(order):
+def create_suppliers_order_details(order, supplier=None):
     """
     function to generate supplier order details for an order
 

@@ -48,6 +48,7 @@ mutation{{
     message
     orderDetails{{
       id
+      supplierOrderNumber
       product{{
         id
       }}
@@ -70,6 +71,7 @@ mutation{{
     message
     orderDetails{{
       id
+      supplierOrderNumber
       product{{
         id
       }}
@@ -95,6 +97,7 @@ mutation{{
     message
     orderDetails{{
       id
+      supplierOrderNumber
       product{{
         id
       }}
@@ -113,10 +116,37 @@ mutation{{
     orderId: {order_id},
     products: [{product}]
     quantities: [{quantity}]
+    costPerItems: ["{costPerItems}"],
+    prices: ["{prices}"]
   ){{
     message
     orderDetails{{
       id
+      supplierOrderNumber
+      product{{
+        id
+      }}
+    }}
+    suppliersOrderDetails{{
+      id
+      orderDetails {{
+        orderedQuantity
+      }}
+    }}
+  }}
+}}
+'''
+
+modify_order_quantities_only = '''
+mutation{{
+  addOrderDetails(
+    orderId: {order_id},
+    products: [{product}]
+    quantities: [{quantity}]
+    message
+    orderDetails{{
+      id
+      supplierOrderNumber
       product{{
         id
       }}
@@ -166,9 +196,7 @@ query {{
     }}
     supplierOrderName
     supplierOrderNumber
-    deliverTo {{
-      id
-    }}
+    deliverTo
     deliveryDue
     additionalNotes
   }}
@@ -190,9 +218,7 @@ query {{
     }}
     supplierOrderName
     supplierOrderNumber
-    deliverTo {{
-      id
-    }}
+    deliverTo
     deliveryDue
     additionalNotes
   }}

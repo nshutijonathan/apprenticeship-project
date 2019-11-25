@@ -38,6 +38,8 @@ class AddOrderDetails(graphene.Mutation):
         products = graphene.List(graphene.Int, required=True)
         quantities = graphene.List(graphene.Int)
         suppliers = graphene.List(graphene.String)
+        prices = graphene.List(graphene.String)
+        cost_per_items = graphene.List(graphene.String)
 
     order_details = graphene.Field(OrderDetailsType)
     message = graphene.Field(graphene.String)
@@ -49,17 +51,45 @@ class AddOrderDetails(graphene.Mutation):
         order_id = kwargs.get('order_id')
         products = kwargs.get('products')
         quantities = kwargs.get('quantities', None)
+        cost_per_items = kwargs.get('cost_per_items', None)
+        prices = kwargs.get('prices', None)
         suppliers = kwargs.get('suppliers', None)
         order = get_model_object(Order, 'id', order_id)
-        if quantities:
+
+        if quantities and prices and cost_per_items:
+            params = {
+                'name1': 'Quantities',
+                'name2': 'Products'
+            }
+            params2 = {
+                'name1': 'Prices',
+                'name2': 'Products'
+            }
+            params3 = {
+                'name1': 'CostPerItems',
+                'name2': 'Products'
+            }
+            add_order_details.check_list_length(products, quantities, **params)
+            add_order_details.check_list_length(products, prices, **params2)
+            add_order_details.check_list_length(
+                products, cost_per_items, **params3
+            )
+            quantity = iter(quantities)
+            price = iter(prices)
+            cost_per_item = iter(cost_per_items)
+            object_list = add_order_details.get_order_details(
+                kwargs, order, quantity, price, cost_per_item
+            )
+        elif quantities:
             params = {
                 'name1': 'Quantities',
                 'name2': 'Products'
             }
             add_order_details.check_list_length(products, quantities, **params)
             quantity = iter(quantities)
-            object_list = \
-                add_order_details.get_order_details(kwargs, order, quantity)
+            object_list = add_order_details.get_order_details(
+                kwargs, order, quantity
+            )
         else:
             object_list = \
                 add_order_details.get_order_details(kwargs, order)

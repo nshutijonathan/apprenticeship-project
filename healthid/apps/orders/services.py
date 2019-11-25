@@ -30,10 +30,8 @@ class SupplierOrderDetailsFetcher:
         """
         order = get_model_object(Order, 'id', self.order_id)
         results = SupplierOrderDetails.objects.all()
-        results = results.filter(id__in=self.supplier_order_details_ids,
-                                 order=order)
-        results = results.select_related('supplier')
-
+        results = results.filter(
+            id__in=self.supplier_order_details_ids, order=order)
         if not results:
             raise ValueError("No supplier Order Details found matching"
                              "provided ids and Order")
@@ -104,7 +102,7 @@ class SupplierOrderDetailsApprovalService:
         for supplier_order in self.supplier_orders:
             self._approve_single_detail(supplier_order, self.user)
             if no_of_orders == 1:
-                supplier_order.additional_notes = self.addtional_notes
+                supplier_order.additional_notes = self.additional_notes
 
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):

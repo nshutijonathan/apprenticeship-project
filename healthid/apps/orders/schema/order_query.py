@@ -4,7 +4,6 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models.orders import (
     SupplierOrderDetails, Order, OrderDetails)
 from healthid.utils.app_utils.database import get_model_object
-from healthid.apps.outlets.schema.outlet_schema import OutletType
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
@@ -33,7 +32,7 @@ class SupplierOrderDetailsType(DjangoObjectType):
     order_details = graphene.List(OrderDetailsType)
     supplier_order_name = graphene.String()
     supplier_order_number = graphene.String()
-    deliver_to = graphene.Field(OutletType)
+    deliver_to = graphene.String()
     delivery_due = graphene.Date()
     payment_due = graphene.Date()
 

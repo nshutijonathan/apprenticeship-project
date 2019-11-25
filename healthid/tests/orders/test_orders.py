@@ -30,7 +30,6 @@ class TestOrders(BaseConfiguration):
             order=self.order,
             supplier=self.supplier,
         ).id
-
         supplier_order_ids = """["{}", "{}"]""".format(id1, id2)
         response = self.query_with_token(
             self.access_token_master,
@@ -84,14 +83,14 @@ class TestOrders(BaseConfiguration):
         id1 = SupplierOrderDetails.objects.create(
             order=self.order,
             supplier=self.supplier,
-        )
+        ).id
 
         id2 = SupplierOrderDetails.objects.create(
             order=self.order,
             supplier=self.supplier,
-        )
+        ).id
 
-        supplier_order_ids = """["{}", "{}"]""".format(id1.id, id2.id)
+        supplier_order_ids = """["{}", "{}"]""".format(id1, id2)
         response = self.query_with_token(
             self.access_token_master,
             mark_supplier_order_as_sent.format(

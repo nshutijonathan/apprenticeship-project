@@ -90,7 +90,10 @@ class AddOrderDetails:
         return created_order
 
     @classmethod
-    def get_order_details(cls, kwargs, order, quantity=None):
+    def get_order_details(
+        cls, kwargs, order, quantity=None,
+        price=None, cost_per_item=None
+    ):
         """
         intitalizes order details for an order
 
@@ -100,6 +103,9 @@ class AddOrderDetails:
             quantity: either an iterable for quantities of being
                       attached to order details or None if quantities
                       are being autofilled
+            price: either an iterable for prices of being attached to
+                    to order details or None if it is only creating
+                    order detail without price
 
         Returns:
             list: objects of order details that have been initialized
@@ -117,6 +123,14 @@ class AddOrderDetails:
                 order_details.ordered_quantity = product.autofill_quantity
             else:
                 order_details.ordered_quantity = next(quantity)
+            if price:
+                order_details.price = next(price)
+            else:
+                order_details.price = ""
+            if cost_per_item:
+                order_details.cost_per_item = next(cost_per_item)
+            else:
+                order_details.cost_per_item = ""
             object_list.append(order_details)
         return object_list
 

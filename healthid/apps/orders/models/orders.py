@@ -64,13 +64,17 @@ class OrderDetails(BaseModel):
     ordered_quantity = models.IntegerField()
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE,
                                  null=True)
-    price = models.DecimalField(blank=True, null=True,
-                                max_digits=10, decimal_places=2)
+    cost_per_item = models.CharField(
+        max_length=50, null=True, editable=True
+    )
+    price = models.CharField(max_length=50, null=True, editable=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    supplier_order_name = models.CharField(
+        max_length=100, null=True, editable=False
+    )
     supplier_order_number = models.CharField(
         max_length=50, null=True, editable=False
     )
-
     @classmethod
     def check_if_duplicate(self, order_id, order_detail_object, supplier=None):
         """
@@ -110,6 +114,8 @@ class OrderDetails(BaseModel):
                 detail_object.supplier_id = supplier_id
                 detail_object.supplier_order_number = \
                     str(detail_object.order.order_number) + '-' + supplier_id
+                detail_object.supplier_order_name = \
+                    detail_object.supplier.name+'-'+detail_object.order.name
                 detail_object_list.append(detail_object)
                 created_order = detail_object
             else:
@@ -120,6 +126,9 @@ class OrderDetails(BaseModel):
                 )
                 current_order_detail.ordered_quantity = \
                     detail_object.ordered_quantity
+                current_order_detail.price = detail_object.price
+                current_order_detail.cost_per_item = \
+                    detail_object.cost_per_item
                 current_order_detail.save()
                 created_order = current_order_detail
 
@@ -182,7 +191,7 @@ class SupplierOrderDetails(BaseModel):
             string: combination of order name and supplier order details
                     id
         """
-        return self.order.name + self.supplier_id
+        return self.supplier.name + '-' + self.order.name
 
     @property
     def get_supplier_order_number(self):
@@ -193,7 +202,7 @@ class SupplierOrderDetails(BaseModel):
             string: combination of order number and supplier order
                     details id
         """
-        return self.order.order_number + self.supplier_id
+        return self.order.order_number + '-' + self.supplier_id
 
     @property
     def deliver_to_outlets(self):
