@@ -18,7 +18,7 @@ Health ID is an inventory management and customer engagement software platform d
     $ git clone https://github.com/bryanmezue/healthid-web-api.git
     $ cd healthid-web-api
     $ pip install virtualenv
-    $ virtualenv venv
+    $ virtualenv --python=python3 venv
     $ source venv/bin/activate
     $ git checkout dev
 ```
