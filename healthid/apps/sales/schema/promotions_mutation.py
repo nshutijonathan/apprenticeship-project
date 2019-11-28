@@ -1,28 +1,31 @@
-import graphene
 from datetime import datetime
+
+import graphene
 from dateutil.relativedelta import relativedelta
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.products.models import Product
-from healthid.utils.app_utils.database import (SaveContextManager,
-                                               get_model_object)
-from healthid.utils.auth_utils.decorator import user_permission
-from healthid.apps.sales.schema.promotions_query import (
-    PromotionType, PromotionTypeModelType
+from healthid.apps.products.schema.product_query import (
+    Product
 )
 from healthid.apps.sales.models import (
     Promotion, PromotionType as PromotionTypeModel
 )
+from healthid.apps.sales.schema.promotions_query import (
+    PromotionType, PromotionTypeModelType
+)
+from healthid.utils.app_utils.check_user_in_outlet import \
+    check_user_is_active_in_outlet
+from healthid.utils.app_utils.database import (SaveContextManager,
+                                               get_model_object)
+from healthid.utils.auth_utils.decorator import user_permission
+from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.utils.messages.sales_responses import \
+    SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES
 from healthid.utils.sales_utils.validators import (
     validate_fields, add_products_to_promotion,
     set_recommended_promotion
 )
-from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_is_active_in_outlet
-from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
-from healthid.utils.messages.sales_responses import \
-    SALES_ERROR_RESPONSES, SALES_SUCCESS_RESPONSES
 
 
 class CreatePromotionType(graphene.Mutation):
@@ -191,7 +194,7 @@ class UpdatePromotion(graphene.Mutation):
             promotion = add_products_to_promotion(promotion, product_ids)
             return UpdatePromotion(success=SUCCESS_RESPONSES[
                 "update_success"].format("Promotion"),
-                                   promotion=promotion)
+                promotion=promotion)
 
 
 class DeletePromotion(graphene.Mutation):

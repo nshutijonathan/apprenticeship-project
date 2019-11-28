@@ -54,8 +54,8 @@ class TestUpdatePromotion(TestPromotion):
         self.assertIsNotNone(response['errors'])
         self.assertEqual(response['errors'][0]['message'],
                          ERROR_RESPONSES[
-                         "duplication_error"].format(
-                              "Promotion with title my promo"))
+                             "duplication_error"].format(
+                             "Promotion with title my promo"))
 
     def test_cannot_update_promotion_when_unauthenticated(self):
         response = self.query_with_token('',

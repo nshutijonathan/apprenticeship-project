@@ -38,6 +38,8 @@ class Promotion(BaseModel):
     title = models.CharField(max_length=140, unique=True)
     promotion_type = models.ForeignKey(PromotionType, on_delete=models.CASCADE)
     description = models.TextField()
+    applied_date = models.DateField(
+        auto_now=False, auto_now_add=False, null=True)
     products = models.ManyToManyField(Product, blank=True)
     discount = models.DecimalField(decimal_places=2, max_digits=10)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)

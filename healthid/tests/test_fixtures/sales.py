@@ -339,3 +339,13 @@ all_sales_history_query = '''
         }
     }
 '''
+
+generate_custom_near_expire_promos = '''
+    mutation{{
+      createCustomNearExpirePromotion(productId:{product_id},
+      promotionId:"{promotion_id}",
+      applyMonths:{apply_months}){{
+        success
+      }}
+    }}
+'''
