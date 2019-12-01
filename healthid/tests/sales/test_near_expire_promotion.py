@@ -16,7 +16,8 @@ class TestNearExpirePromotion(TestPromotion):
         response = self.query_with_token(
             self.access_token_master,
             generate_custom_near_expire_promos.format(**self.promotion_data))
-        self.assertIn("success", response["data"]["createCustomNearExpirePromotion"])
+        self.assertIn("success", response["data"]
+                      ["createCustomNearExpirePromotion"])
         self.assertNotIn('errors', response)
 
     def test_generate_custom_discount_with_invalid_product_id(self):

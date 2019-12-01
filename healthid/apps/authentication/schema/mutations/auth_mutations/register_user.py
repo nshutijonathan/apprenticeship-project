@@ -31,6 +31,7 @@ class RegisterUser(graphene.Mutation):
     verification_link = graphene.Field(graphene.String)
 
     def mutate(self, info, email, password, mobile_number):
+        mobile_number = mobile_number.replace(" ", "")
         validate_fields = ValidateUser().validate_user_fields(
             email, password, mobile_number)
         try:

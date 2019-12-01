@@ -63,4 +63,5 @@ class CreateCustomNearExpirePromotion(graphene.Mutation):
 
 
 class Mutation(graphene.ObjectType):
-    create_custom_near_expire_promotion = CreateCustomNearExpirePromotion.Field()
+    create_custom_near_expire_promotion = \
+        CreateCustomNearExpirePromotion.Field()
