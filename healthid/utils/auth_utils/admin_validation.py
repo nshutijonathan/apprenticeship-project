@@ -13,24 +13,29 @@ class ValidateAdmin:
     """
 
     def validate_admin_fields(self, **kwargs):
+        secondary_email = kwargs.get('secondary_email', None)
+        secondary_phone_number = kwargs.get(
+            'secondary_phone_number', None)
+        if secondary_email:
+            secondary_email = self._validate_secondary_email(
+                secondary_email)
+        if secondary_phone_number:
+            secondary_phone_number = validator.validate_mobile(
+                secondary_phone_number)
         first_name = kwargs.get('first_name', '')
         last_name = kwargs.get('last_name', '')
         username = kwargs.get('username', '')
         email = kwargs.get('email', '')
         mobile_number = kwargs.get('mobile_number', '')
-        secondary_email = kwargs.get('secondary_email', '')
-        secondary_phone_number = kwargs.get(
-            'secondary_phone_number', '')
         return{
             "first_name": self._validate_name(first_name),
             "last_name": self._validate_name(last_name),
             "username": self._validate_name(username),
             "email": self._validate_secondary_email(email),
-            "secondary_email": self._validate_secondary_email(secondary_email),
+            "secondary_email": secondary_email,
             "mobile_number": validator.validate_mobile(
                              mobile_number),
-            "secondary_phone_number": validator.validate_mobile(
-                secondary_phone_number)
+            "secondary_phone_number": secondary_phone_number
         }
 
     def _validate_name(self, name):

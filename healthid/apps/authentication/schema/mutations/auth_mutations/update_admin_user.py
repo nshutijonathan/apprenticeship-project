@@ -22,8 +22,8 @@ class UpdateAdminUser(graphene.Mutation):
         username = graphene.String()
         email = graphene.String()
         mobile_number = graphene.String()
-        secondary_email = graphene.String()
-        secondary_phone_number = graphene.String()
+        secondary_email = graphene.String(required=False)
+        secondary_phone_number = graphene.String(required=False)
 
     @staticmethod
     @login_required
