@@ -35,7 +35,7 @@ class TestCreatePromotion(TestPromotion):
                                "Promotion with title another promo"))
 
     def test_only_manager_admin_can_create_promotion(self):
-        self.business.user.add(self.user)
+        self.business.user = self.user
         response = self.query_with_token(self.access_token,
                                          create_promotion(self.promotion_data))
         self.assertIsNotNone(response['errors'])

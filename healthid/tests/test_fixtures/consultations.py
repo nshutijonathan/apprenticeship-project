@@ -117,7 +117,7 @@ mutation {{
     outletId:{}
     consultant:"Consultant"
     status:"Now"
-    bookingDate:"2019-12-01"
+    bookingDate:"{}"
     ){{
       bookConsultation {{
         status
@@ -130,7 +130,7 @@ update_consultation = '''
 mutation {{
   updateConsultation(
   consultationId:{}
-  bookingDate:"2020-01-02"
+  bookingDate:"{}"
   ) {{
     updateConsultation {{
       status

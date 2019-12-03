@@ -15,7 +15,7 @@ class TestUpdatePromotion(TestPromotion):
         self.assertNotIn('errors', response)
 
     def test_only_admin_manager_can_update_promotion(self):
-        self.business.user.add(self.user)
+        self.business.user = self.user
         response = self.query_with_token(self.access_token,
                                          update_promotion(self.promotion.id,
                                                           'new promo'))

@@ -80,7 +80,7 @@ class AddUser(graphene.Mutation):
             for outlet_id in outlet:
                 outlet_instance = get_model_object(Outlet, 'id', outlet_id)
                 business_instance = outlet_instance.business
-                business_instance.user.add(user)
+                business_instance.user = user
                 is_active_outlet = False if user.user_outlets.exists() \
                     else True
                 OutletUser.objects.create(user=user,

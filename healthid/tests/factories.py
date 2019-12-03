@@ -127,7 +127,7 @@ class BusinessFactory(factory.DjangoModelFactory):
 
         if extracted:
             for u in extracted:
-                self.user.add(u)
+                self.user = u
 
 
 class OutletKindFactory(factory.DjangoModelFactory):

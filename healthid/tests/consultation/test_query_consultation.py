@@ -1,4 +1,5 @@
 from faker import Faker
+from datetime import date, timedelta
 from healthid.tests.base_config import BaseConfiguration
 
 from healthid.tests.test_fixtures.consultations import (
@@ -92,9 +93,9 @@ class TestQueryConsultation(BaseConfiguration):
                 self.customer_consultation.customer.id,
                 self.consultation_item.id,
                 self.outlet.id,
+                date.today() + timedelta(days=3)
             )
         )
-
         self.assertEqual(
             'Now',
             response['data']['bookConsultation']['bookConsultation']['status']
@@ -104,7 +105,8 @@ class TestQueryConsultation(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             update_consultation.format(
-                self.customer_consultation.id
+                self.customer_consultation.id,
+                date.today() + timedelta(days=5)
             )
         )
         self.assertIsNotNone(response)

@@ -9,7 +9,7 @@ AUTH_SUCCESS_RESPONSES = {
     "password_reset_link_success": "Please check your email for a password"
                                    " reset link. Look inside your Spam folder"
                                    "in case you cannot trace it",
-    "account_verification": "Your account is already verified,"
+    "account_verification": "Your account is now verified,"
                             " Please click the button below to login",
     "password_reset_success": "Your password was successfully reset.",
     "create_role_success": "Successfully created a role: {}"

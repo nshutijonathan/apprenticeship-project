@@ -55,9 +55,8 @@ class CreateBusiness(graphene.Mutation):
         business = Business()
         for key, value in kwargs.items():
             setattr(business, key, value)
-
+        business.user = user
         with SaveContextManager(business, model=Business) as business:
-            business.user.add(user)
             success = [SUCCESS_RESPONSES[
                        "creation_success"].format(business.legal_name)]
             return CreateBusiness(business=business, success=success)
@@ -96,9 +95,8 @@ class UpdateBusiness(graphene.Mutation):
         user = info.context.user
         id = kwargs.get('id')
         business = get_model_object(Business, 'id', id)
-        business_users = business.user.all()
 
-        if user not in business_users:
+        if business.user != user:
             update_error = BUSINESS_ERROR_RESPONSES["business_update_error"]
             raise GraphQLError(update_error)
         for(key, value) in kwargs.items():
@@ -129,7 +127,7 @@ class AddUserBusiness(graphene.Mutation):
         business_id = kwargs.get('business_id')
         user_instance = get_model_object(User, 'id', user_id)
         business_instance = get_model_object(Business, 'id', business_id)
-        business_instance.user.add(user_instance)
+        business_instance.user = user_instance
         user_instance.save()
         message = [
             BUSINESS_SUCCESS_RESPONSES[

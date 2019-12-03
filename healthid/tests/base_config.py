@@ -290,7 +290,7 @@ class BaseConfiguration(TestCase):
         user.is_active = True
         user.role = self.master_admin_role
         user.save()
-        self.business.user.add(user)
+        self.business.user = user
         return user
 
     def user_login(self):
