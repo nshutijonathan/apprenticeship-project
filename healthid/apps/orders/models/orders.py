@@ -149,11 +149,13 @@ class SupplierOrderDetails(BaseModel):
     PENDING = "pending"
     OPEN = "open"
     CLOSED = "closed"
+    APPROVED = "approved"
 
     ORDER_STATUSES = (
         (PENDING, "Pending Approval"),
         (OPEN, "Open"),
         (CLOSED, "Closed"),
+        (APPROVED, "Approved")
     )
 
     id = models.CharField(

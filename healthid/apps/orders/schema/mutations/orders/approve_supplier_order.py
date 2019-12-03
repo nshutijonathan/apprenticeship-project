@@ -35,6 +35,7 @@ class ApproveSupplierOrder(graphene.Mutation):
         order_id = graphene.Int(required=True)
         supplier_order_ids = graphene.List(graphene.String)
         additional_notes = graphene.String()
+        status = graphene.String()
 
     @login_required
     @user_permission('Manager', 'Admin')

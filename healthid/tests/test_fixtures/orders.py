@@ -370,3 +370,13 @@ query{
   }
 }
 '''
+
+order_details_status_change = '''
+mutation{{
+  markSupplierOrderStatusApproved(
+    supplierOrderId: "{supplier_order_id}"
+    ){{
+      message
+    }}
+  }}
+'''

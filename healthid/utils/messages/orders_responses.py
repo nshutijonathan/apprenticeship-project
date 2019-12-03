@@ -17,7 +17,9 @@ ORDERS_SUCCESS_RESPONSES = {
     "supplier_order_marked_closed": "Supplier Order Details"
                                     " of id {} succefully closed.",
     "already_closed_order": "Order {} already closed",
-    "order_close_success": "Order {} closed successfully"
+    "order_close_success": "Order {} closed successfully",
+    "supplier_order_mark_status": "Supplier Order Details"
+                                       " of id {} status marked approved.",
 }
 
 ORDERS_ERROR_RESPONSES = {
@@ -54,4 +56,8 @@ ORDERS_ERROR_RESPONSES = {
     "invalid_supplier_email": "Please input a valid email",
     "invalid_supplier_phone": "Please input a valid phone",
     "invalid_rating": "The {} should be between 0 and {}",
+    "supplier_order_not_approved":
+    "Can't set status to approved, supplier order form not approved yet",
+    "no_supplier_order_id": "supplier order details of id {} doesnot exist",
+    "none_supplier_order_id": "supplier order details id not provided",
 }

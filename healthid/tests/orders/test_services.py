@@ -1,6 +1,5 @@
 from django.core import mail
 from django.test import TestCase
-
 from healthid.tests.factories import (OrderFactory, OrderDetailsFactory,
                                       SupplierOrderDetailsFactory,
                                       SuppliersFactory, OutletFactory,

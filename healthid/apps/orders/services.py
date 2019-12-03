@@ -1,10 +1,12 @@
 """Service objects that implement business logic."""
 
 from healthid.apps.orders.models import Order, SupplierOrderDetails
+from graphql import GraphQLError
 from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.app_utils.database import (get_model_object,
                                                SaveContextManager)
-from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
+from healthid.utils.messages.orders_responses import (
+    ORDERS_SUCCESS_RESPONSES, ORDERS_ERROR_RESPONSES)
 
 
 class SupplierOrderDetailsFetcher:
@@ -122,3 +124,43 @@ class SupplierOrderDetailsApprovalService:
         supplier_order.approved_by = user
         supplier_order.approved = True
         return supplier_order
+
+
+class SupplierOrderStatusChangeService:
+    """A service object that chnages supplier order details
+    status to approved.
+
+    Approve a supplier order detail indicating the approver.
+    Change the status of the supplier order detail to "Approved"
+
+    Args:
+        supplier_order_detail: a supplier order id
+
+    Returns:
+        (Obj:) supplier_order_detail
+    """
+
+    def __init__(self, supplier_order_details_id, user):
+        self.user = user
+        self.supplier_order_details_id = supplier_order_details_id
+
+    def change_status(self):
+        ids = list()
+        print(type(self.supplier_order_details_id))
+        if self.supplier_order_details_id[0] == "":
+            raise GraphQLError(ORDERS_ERROR_RESPONSES[
+            'none_supplier_order_id'])
+        results = SupplierOrderDetails.objects.all()
+        supplier_order = results.filter(id__in=self.supplier_order_details_id).first()
+        if supplier_order:
+            if supplier_order.approved is not True:
+                raise GraphQLError(ORDERS_ERROR_RESPONSES[
+                    'supplier_order_not_approved'].format('approved'))
+            supplier_order.status = 'approved'
+            supplier_order.approved_by = self.user
+            with SaveContextManager(supplier_order,model=SupplierOrderDetails):
+                return ORDERS_SUCCESS_RESPONSES[
+                    "supplier_order_mark_status"
+                    ].format(self.supplier_order_details_id)
+        raise GraphQLError(ORDERS_ERROR_RESPONSES[
+            'no_supplier_order_id'].format(self.supplier_order_details_id))
