@@ -12,5 +12,6 @@ BUSINESS_ERROR_RESPONSES = {
     "business_names_validation": "Both trading name and legal "
                                  "name are required!",
     "invalid_address1_error": "Address Line 1 is required!",
-    "blank_city_and_or_country": "Both city and country are required!"
+    "blank_city_and_or_country": "Both city and country are required!",
+    "no_business_error": "You don't have any business"
 }

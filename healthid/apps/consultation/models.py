@@ -110,7 +110,6 @@ class CustomerConsultation(BaseModel):
         if self.paid and not self.sale_record:
             raise ValidationError(
                 CONSULTATION_ERROR_RESPONSES["paid_status_error"])
-
         if self.booking_date.date() < timezone.now().date():
             raise ValidationError(
                 CONSULTATION_ERROR_RESPONSES['booking_date_error'])

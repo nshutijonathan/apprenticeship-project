@@ -190,6 +190,9 @@ class BaseConfiguration(TestCase):
             user=self.manager, outlet=self.outlet, is_active_outlet=True)
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin(self.master_admin)
+        self.business.user = self.master_admin_user
+        self.business.save()
+
         self.another_master_admin_user = self.register_master_admin(
             self.another_master_admin)
         self.second_master_admin_user = self.register_master_admin(
@@ -290,7 +293,6 @@ class BaseConfiguration(TestCase):
         user.is_active = True
         user.role = self.master_admin_role
         user.save()
-        self.business.user = user
         return user
 
     def user_login(self):

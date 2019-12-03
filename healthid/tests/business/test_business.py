@@ -61,13 +61,8 @@ class GraphQLTestCase(BaseConfiguration):
 
     def test_update_business(self):
         """Test that a business can be updated."""
-        business = self.query_with_token(
-            self.access_token_master, authentic_business)
         response = self.query_with_token(self.access_token_master,
-                                         update_business(business[
-                                                 'data']
-                                             ['createBusiness']
-                                             ['business']['id']))
+                                         update_business(self.business.id))
         self.assertIn('data', response)
 
     def test_update_business_you_are_not_assigned_to(self):

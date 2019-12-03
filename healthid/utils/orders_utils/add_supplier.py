@@ -3,10 +3,11 @@ from rest_framework.exceptions import NotFound, ValidationError
 from healthid.apps.orders.models.suppliers import PaymentTerms, Suppliers, Tier
 from healthid.apps.outlets.models import City, Country
 from healthid.apps.authentication.models import User
+from healthid.utils.app_utils.get_user_business import (
+    get_user_business
+)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
-from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_has_an_active_outlet
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
     validate_suppliers_csv_upload
@@ -20,7 +21,7 @@ class AddSupplier:
         :param io_string:
         :return total number csv rows uploaded into the DB:
         """
-
+        business = get_user_business(user)
         params = {'model': Suppliers, 'error_type': ValidationError}
         [supplier_count, row_count, error] = [0, 0, '']
         duplicated_suppliers = []
@@ -94,10 +95,9 @@ class AddSupplier:
                     user=user_id,
                 )
 
-                outlet = check_user_has_an_active_outlet(user)
                 with SaveContextManager(suppliers_instance,
                                         **params) as supplier:
-                    supplier.outlet.add(outlet)
+                    supplier.business = business
                     pass
                 supplier_count += 1
             else:

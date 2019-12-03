@@ -24,18 +24,14 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         super(SuppliersTestCase, self).setUp()
         self.factory = RequestFactory()
         self.base_path = os.path.dirname(os.path.realpath(__file__))
-        # Log in user and use fetched token for endpoint authorization
-        email = self.new_user["email"]
-        password = self.new_user["password"]
-        login_response = self.client.execute(loginUser_mutation.format(
-            email=email,
-            password=password)
-        )
-        token = login_response.data['loginUser']['restToken']
+        login_admin = self.client.execute(loginUser_mutation.format(
+            **self.login_master_admin
+        ))
 
-        self.auth_headers = {
+        master_admin_rest_token = login_admin.data['loginUser']['restToken']
+        self.admin_auth_headers = {
             'HTTP_AUTHORIZATION':
-            ' Token ' + str(token)
+            ' Token ' + str(master_admin_rest_token)
         }
         call_command('loaddata', 'healthid/fixtures/tests')
         self.view = HandleCSV.as_view()
@@ -53,7 +49,7 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         file = open(path, 'rb')
         request = self.factory.post(
             reverse('handle_csv', args=['suppliers']), {'file': file},
-            **self.auth_headers)
+            **self.admin_auth_headers)
         self.view
         return request
 
@@ -69,8 +65,9 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         assert (str(payment_term) == 'on credit')
 
     def test_duplicate_supplier_email(self):
-        self.query_with_token(self.access_token, supplier_mutation)
-        response = self.query_with_token(self.access_token, supplier_mutation)
+        self.query_with_token(self.access_token_master, supplier_mutation)
+        response = self.query_with_token(
+            self.access_token_master, supplier_mutation)
         self.assertIn('errors', response)
         self.assertIn(ERROR_RESPONSES[
                       "duplication_error"].format(
@@ -116,19 +113,22 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
             response['errors'][0]['message'])
 
     def test_create_supplier(self):
-        response = self.query_with_token(self.access_token, supplier_mutation)
+        response = self.query_with_token(
+            self.access_token_master, supplier_mutation)
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
 
     def test_invalid_email_supplier(self):
-        response = self.query_with_token(self.access_token, email_invalid)
+        response = self.query_with_token(
+            self.access_token_master, email_invalid)
         message = ORDERS_ERROR_RESPONSES["invalid_email"]
         self.assertEqual(
             message,
             response['errors'][0]['message'])
 
     def test_invalid_mobile_supplier(self):
-        response = self.query_with_token(self.access_token, mobile_invalid)
+        response = self.query_with_token(
+            self.access_token_master, mobile_invalid)
         msg_format = "mobile number (ex. +2346787646)"
         message = ERROR_RESPONSES['invalid_field_error'].format(msg_format)
         self.assertEqual(
@@ -200,7 +200,7 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
     def test_empty_suppliers_csv_export_succeeds(self):
         self.url = reverse('export_csv_file', kwargs={'param': 'suppliers'})
         response = self.client.get(self.url,
-                                   format='json', **self.auth_headers)
+                                   format='json', **self.admin_auth_headers)
         content_type = response._headers['content-type'][1]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content_type, 'text/csv')
@@ -208,6 +208,6 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
     def test_empty_suppliers_csv_export_failure(self):
         self.url = reverse('export_csv_file', kwargs={'param': 'supplier'})
         response = self.client.get(self.url,
-                                   format='json', **self.auth_headers)
+                                   format='json', **self.admin_auth_headers)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data, ERROR_RESPONSES['wrong_param'])

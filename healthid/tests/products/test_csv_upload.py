@@ -27,7 +27,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         )
         token = response.data['loginUser']['restToken']
 
-        self.query_with_token(self.access_token,
+        self.query_with_token(self.access_token_master,
                               supplier_mutation)
         self.auth_headers = {
             'HTTP_AUTHORIZATION':

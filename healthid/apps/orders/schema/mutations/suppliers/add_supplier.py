@@ -3,6 +3,9 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.schema.suppliers_query import (SuppliersType)
 from healthid.apps.orders.models import Suppliers
+from healthid.utils.app_utils.get_user_business import (
+    get_user_business
+)
 from healthid.utils.app_utils.database import (SaveContextManager)
 from healthid.utils.app_utils.validator import validator
 
@@ -57,10 +60,12 @@ class AddSupplier(graphene.Mutation):
     def mutate(cls, root, info, input=None):
         user = info.context.user
         supplier = Suppliers()
+        business = get_user_business(user)
         input['email'] = validator.validate_email(input.email)
         input['mobile_number'] = validator.validate_mobile(input.mobile_number)
         for (key, value) in input.items():
             setattr(supplier, key, value)
         supplier.user = user
+        supplier.business = business
         with SaveContextManager(supplier, model=Suppliers) as supplier:
             return cls(supplier=supplier)

@@ -17,9 +17,9 @@ class TestCreateProduct(BaseConfiguration):
     def setUp(self):
         super().setUp()
         call_command('loaddata', 'healthid/fixtures/product_test')
-        self.supplier1 = self.query_with_token(self.access_token,
+        self.supplier1 = self.query_with_token(self.access_token_master,
                                                supplier_mutation)
-        self.supplier2 = self.query_with_token(self.access_token,
+        self.supplier2 = self.query_with_token(self.access_token_master,
                                                backup_supplier)
         self.supplier_id = self.supplier1['data']['addSupplier']['supplier'][
             'id']
@@ -185,8 +185,8 @@ class TestCreateProduct(BaseConfiguration):
             decline_proposed_edits.format(
                 product_id=self.product.id, edit_request_id=edit_request_id))
         self.assertIn(PRODUCTS_SUCCESS_RESPONSES[
-                          "edit_request_decline"].format("Cold cap"),
-                      response['data']['declineProposedEdits']['message'])
+            "edit_request_decline"].format("Cold cap"),
+            response['data']['declineProposedEdits']['message'])
 
     def test_near_expire_product_query(self):
         response = self.query_with_token(

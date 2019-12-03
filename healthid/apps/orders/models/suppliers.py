@@ -1,6 +1,7 @@
 from django.db import models
 
 from healthid.apps.authentication.models import User
+from healthid.apps.business.models import Business
 from healthid.apps.outlets.models import City, Outlet, Country
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
@@ -42,6 +43,9 @@ class Suppliers(BaseModel):
         User, on_delete=models.CASCADE, related_name='supplier_creator')
     admin_comment = models.TextField(null=True)
     outlet = models.ManyToManyField(Outlet)
+    business = models.ForeignKey(
+        Business, on_delete=models.CASCADE,
+        related_name='supplier_business', null=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedEdit",
                                null=True, blank=True)

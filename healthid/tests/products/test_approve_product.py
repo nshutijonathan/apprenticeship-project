@@ -9,7 +9,7 @@ class ApproveProducts(BaseConfiguration):
     def setUp(self):
         super().setUp()
         call_command('loaddata', 'healthid/fixtures/product_csv')
-        self.supplier = self.query_with_token(self.access_token,
+        self.supplier = self.query_with_token(self.access_token_master,
                                               products.supplier_mutation)
         self.supplier_id = self.supplier['data']['addSupplier']['supplier'][
             'id']
