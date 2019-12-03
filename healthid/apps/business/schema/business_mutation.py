@@ -103,7 +103,7 @@ class UpdateBusiness(graphene.Mutation):
             if key is not None:
                 setattr(business, key, value)
         msg = BUSINESS_ERROR_RESPONSES["existing_business_error"]
-        with SaveContextManager(business, message=msg):
+        with SaveContextManager(business, model=Business, message=msg):
             success =\
                 [SUCCESS_RESPONSES[
                     "update_success"].format(business.legal_name)]
