@@ -132,6 +132,11 @@ class UpdateProduct(CreateEditProduct):
         user = info.context.user
         id = kwargs.get('id')
         product = get_model_object(Product, 'id', id)
+        roles = ("Master Admin", "Operations Admin")
+        if str(user.role) in roles and product.is_approved:
+            output = set_product_attributes(product, **kwargs)
+            message = SUCCESS_RESPONSES["update_success"].format("Product")
+            return UpdateProduct(product=output, message=message)
         if product.is_approved:
             proposed_edit = product
             proposed_edit.id = None
@@ -142,9 +147,9 @@ class UpdateProduct(CreateEditProduct):
             output.save()
             message = PRODUCTS_SUCCESS_RESPONSES["approval_pending"]
             return UpdateProduct(product=output, message=message)
-        output = set_product_attributes(product, **kwargs)
-        message = SUCCESS_RESPONSES["update_success"].format("Product")
-        return UpdateProduct(product=output, message=message)
+        message = PRODUCTS_ERROR_RESPONSES[
+            "product_not_approved"].format(product.product_name)
+        raise GraphQLError(message)
 
 
 class DeleteProduct(graphene.Mutation):
