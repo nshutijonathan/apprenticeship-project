@@ -65,6 +65,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'healthid.middlewares.ignore_login_token.IgnoreToken',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -147,7 +148,9 @@ USE_TZ = True
 # GraphQl settings
 GRAPHENE = {
     "SCHEMA": "healthid.schema.schema",
-    "MIDDLEWARE": ["graphql_jwt.middleware.JSONWebTokenMiddleware"],
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware"
+    ],
     "SCHEMA_INDENT": 4,
 }
 
