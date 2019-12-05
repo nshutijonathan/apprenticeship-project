@@ -86,7 +86,7 @@ class HandleCSV(APIView):
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
                 user = request.user
-                result = handle_csv(io_string=io_string)
+                result = handle_csv(io_string=io_string, user=user)
                 message = {
                     "message": ("Products successfully added"
                                 if result['product_count']

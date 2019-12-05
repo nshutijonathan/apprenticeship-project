@@ -2,6 +2,7 @@ import csv
 from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
+from healthid.apps.outlets.models import OutletUser
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
@@ -14,10 +15,12 @@ from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.validate_products_csv_upload import\
     validate_products_csv_upload
+from healthid.utils.product_utils.get_product_category import\
+    get_product_category
 
 
 class HandleCsvValidations(object):
-    def handle_csv_upload(self, io_string):
+    def handle_csv_upload(self, io_string, user):
         """
         Parses products information from an appropriately formatted CSV file
         and save them.
@@ -30,47 +33,55 @@ class HandleCsvValidations(object):
             int: the number of saved products
         """
         params = {'model': Product, 'error_type': ValidationError}
-        [product_count, duplicated_products] = [0, []]
-
+        [product_count, row_count, duplicated_products] = [0, 0, []]
+        user_outlets = OutletUser.objects.filter(user_id=user.id).values()
         products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
 
         for row in products:
+            row_count += 1
+            category = row.get('category') or row.get('product category')
+            product_categories = ProductCategory.objects.filter(
+                name__iexact=category).values()
+
             product_name = row.get('name') or row.get('product name')
-            product_category = get_model_object(ProductCategory,
-                                                'name__iexact',
-                                                row.get('category') or row.get(
-                                                    'product category'),
-                                                error_type=NotFound)
+
+            product_category = get_product_category(
+                user_outlets, product_categories, category, row_count)
+
             supplier = get_model_object(Suppliers,
                                         'email__iexact',
                                         row.get('preferred supplier'),
                                         error_type=NotFound,
                                         label='email')
+
             backup_supplier = get_model_object(Suppliers,
                                                'email__iexact',
                                                row.get('backup supplier'),
                                                error_type=NotFound,
                                                label='email')
+
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
                                                row.get('dispensing size') or
                                                row.get('measurement unit'),
                                                error_type=NotFound,
                                                label='Dispensing size')
+
             vat_status = row.get('vat status').lower() == 'vat' or False\
                 if row.get('vat status')\
-                else product_category.is_vat_applicable
+                else product_category.get('is_vat_applicable')
 
             loyalty_weight = row.get('loyalty weight')\
                 if str(row.get('loyalty weight')).isdigit()\
-                else product_category.loyalty_weight
+                else product_category.get('loyalty_weight')
+
             image = row.get('image') or row.get('product image')
-            if product_name \
-                    not in product_names and product_category.outlet_id:
+
+            if product_name.lower() not in map(str.lower, product_names):
                 product_instance = Product(
-                    product_category_id=product_category.id,
-                    outlet_id=product_category.outlet_id,
+                    product_category_id=product_category.get('id'),
+                    outlet_id=product_category.get('outlet_id'),
                     product_name=product_name,
                     dispensing_size_id=dispensing_size.id,
                     description=row.get('description') or '',

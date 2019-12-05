@@ -175,7 +175,7 @@ class BaseConfiguration(TestCase):
         self.timezone.save()
         self.outlet = self.create_outlet(self.outlet)
         self.dispensing_size = self.create_dispensing_size()
-        self.product_category = self.create_product_category()
+        self.product_category = self.create_product_category(self.outlet)
         self.product = self.create_product()
         self.batch_info = self.create_batch_info()
         self.sales_prompt = self.create_sales_prompt()
@@ -376,9 +376,9 @@ class BaseConfiguration(TestCase):
     def create_dispensing_size(self):
         return DispensingSize.objects.create(name='kilogram')
 
-    def create_product_category(self):
-        return ProductCategory.objects.create(name='Drinks',
-                                              outlet=self.outlet)
+    def create_product_category(self, outlet):
+        return ProductCategory.objects.create(name='Prescription',
+                                              outlet=outlet)
 
     def create_product(self, product_name='Pizza'):
         return Product.objects.create(

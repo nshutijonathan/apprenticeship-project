@@ -181,14 +181,6 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.assertIn(ERROR_RESPONSES["csv_many_field"],
                       str(response.data['error']))
 
-    def test_invalid_cash_on_delivery(self):
-        path = os.path.join(self.base_path, 'invalid_cash_on_delivery.csv')
-        request = self.handle_csv_request(path)
-        response = self.view(request, param='suppliers')
-        self.assertEqual(response.status_code, 400)
-        self.assertIn(ERROR_RESPONSES["payment_terms_cash_on_deliver"].
-                      format(1), str(response.data['error']))
-
     def test_invalid_on_credit(self):
         path = os.path.join(self.base_path, 'invalid_on_credit.csv')
         request = self.handle_csv_request(path)
@@ -196,6 +188,14 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn(ERROR_RESPONSES["payment_terms_on_credit"].format(1),
                       str(response.data['error']))
+
+    def test_invalid_cash_on_delivery(self):
+        path = os.path.join(self.base_path, 'invalid_cash_on_delivery.csv')
+        request = self.handle_csv_request(path)
+        response = self.view(request, param='suppliers')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ERROR_RESPONSES["payment_terms_cash_on_deliver"].
+                      format(1), str(response.data['error']))
 
     def test_empty_suppliers_csv_export_succeeds(self):
         self.url = reverse('export_csv_file', kwargs={'param': 'suppliers'})

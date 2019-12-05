@@ -2,7 +2,7 @@ from healthid.tests.products.test_create_product import TestCreateProduct
 from healthid.tests.test_fixtures.products import (
     product_search_query,
     generalised_product_search_query
-    )
+)
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
@@ -16,7 +16,7 @@ class TestFilterProducts(TestCreateProduct):
         self.assertIn('errors', response)
         self.assertEquals(response['errors'][0]['message'],
                           PRODUCTS_ERROR_RESPONSES[
-                                   "invalid_search_key"])
+            "invalid_search_key"])
 
     def test_return_search_result(self):
         "method that tests correct search result is returned"
@@ -36,7 +36,7 @@ class TestFilterProducts(TestCreateProduct):
         self.assertIn('errors', response)
         self.assertEquals(response['errors'][0]['message'],
                           PRODUCTS_ERROR_RESPONSES[
-                                   "inexistent_product_query"])
+            "inexistent_product_query"])
 
     def test_general_productname_search(self):
         "tests the return of an existing product using the "
@@ -81,11 +81,11 @@ class TestFilterProducts(TestCreateProduct):
     def test_general_product_search_by_category(self):
         "tests the return of existing products using the "
         "generalised product search query and product category"
-        search_term = "Drinks"
+        search_term = "Prescription"
         response = self.query_with_token(
             self.access_token, generalised_product_search_query.format(
                 search_term=search_term))
-        self.assertEquals(len(response['data']['products']), 3)
+        self.assertEquals(len(response['data']['products']), 4)
 
     def test_general_product_search_by_supplier(self):
         "tests the return of existing products using the "
