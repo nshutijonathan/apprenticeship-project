@@ -145,22 +145,23 @@ class SupplierOrderStatusChangeService:
         self.supplier_order_details_id = supplier_order_details_id
 
     def change_status(self):
-        ids = list()
         print(type(self.supplier_order_details_id))
         if self.supplier_order_details_id[0] == "":
             raise GraphQLError(ORDERS_ERROR_RESPONSES[
-            'none_supplier_order_id'])
+                'none_supplier_order_id'])
         results = SupplierOrderDetails.objects.all()
-        supplier_order = results.filter(id__in=self.supplier_order_details_id).first()
+        supplier_order = results.filter(
+            id__in=self.supplier_order_details_id).first()
         if supplier_order:
             if supplier_order.approved is not True:
                 raise GraphQLError(ORDERS_ERROR_RESPONSES[
                     'supplier_order_not_approved'].format('approved'))
             supplier_order.status = 'approved'
             supplier_order.approved_by = self.user
-            with SaveContextManager(supplier_order,model=SupplierOrderDetails):
+            with SaveContextManager(supplier_order,
+                                    model=SupplierOrderDetails):
                 return ORDERS_SUCCESS_RESPONSES[
                     "supplier_order_mark_status"
-                    ].format(self.supplier_order_details_id)
+                ].format(self.supplier_order_details_id)
         raise GraphQLError(ORDERS_ERROR_RESPONSES[
             'no_supplier_order_id'].format(self.supplier_order_details_id))

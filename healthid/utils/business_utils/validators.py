@@ -22,7 +22,7 @@ class ValidateBusiness:
                                "required_field"].format("Phone number"))
         elif not business_fields['city'] and business_fields['country']:
             raise GraphQLError(BUSINESS_ERROR_RESPONSES[
-                                "blank_city_and_or_country"])
+                "blank_city_and_or_country"])
         elif not business_fields['address_line_1']:
             raise GraphQLError(BUSINESS_ERROR_RESPONSES[
                                "invalid_address1_error"])

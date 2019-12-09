@@ -2,7 +2,7 @@ from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.orders import (
     order_details_status_change, approve_supplier_order)
 from healthid.utils.messages.orders_responses import (
-    ORDERS_ERROR_RESPONSES, ORDERS_SUCCESS_RESPONSES)
+    ORDERS_SUCCESS_RESPONSES)
 from healthid.apps.orders.models.orders import SupplierOrderDetails
 
 

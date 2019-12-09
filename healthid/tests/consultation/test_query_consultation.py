@@ -1,7 +1,6 @@
 from faker import Faker
 from datetime import date, timedelta
 from healthid.tests.base_config import BaseConfiguration
-from datetime import timedelta, date
 from healthid.tests.test_fixtures.consultations import (
     retrieve_consultations)
 from healthid.tests.test_fixtures.consultations import (
@@ -93,7 +92,7 @@ class TestQueryConsultation(BaseConfiguration):
                 self.customer_consultation.customer.id,
                 self.consultation_item.id,
                 self.outlet.id,
-                date.today() + timedelta(days = 3)
+                date.today() + timedelta(days=3)
             )
         )
         self.assertEqual(
@@ -106,7 +105,7 @@ class TestQueryConsultation(BaseConfiguration):
             self.access_token,
             update_consultation.format(
                 self.customer_consultation.id,
-                date.today() + timedelta(days = 5)
+                date.today() + timedelta(days=5)
             )
         )
         self.assertIsNotNone(response)

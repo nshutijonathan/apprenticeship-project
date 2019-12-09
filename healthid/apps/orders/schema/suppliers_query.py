@@ -85,7 +85,8 @@ class Query(graphene.AbstractType):
     """
 
     all_suppliers = graphene.List(SuppliersType, page_count=graphene.Int(),
-                                  page_number=graphene.Int())
+                                  page_number=graphene.Int(),
+                                  is_approved=graphene.Boolean())
     single_supplier = graphene.Field(SuppliersType,
                                      name=graphene.String(),
                                      id=graphene.String())
@@ -110,9 +111,11 @@ class Query(graphene.AbstractType):
     def resolve_all_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        user_id = info.context.user.id
+        is_approved = kwargs.get('is_approved', False)
+        user = info.context.user
         suppliers_set = Suppliers.objects.filter(
-            user_id=user_id).order_by('id')
+            business=user.business_user, is_approved=is_approved)\
+            .order_by('id')
         if page_count or page_number:
             suppliers = pagination_query(
                 suppliers_set, page_count, page_number)
