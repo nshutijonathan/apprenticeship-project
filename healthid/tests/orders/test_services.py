@@ -2,6 +2,7 @@ from django.core import mail
 from django.test import TestCase
 from healthid.tests.factories import (OrderFactory, OrderDetailsFactory,
                                       SupplierOrderDetailsFactory,
+                                      SuppliersContactsFactory,
                                       SuppliersFactory, OutletFactory,
                                       OutletKindFactory, CityFactory,
                                       CountryFactory, BusinessFactory,
@@ -33,6 +34,8 @@ class TestSupplierOrders(TestCase):
         self.order_details2 = OrderDetailsFactory(order=self.order1)
 
         self.supplier = SuppliersFactory(user=self.user2)
+        self.supplier_contacts = SuppliersContactsFactory(
+            supplier=self.supplier)
 
         self.supplier_order1 = SupplierOrderDetailsFactory(
             order=self.order1, supplier=self.supplier)

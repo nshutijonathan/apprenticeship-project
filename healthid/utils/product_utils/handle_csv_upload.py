@@ -3,7 +3,7 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.outlets.models import OutletUser
-from healthid.apps.orders.models.suppliers import Suppliers
+from healthid.apps.orders.models.suppliers import Suppliers, SuppliersContacts
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -49,13 +49,13 @@ class HandleCsvValidations(object):
             product_category = get_product_category(
                 user_outlets, product_categories, category, row_count)
 
-            supplier = get_model_object(Suppliers,
+            supplier = get_model_object(SuppliersContacts,
                                         'email__iexact',
                                         row.get('preferred supplier'),
                                         error_type=NotFound,
                                         label='email')
 
-            backup_supplier = get_model_object(Suppliers,
+            backup_supplier = get_model_object(SuppliersContacts,
                                                'email__iexact',
                                                row.get('backup supplier'),
                                                error_type=NotFound,
@@ -88,8 +88,8 @@ class HandleCsvValidations(object):
                     brand=row.get('brand') or '',
                     manufacturer=row.get('manufacturer') or '',
                     vat_status=vat_status,
-                    preferred_supplier_id=supplier.id,
-                    backup_supplier_id=backup_supplier.id,
+                    preferred_supplier_id=supplier.supplier_id,
+                    backup_supplier_id=backup_supplier.supplier_id,
                     tags=row.get('tags') or '',
                     image=image or '',
                     loyalty_weight=loyalty_weight)

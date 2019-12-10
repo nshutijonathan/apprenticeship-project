@@ -28,6 +28,8 @@ ORDERS_ERROR_RESPONSES = {
                                        "did not initiate this order",
     "supplier_edit_proposal_validation_error": "You can only propose an edit "
                                                "to an approved supplier!",
+    "supplier_edit_validation_error": "You can only edit an "
+                                      "approved supplier!",
     "edit_proposal_validation_error": "You can't edit an edit request "
                                       "you did not propose!",
     "supplier_note_length_error": "Suppliers note must be two or more words",

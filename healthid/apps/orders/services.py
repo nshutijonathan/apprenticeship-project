@@ -1,7 +1,8 @@
 """Service objects that implement business logic."""
+from graphql.error import GraphQLError
 
-from healthid.apps.orders.models import Order, SupplierOrderDetails
-from graphql import GraphQLError
+from healthid.apps.orders.models import \
+    Order, SupplierOrderDetails, SuppliersContacts
 from healthid.utils.app_utils.send_mail import SendMail
 from healthid.utils.app_utils.database import (get_model_object,
                                                SaveContextManager)
@@ -54,7 +55,9 @@ class SupplierOrderEmailSender:
     def send(self):
         detail_ids = list()
         for detail in self.supplier_order_details:
-            email = detail.supplier.email
+            supplier = SuppliersContacts.objects.filter(
+                supplier_id=detail.supplier.id).first()
+            email = supplier.email if supplier else None
             self._send_single_email(email, detail)
             detail.status = detail.OPEN
             detail_ids.append(detail.id)

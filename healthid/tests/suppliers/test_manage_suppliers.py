@@ -48,6 +48,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
                 supplier_id=self.supplier_id
             )
         )
+
         self.request_id = \
             self.request['data']['editSupplier']['editRequest']['id']
 

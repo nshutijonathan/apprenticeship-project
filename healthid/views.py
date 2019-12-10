@@ -11,7 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from healthid.apps.products.models import Product, BatchInfo
-from healthid.apps.orders.models.suppliers import Suppliers
+from healthid.apps.orders.models.suppliers import \
+    (Suppliers, SuppliersContacts, SuppliersMeta)
 from healthid.apps.profiles.models import Profile
 from healthid.apps.products.serializers import ProductsSerializer
 from healthid.utils.orders_utils.add_supplier import AddSupplier
@@ -57,6 +58,7 @@ class HandleCSV(APIView):
         handle_customer_csv_upload =\
             handle_customer_csv_object.handle_customer_csv_upload
         csv_file = request.FILES['file']
+
         if not csv_file.name.endswith('.csv'):
             message = {"error": "Please upload a csv file"}
             return Response(message, status.HTTP_400_BAD_REQUEST)
@@ -65,9 +67,11 @@ class HandleCSV(APIView):
         io_string = io.StringIO(data_set)
         try:
             if param == 'suppliers':
+                on_duplication = request.POST.get('on_duplication')
                 user = request.user
-                res = handle_supplier_csv(
-                    user=user, io_string=io_string)
+                res = handle_supplier_csv(user=user,
+                                          io_string=io_string,
+                                          on_duplication=on_duplication)
                 added_suppliers = res['supplier_count']
                 message = {
                     "success": "Successfully added supplier(s)",
@@ -172,25 +176,27 @@ class EmptyCsvFileExport(APIView):
             response = generate_csv_response(
                 HttpResponse,
                 'sample_product.csv',
-                Product,
+                [Product],
                 PRODUCT_INCLUDE_CSV_FIELDS)
         elif param == 'customers':
             response = generate_csv_response(
                 HttpResponse,
                 'sample_customers.csv',
-                Profile,
+                [Profile],
                 CUSTOMERS_INCLUDE_CSV_FIELDS)
         elif param == 'batch_info':
             response = generate_csv_response(HttpResponse,
                                              'sample_batch_info.csv',
-                                             BatchInfo,
+                                             [BatchInfo],
                                              BATCH_INFO_CSV_FIELDS,
                                              name='batch')
         elif param == 'suppliers':
             response = generate_csv_response(
                 HttpResponse,
                 'sample_suppliers.csv',
-                Suppliers,
+                [Suppliers,
+                 SuppliersContacts,
+                 SuppliersMeta],
                 SUPPLIERS_INCLUDE_CSV_FIELDS)
         else:
             response = Response(ERROR_RESPONSES["wrong_param"],

@@ -17,19 +17,7 @@ class EditProposal(graphene.Mutation):
     args:
         id(str): id of the supplier to be edited
         name(str): supplier name
-        email(str): supplier contact email
-        mobile_number(str): contact number
-        address_line_1(str): first address line
-        address_line_2(str): second address line
-        lga(str): name of the supplier's local goverment area
-        city_id(int): id of the supplier city location
         tier_id(int): id of the supplier's category
-        country_id(int): supplier country
-        credit_days(int): average number of days expected to settle outstanding
-                          payments to the supplier
-        logo(str): image URL for the supplier logo
-        payment_terms_id(int): id of the preferred payment method
-        commentary(str): additional comments
 
     returns:
         edit_request(obj): 'Suppliers' model object detailing the edit request
@@ -39,18 +27,7 @@ class EditProposal(graphene.Mutation):
     class Arguments:
         id = graphene.String(required=True)
         name = graphene.String()
-        email = graphene.String()
-        mobile_number = graphene.String()
-        address_line_1 = graphene.String()
-        address_line_2 = graphene.String()
-        lga = graphene.String()
-        city_id = graphene.Int()
         tier_id = graphene.Int()
-        country_id = graphene.Int()
-        credit_days = graphene.Int()
-        logo = graphene.String()
-        payment_terms_id = graphene.Int()
-        commentary = graphene.String()
 
     edit_request = graphene.Field(SuppliersType)
     message = graphene.Field(graphene.String)

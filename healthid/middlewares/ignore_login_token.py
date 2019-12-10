@@ -13,5 +13,5 @@ class IgnoreToken(MiddlewareMixin):
                         query += line
                 if 'mutation' in query and 'loginUser' in query:
                     del request.META['HTTP_AUTHORIZATION']
-        except:
+        except Exception:
             pass

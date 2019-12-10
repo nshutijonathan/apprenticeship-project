@@ -28,34 +28,48 @@ create_product = '''
 
 supplier_mutation = '''
         mutation{
-            addSupplier(input:{
-                name: "shadik.",
-                email: "email@ntale.com",
-                mobileNumber:"+256702260027",
-                addressLine1:"address",
-                addressLine2:"addressline2",
-                lga: "lga",
-                tierId: 1,
-                cityId: 1
-                countryId:1,
-                creditDays:4,
-                logo:"logo",
-                paymentTermsId: 1,
-                commentary: "no comment"
-            }){
-                supplier{
-                supplierId
-                id
-                user{
-                    email
-                }
-                city{
-                    name
-                }
-                supplierId
-                }
+          addSupplier(
+            input:{
+              name: "supplier.",
+              tierId: 1
+            },
+            contactsInput: {
+              email: "email@supplier.com",
+              mobileNumber:"+256702260027",
+              addressLine1:"address",
+              addressLine2:"addressline2",
+              lga: "lga",
+              cityId: 1
+              countryId:1,
+            },
+            metaInput: {
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment"
             }
+          ){
+            supplier{
+              id
+              name
+              tier { name }
+              supplierContacts{
+                email
+                mobileNumber
+                addressLine1
+                city{ name }
+                country{ name }
+              }
+              supplierMeta{
+                displayName
+                creditDays
+                logo
+                paymentTerms
+                commentary
+              }
             }
+          }
+        }
 '''
 create_proposed_product = '''
 mutation {{
@@ -87,31 +101,48 @@ mutation {{
 '''
 backup_supplier = '''
         mutation{
-            addSupplier(input:{
-                name: "shadik.",
-                email: "shadik@email.com",
-                mobileNumber:"+256702260027",
-                addressLine1:"address",
-                addressLine2:"addressline2",
-                lga: "lga",
-                tierId: 1,
-                cityId: 1
-                countryId:1,
-                creditDays:4,
-                logo:"logo",
-                paymentTermsId: 1,
-                commentary: "no comment"
-            }){
-                supplier{
-                supplierId
-                id
-                city{
-                    name
-                }
-                supplierId
-                }
+          addSupplier(
+            input:{
+              name: "backup supplier",
+              tierId: 1
+            },
+            contactsInput: {
+              email: "email@backupsupplier.com",
+              mobileNumber:"+256702260027",
+              addressLine1:"address",
+              addressLine2:"addressline2",
+              lga: "lga",
+              cityId: 1
+              countryId:1,
+            },
+            metaInput: {
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment"
             }
+          ){
+            supplier{
+              id
+              name
+              tier { name }
+              supplierContacts{
+                email
+                mobileNumber
+                addressLine1
+                city{ name }
+                country{ name }
+              }
+              supplierMeta{
+                displayName
+                creditDays
+                logo
+                paymentTerms
+                commentary
+              }
             }
+          }
+        }
 '''
 
 approved_product_query = '''

@@ -6,8 +6,9 @@ from django.test import Client, TestCase
 
 from healthid.apps.authentication.models import Role, User
 from healthid.apps.events.models import Event, EventType
-from healthid.apps.orders.models import (Order, PaymentTerms, SupplierNote,
-                                         Suppliers, Tier)
+from healthid.apps.orders.models import (Order, SupplierNote,
+                                         Suppliers, SuppliersContacts,
+                                         SuppliersMeta, Tier)
 from healthid.apps.outlets.models import (
     City, Country, Outlet, OutletKind, OutletUser)
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
@@ -170,10 +171,13 @@ class BaseConfiguration(TestCase):
         self.business = create_business()
         self.outlet_kind = self.create_outlet_kind()
         self.supplier = self.create_suppliers(self.user)
+        self.supplier_contacts = self.create_suppliers_contacts(self.supplier)
+        self.supplier_meta = self.create_suppliers_meta(self.supplier)
         self.timezone = Timezone(
             id="285461788", name="Africa/Lagos", time_zone="(GMT+01:00) Lagos")
         self.timezone.save()
         self.outlet = self.create_outlet(self.outlet)
+        self.user_outlet = self.create_user_outlet(self.user, self.outlet)
         self.dispensing_size = self.create_dispensing_size()
         self.product_category = self.create_product_category(self.outlet)
         self.product = self.create_product()
@@ -327,6 +331,10 @@ class BaseConfiguration(TestCase):
             kind_id=info["outlet_kindid"],
             business_id=self.business.id)
 
+    def create_user_outlet(self, user, outlet):
+        return OutletUser.objects.create(
+            user=user, outlet=outlet, is_active_outlet=True)
+
     def create_order(self, closed=True):
         """Return an instance of Order.
 
@@ -353,21 +361,34 @@ class BaseConfiguration(TestCase):
         return Role.objects.create(name=role_name)
 
     def create_suppliers(self, user):
-        payment_terms = \
-            PaymentTerms.objects.create(name="Mobile Banking")
-        city = City.objects.get(name="Chiclayo")
-        country = Country.objects.get(name="Peru")
         tier = Tier.objects.create(name="exporter")
 
         return Suppliers.objects.create(
             name='Sport Direct',
+            tier=tier,
+            user=user)
+
+    def create_suppliers_contacts(self, supplier):
+        city = City.objects.get(name="Chiclayo")
+        country = Country.objects.get(name="Peru")
+
+        return SuppliersContacts.objects.create(
             email='sportdirect@mail.com',
             mobile_number='+254745345342',
+            address_line_1="address line 1",
+            address_line_2="address line 2",
             city=city,
             country=country,
-            tier=tier,
-            payment_terms=payment_terms,
-            user=user)
+            supplier=supplier)
+
+    def create_suppliers_meta(self, supplier):
+
+        return SuppliersMeta.objects.create(
+            credit_days=10,
+            logo='image.png',
+            payment_terms='ON_CREDIT',
+            commentary='good supplier',
+            supplier=supplier)
 
     def create_dispensing_size(self):
         return DispensingSize.objects.create(name='kilogram')

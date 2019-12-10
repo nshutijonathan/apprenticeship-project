@@ -34,6 +34,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             ' Token ' + str(token)
         }
         call_command('loaddata', 'healthid/fixtures/product_csv')
+        call_command('loaddata', 'healthid/fixtures/orders_products')
 
     def test_csv_file_upload_products(self):
         factory = RequestFactory()
@@ -45,6 +46,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
+        print('=====>{}'.format(response.data))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('message', response.data)
         self.assertIn('noOfProductsAdded', response.data)
@@ -93,7 +95,6 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='batch_info')
-
         self.assertEqual(response.status_code, 201)
         self.assertEqual(
             response.data['success'],
@@ -132,7 +133,6 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='batch_info')
-
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data[0],
                          PRODUCTS_ERROR_RESPONSES["batch_bool_error"]
@@ -151,7 +151,6 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='batch_info')
-
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data[0],
                          PRODUCTS_ERROR_RESPONSES["batch_expiry_error"].format

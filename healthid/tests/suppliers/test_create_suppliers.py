@@ -64,16 +64,6 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         assert (str(tier) == 'manufacturer')
         assert (str(payment_term) == 'on credit')
 
-    def test_duplicate_supplier_email(self):
-        self.query_with_token(self.access_token_master, supplier_mutation)
-        response = self.query_with_token(
-            self.access_token_master, supplier_mutation)
-        self.assertIn('errors', response)
-        self.assertIn(ERROR_RESPONSES[
-                      "duplication_error"].format(
-            "Suppliers with email email@ntale.com"),
-            response['errors'][0]['message'])
-
     def test_suppliers_query(self):
         response = self.query_with_token(self.access_token_master,
                                          suppliers_query)
@@ -144,13 +134,8 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
         # test dupplication
         request = self.handle_csv_request(path)
         response = self.view(request, param='suppliers')
-        expectedDupplications = [
-            ERROR_RESPONSES['duplication_error'].format('email@ntale.com'),
-            ERROR_RESPONSES['duplication_error'].format('email@shadik.com')
-        ]  # in test.csv file
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data['duplicatedSuppliers'], expectedDupplications)
+        self.assertIn('duplicatedSuppliers', response.data)
 
     def test_invalid_csv_data(self):
         path = os.path.join(self.base_path, 'invalid_csv.csv')

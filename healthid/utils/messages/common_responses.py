@@ -33,8 +33,10 @@ ERROR_RESPONSES = {
     "csv_many_field": "csv file has more than the required column(s)",
     "country_city_mismatch": "Country {} doesnot have City {}",
     "csv_field_error": "Fields marked with * are mandatory",
+    "payment_terms": "'{}' is not a valid payment term. "
+                     "Only ON_CREDIT or CASH_ON_DELIVERY are allowed",
     "payment_terms_cash_on_deliver": "Cash on delivery terms do not need "
-    "credit days on row {}",
+                                     "credit days",
     "payment_terms_on_credit": "On credit payment terms requires "
-    "at least 1 credit day or more on row {}"
+                                 "at least 1 credit day or more"
 }

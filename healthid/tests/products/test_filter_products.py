@@ -90,11 +90,11 @@ class TestFilterProducts(TestCreateProduct):
     def test_general_product_search_by_supplier(self):
         "tests the return of existing products using the "
         "generalised product search query and product's preferred supplier"
-        search_term = "shadik"
+        search_term = "p"
         response = self.query_with_token(
             self.access_token, generalised_product_search_query.format(
                 search_term=search_term))
-        self.assertEquals(len(response['data']['products']), 3)
+        self.assertEquals(len(response['data']['products']), 4)
 
     def test_general_empty_search(self):
         "tests the result of an invalid search item"

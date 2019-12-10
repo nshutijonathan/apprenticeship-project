@@ -1,6 +1,9 @@
 from rest_framework.exceptions import NotFound, ValidationError
 
-from healthid.apps.orders.models.suppliers import PaymentTerms, Suppliers, Tier
+from healthid.apps.orders.models.suppliers import (
+    Suppliers,
+    SuppliersContacts,
+    SuppliersMeta, Tier)
 from healthid.apps.outlets.models import City, Country
 from healthid.apps.authentication.models import User
 from healthid.utils.app_utils.get_user_business import (
@@ -11,27 +14,36 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
     validate_suppliers_csv_upload
+from healthid.utils.orders_utils.get_on_duplication_actions import\
+    get_on_duplication_actions
 
 
 class AddSupplier:
-    def handle_csv_upload(self, user, io_string):
+    def handle_csv_upload(self, user, io_string, on_duplication):
         """
         This CSV method loops through the csv file populating the DB with
         the information in the csv rows through the SaveContextManager,
         :param io_string:
         :return total number csv rows uploaded into the DB:
         """
+        on_duplication_actions = get_on_duplication_actions(on_duplication)
         business = get_user_business(user)
         params = {'model': Suppliers, 'error_type': ValidationError}
         [supplier_count, row_count, error] = [0, 0, '']
         duplicated_suppliers = []
         suppliers = validate_suppliers_csv_upload(io_string)
+        supplier_names = Suppliers.objects.values_list('name', flat=True)
+        supplier_emails = SuppliersContacts.objects.values_list(
+            'email', flat=True)
 
         for row in suppliers:
             row_count += 1
-            if row.get('email') not in (
-                    Suppliers.objects.values_list('email', flat=True)):
+            name = row.get('name')
+            does_supplier_exist = name in supplier_names
+            on_duplicate_action = on_duplication_actions.get(
+                name.lower()) or ''
 
+            if not does_supplier_exist or on_duplicate_action.lower() == 'new':
                 city = get_model_object(City,
                                         'name__iexact',
                                         row.get('city'),
@@ -50,59 +62,82 @@ class AddSupplier:
                 user_id = get_model_object(User,
                                            'id',
                                            user.pk,
+
                                            error_type=NotFound)
+                try:
+                    credit_days = int(row.get('credit days')) or 0
+                except Exception:
+                    credit_days = 0
 
-                credit_days = int(row.get('credit days') or 0)
-                payment_terms = get_model_object(PaymentTerms,
-                                                 'name__iexact',
-                                                 row.get('payment terms'),
-                                                 error_type=NotFound,
-                                                 label='name')
+                # check if email is already used
+                if row.get('email') in supplier_emails and \
+                        on_duplicate_action.lower() != 'new':
+                    error = "supplier with email "
+                    error += ERROR_RESPONSES['duplication_error'].format(
+                        row.get('email'))
 
-                # check payment_terms
+                # validate payment terms
                 if int(credit_days) > 0 and \
-                        row.get('payment terms').lower() == 'cash on delivery':
-                    error = ERROR_RESPONSES['payment_terms_cash_on_deliver'].\
-                        format(row_count)
+                        row.get('payment terms') == 'CASH_ON_DELIVERY':
+                    error = ERROR_RESPONSES['payment_terms_cash_on_deliver']
 
-                elif int(credit_days) == 0 and \
-                        row.get('payment terms').lower() == 'on credit':
-                    error = ERROR_RESPONSES['payment_terms_on_credit'].format(
-                        row_count)
+                elif int(credit_days) <= 0 and \
+                        row.get('payment terms') == 'ON_CREDIT':
+                    error = ERROR_RESPONSES['payment_terms_on_credit']
 
                 if error:
-                    raise ValidationError({'error': error})
-
-                if city.country.name != country.name:
                     raise ValidationError(
-                        ERROR_RESPONSES['country_city_mismatch']
-                        .format(country.name, city.name))
-
+                        {'error': f'{error} on row {row_count}'})
                 suppliers_instance = Suppliers(
-                    name=row.get('name'),
-                    email=row.get('email'),
-                    mobile_number=row.get('mobile number'),
-                    country=country,
-                    address_line_1=row.get('address line 1'),
-                    address_line_2=row.get('address line 2'),
-                    lga=row.get('lga'),
-                    city=city,
+                    name=name,
                     tier=tier,
-                    logo=row.get('logo'),
-                    commentary=row.get('commentary'),
-                    payment_terms=payment_terms,
-                    credit_days=credit_days,
                     user=user_id,
+                    business=business
                 )
 
                 with SaveContextManager(suppliers_instance,
                                         **params) as supplier:
                     supplier.business = business
+
+                    suppliers_contacts_instance = \
+                        SuppliersContacts(
+                            email=row.get('email'),
+                            mobile_number=row.get('mobile number'),
+                            country=country,
+                            address_line_1=row.get('address line 1'),
+                            address_line_2=row.get('address line 2'),
+                            lga=row.get('lga'),
+                            city=city,
+                            supplier_id=supplier.id
+                        )
+
+                    suppliers_meta_instance = SuppliersMeta(
+                        display_name=f"{name} ({supplier.supplier_id})",
+                        logo=row.get('logo'),
+                        commentary=row.get('commentary'),
+                        payment_terms=row.get('payment terms'),
+                        credit_days=credit_days,
+                        supplier_id=supplier.id
+                    )
+                    with SaveContextManager(suppliers_contacts_instance,
+                                            model=SuppliersContacts):
+                        pass
+                    with SaveContextManager(
+                            suppliers_meta_instance, model=SuppliersMeta):
+                        pass
                     pass
                 supplier_count += 1
             else:
-                duplicated_suppliers.append(
-                    ERROR_RESPONSES['duplication_error'].format(
-                        row.get('email')))
+                duplicated_suppliers.append({
+                    row.get('name'): {
+                        'row': row_count,
+                        'message': ERROR_RESPONSES['duplication_error'].format(
+                            row.get('name')),
+                        'data': row,
+                        'conflicts': Suppliers.objects.filter(
+                            name__iexact=row.get('name')).values(
+                                'name', 'id', 'supplier_id')
+                    }
+                })
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}

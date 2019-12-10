@@ -18,6 +18,7 @@ class Validator:
         field(str): field
         value(str): value
     """
+
     def validate_email(self, email):
         self.email = email.strip()
 
@@ -26,10 +27,13 @@ class Validator:
             raise GraphQLError(ORDERS_ERROR_RESPONSES['invalid_email'])
         return self.email
 
-    def special_character_validation(self, string):
+    def special_character_validation(self, string, field_name=None):
         self.string = re.search(r'[^a-zA-Z0-9.,\-\s]+', string)
         if self.string is not None:
-            raise GraphQLError(VALIDATOR_RESPONSES['character-not-allowed'])
+            field = f' in {field_name}' if field_name else ''
+            raise GraphQLError(
+                VALIDATOR_RESPONSES['character-not-allowed'].format(field))
+        return string
 
     def validate_empty_field(self, field, value):
         """

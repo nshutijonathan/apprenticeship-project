@@ -3,19 +3,21 @@ from rest_framework.exceptions import ValidationError
 
 from healthid.utils.app_utils.validators import validate_mobile
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
+from healthid.utils.orders_utils.check_payment_terms import\
+    check_payment_terms
 
 
 def validate_suppliers_csv_upload(io_string):
     """
-        Validate suppliers info from an appropriately formatted CSV file.
+    Validate suppliers info from an appropriately formatted CSV file.
 
-        arguments:
-            io_string(obj): 'io.StringIO' object containing a list
-                            of suppliers in CSV format
+    arguments:
+        io_string(obj): 'io.StringIO' object containing a list
+                        of suppliers in CSV format
 
-        returns:
-            array: a list of suppliers
-        """
+    returns:
+        array: a list of suppliers
+    """
     [row_count, csv_columns, suppliers, csv_errors] = [0, [], [], {}]
     valid_columns = {
         'name': 'required',
@@ -55,12 +57,22 @@ def validate_suppliers_csv_upload(io_string):
                     csv_columns[i]: ERROR_RESPONSES['required_field'].format(
                         csv_columns[i])
                 }
+
             # validate phone number
-            if csv_columns[i] == 'mobile number':
+            if csv_columns[i] == 'mobile number' and row[i]:
                 is_mobile_number_validate = validate_mobile(row[i])
                 row_errors = row_errors if is_mobile_number_validate else {
                     **row_errors,
                     csv_columns[i]: (ERROR_RESPONSES['invalid_mobile_number'].
+                                     format(row[i]))
+                }
+
+            # validate payment terms
+            if csv_columns[i] == 'payment terms' and row[i]:
+                row[i] = row[i].upper().replace(' ', '_')
+                row_errors = row_errors if check_payment_terms(row[i]) else {
+                    **row_errors,
+                    csv_columns[i]: (ERROR_RESPONSES['payment_terms'].
                                      format(row[i]))
                 }
 

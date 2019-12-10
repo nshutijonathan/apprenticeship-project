@@ -208,21 +208,9 @@
     "pk": 1,
     "fields": {
       "name": "first",
-      "email": "email@email.com",
-      "mobile_number": "1234567890",
-      "country": 1,
-      "address_line_1": "okay",
-      "lga": "nice",
-      "city": 1,
       "tier": 1,
-      "logo": "sdfs",
-      "commentary": "sfsd",
-      "payment_terms": 1,
-      "credit_days": 1,
-      "supplier_id": "sdssd",
       "user": "aul5xrp73",
-      "is_approved": true,
-      "admin_comment": "sefasefw"
+      "is_approved": true
     }
   },
   {
@@ -230,21 +218,10 @@
     "pk": 2,
     "fields": {
       "name": "second",
-      "email": "okay@email.com",
-      "mobile_number": "1234567890",
-      "country": 1,
-      "address_line_1": "okay",
-      "lga": "nice",
-      "city": 1,
       "tier": 1,
-      "logo": "sdfs",
-      "commentary": "sfsd",
-      "payment_terms": 1,
-      "credit_days": 1,
       "supplier_id": "sdssdhk",
       "user": "aul5xrp73",
-      "is_approved": true,
-      "admin_comment": "sefasefw"
+      "is_approved": true
     }
   },
   {

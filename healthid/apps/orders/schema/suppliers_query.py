@@ -7,6 +7,8 @@ from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.models import (Suppliers,
+                                         SuppliersContacts,
+                                         SuppliersMeta,
                                          SupplierNote,
                                          Tier,
                                          PaymentTerms,
@@ -18,21 +20,29 @@ from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 
 
+class SuppliersContactsType(DjangoObjectType):
+    class Meta:
+        model = SuppliersContacts
+
+
+class SuppliersMetaType(DjangoObjectType):
+    class Meta:
+        model = SuppliersMeta
+
+
 class SuppliersType(DjangoObjectType):
     class Meta:
         model = Suppliers
         # Specifying model fields to filter by
         filter_fields = {
-            'city__name': ['exact', 'icontains', 'istartswith'],
             'tier__name': ['exact', 'icontains', 'istartswith'],
-            'payment_terms__name': ['exact', 'icontains', 'istartswith'],
-            'credit_days': ['exact'],
-            'country__name': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
             'is_approved': ['exact']
         }
         interfaces = (graphene.relay.Node, )
     id = graphene.ID(required=True)
+    supplier_meta = graphene.List(SuppliersMetaType)
+    supplier_contacts = graphene.List(SuppliersContactsType)
 
     @resolve_only_args
     def resolve_id(self):
@@ -41,6 +51,24 @@ class SuppliersType(DjangoObjectType):
         :return: database ID
         """
         return self.id
+
+    def resolve_supplier_contacts(self, info, **kwargs):
+        """
+        get contacts of a supplier
+
+        Returns:
+            list: contacts of a single supplier
+        """
+        return self.get_supplier_contacts
+
+    def resolve_supplier_meta(self, info, **kwargs):
+        """
+        get meta data of a supplier
+
+        Returns:
+            list: meta data of a single supplier
+        """
+        return self.get_supplier_meta
 
 
 class SupplierNoteType(DjangoObjectType):

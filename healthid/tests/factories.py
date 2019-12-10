@@ -7,6 +7,7 @@ from django.conf import settings
 
 from healthid.apps.orders.models import (Order, SupplierOrderDetails,
                                          OrderDetails, Suppliers,
+                                         SuppliersContacts, SuppliersMeta,
                                          SupplierNote, PaymentTerms,
                                          Tier, SupplierRating)
 from healthid.apps.products.models import (ProductCategory, Product,
@@ -163,6 +164,17 @@ class SuppliersFactory(factory.DjangoModelFactory):
         model = Suppliers
 
     name = factory.Sequence(lambda x: "Supplier %d" % x)
+    tier = factory.SubFactory(TierFactory)
+    user = factory.SubFactory(UserFactory)
+    is_approved = False
+
+
+class SuppliersContactsFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = SuppliersContacts
+
+    supplier = factory.SubFactory(SuppliersFactory)
     email = factory.Sequence(lambda x: "supplier%d@supplier%d.com" % (x, x))
     mobile_number = "254700000000"
     address_line_1 = "Building 1"
@@ -170,11 +182,18 @@ class SuppliersFactory(factory.DjangoModelFactory):
     lga = "NO idea"
     city = factory.SubFactory(CityFactory)
     country = factory.SubFactory(CountryFactory)
-    tier = factory.SubFactory(TierFactory)
+
+
+class SuppliersMetaFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = SuppliersMeta
+
+    supplier = factory.SubFactory(SuppliersFactory)
+    display_name = factory.Sequence(lambda x: "Supplier %d" % x)
     logo = "http://unkownurl.something"
     commentary = "no comment"
     payment_terms = factory.SubFactory(PaymentTermsFactory)
-    user = factory.SubFactory(UserFactory)
     is_approved = False
 
 

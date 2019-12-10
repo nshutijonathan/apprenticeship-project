@@ -1,89 +1,139 @@
 supplier_mutation = '''
         mutation{
-            addSupplier(input:{
-                name: "shadik.",
-                email: "email@ntale.com",
-                mobileNumber:"+256702260027",
-                addressLine1:"address",
-                addressLine2:"addressline2",
-                lga: "lga",
-                tierId: 1,
-                cityId: 1
-                countryId:1,
-                creditDays:4,
-                logo:"logo",
-                paymentTermsId: 1,
-                commentary: "no comment"
-
-            }){
-                supplier{
-                id
-                supplierId
-                city{
-                    name
-                }
-                supplierId
-                }
+          addSupplier(
+            input:{
+              name: "shadik.",
+              tierId: 1
+            },
+            contactsInput: {
+              email: "email@ntale.com",
+              mobileNumber:"+256702260027",
+              addressLine1:"address",
+              addressLine2:"addressline2",
+              lga: "lga",
+              cityId: 1
+              countryId:1,
+            },
+            metaInput: {
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment"
             }
+          ){
+            supplier{
+              id
+              name
+              tier { name }
+              supplierContacts{
+                email
+                mobileNumber
+                addressLine1
+                city{ name }
+                country{ name }
+              }
+              supplierMeta{
+                displayName
+                creditDays
+                logo
+                paymentTerms
+                commentary
+              }
             }
+          }
+        }
 '''
 
 email_invalid = '''
         mutation{
-            addSupplier(input:{
-                name: "shadik.",
-                email: "emailntale.com",
-                mobileNumber:"+256702260027",
-                addressLine1:"address",
-                addressLine2:"addressline2",
-                lga: "lga",
-                tierId: 1,
-                cityId: 1,
-                creditDays:4,
-                logo:"logo",
-                paymentTermsId: 1,
-                commentary: "no comment"
-
-            }){
-                supplier{
-                id
-                supplierId
-                city{
-                    name
-                }
-                supplierId
-                }
+          addSupplier(
+            input:{
+              name: "shadik.",
+              tierId: 1
+            },
+            contactsInput: {
+              email: "email",
+              mobileNumber:"+256702260027",
+              addressLine1:"address",
+              addressLine2:"addressline2",
+              lga: "lga",
+              cityId: 1
+              countryId:1,
+            },
+            metaInput: {
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment"
             }
+          ){
+            supplier{
+              id
+              name
+              tier { name }
+              supplierContacts{
+                email
+                mobileNumber
+                addressLine1
+                city{ name }
+                country{ name }
+              }
+              supplierMeta{
+                displayName
+                creditDays
+                logo
+                paymentTerms
+                commentary
+              }
             }
+          }
+        }
 '''
 
 mobile_invalid = '''
         mutation{
-            addSupplier(input:{
-                name: "shadik.",
-                email: "emai@lntale.com",
-                mobileNumber:"02260027",
-                addressLine1:"address",
-                addressLine2:"addressline2",
-                lga: "lga",
-                tierId: 1,
-                cityId: 1,
-                creditDays:4,
-                logo:"logo",
-                paymentTermsId: 1,
-                commentary: "no comment"
-
-            }){
-                supplier{
-                id
-                supplierId
-                city{
-                    name
-                }
-                supplierId
-                }
+          addSupplier(
+            input:{
+              name: "shadik.",
+              tierId: 1
+            },
+            contactsInput: {
+              email: "email@ntale.com",
+              mobileNumber:"+256",
+              addressLine1:"address",
+              addressLine2:"addressline2",
+              lga: "lga",
+              cityId: 1
+              countryId:1,
+            },
+            metaInput: {
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment"
             }
+          ){
+            supplier{
+              id
+              name
+              tier { name }
+              supplierContacts{
+                email
+                mobileNumber
+                addressLine1
+                city{ name }
+                country{ name }
+              }
+              supplierMeta{
+                displayName
+                creditDays
+                logo
+                paymentTerms
+                commentary
+              }
             }
+          }
+        }
 '''
 
 suppliers_query = '''
@@ -145,25 +195,13 @@ edit_request = '''
         mutation{{
           editSupplier(
             id: "{supplier_id}"
-            email: "email9@email.com"
             name: "shack",
-            mobileNumber:"+256702260027",
-            addressLine1:"address",
-            addressLine2:"addressline2",
-            lga: "lga",
             tierId:1,
-            cityId: 1
-            countryId:1,
-            creditDays:4,
-            logo:"logo",
-            paymentTermsId:1,
-            commentary: "no comment"
           ){{
             message,
             editRequest{{
               id
               name
-              mobileNumber
             }}
           }}
         }}
@@ -175,19 +213,10 @@ edit_proposal = '''
           editProposal(
             id: "{proposal_id}"
             name: "sean2",
-            mobileNumber:"+256702260027",
-            addressLine1:"DreamVille",
-            addressLine2:"addressline2",
-            lga: "lga",
-            countryId:1,
-            creditDays:4,
-            logo:"logo",
-            commentary: "no comment"
           ){{
             message,
             editRequest{{
               name
-              mobileNumber
             }}
           }}
         }}
@@ -221,7 +250,7 @@ decline_request = '''
 '''
 filter_suppliers = '''
         query{
-          filterSuppliers(country_Name: "Uganda"){
+          filterSuppliers(name_Icontains: "sha"){
             edges{
               node{
                 id
@@ -234,7 +263,7 @@ filter_suppliers = '''
 
 empty_search = '''
         query{
-          filterSuppliers(country_Name: "Kenya"){
+          filterSuppliers(name_Icontains: "Kenya"){
             edges{
               node{
                 id
@@ -262,7 +291,6 @@ user_requests = '''
             userRequests{
             id
             name
-            adminComment
           }
         }
 '''
@@ -286,7 +314,6 @@ create_suppliers_note = '''
           supplier{{
             id
             name
-            email
           }}
 
         }}
@@ -312,7 +339,6 @@ update_suppliers_note = '''
             supplier{{
               id
               name
-              email
             }}
           }}
         }}
@@ -413,7 +439,6 @@ mutation{{
       rating
       supplier{{
         name
-        email
       }}
     }}
   }}

@@ -35,13 +35,18 @@ class TestActivateDeactivateOutletUser(BaseConfiguration):
         self.assertNotIn('errors', response)
 
     def test_cannot_activate_user_who_isnt_part_of_outlet(self):
-        OutletUser.objects.get(user=self.user, outlet=self.outlet).delete()
+        OutletUser.objects.filter(
+            user=self.user, outlet=self.outlet).first().delete()
+        OutletUser.objects.filter(
+            user=self.user, outlet=self.outlet).first().delete()
         response = self.query_with_token(
             self.access_token_master,
             activate_deactivate_outlet_user.format(**self.outlet_user_data))
         self.assertIsNotNone(response['errors'])
 
     def test_cant_deactivate_when_only_one_user_is_active_in_outlet(self):
+        OutletUser.objects.filter(
+            user=self.user, outlet=self.outlet).first().delete()
         self.outlet_user_data['is_active'] = json.dumps(False)
         self.outlet_user_data_two['is_active'] = json.dumps(False)
         self.query_with_token(
