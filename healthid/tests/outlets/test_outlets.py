@@ -37,15 +37,16 @@ class OutletTestCase(BaseConfiguration):
 
     def test_update_outlet(self):
         outlet = self.outlet
+        info = self.outlet_kind
         response = self.query_with_token(
             self.access_token_master,
             update_outlet(outlet.id,
-                          str(outlet.name)),
+                          outlet.name,
+                          info['city_id']),
         )
         self.assertResponseNoErrors(
             response, {"updateOutlet": {
-                'outlet': {'name': str(outlet.name),
-                           'prefixId': outlet.prefix_id}
+                'outlet': {'name': outlet.name}
             }})
 
     def test_outlet_model(self):

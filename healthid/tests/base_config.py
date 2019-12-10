@@ -183,11 +183,12 @@ class BaseConfiguration(TestCase):
         self.event = self.create_event()
         self.order = self.create_order()
 
-        # register and log in user
         OutletUser.objects.create(
             user=self.user, outlet=self.outlet, is_active_outlet=True)
         OutletUser.objects.create(
             user=self.manager, outlet=self.outlet, is_active_outlet=True)
+
+        # register and log in user
         self.access_token = self.user_login()
         self.master_admin_user = self.register_master_admin(self.master_admin)
         self.business.user = self.master_admin_user
@@ -206,6 +207,7 @@ class BaseConfiguration(TestCase):
         self.currency = Currency.objects.filter(
             id=self.preference.outlet_currency_id).first()
         self.second_outlet = self.create_outlet(self.second_outlet)
+
         OutletUser.objects.create(user=self.second_master_admin_user,
                                   outlet=self.second_outlet,
                                   is_active_outlet=True)
@@ -323,12 +325,6 @@ class BaseConfiguration(TestCase):
         return Outlet.objects.create(
             name=outlet["name"],
             kind_id=info["outlet_kindid"],
-            address_line1=outlet["address_line1"],
-            phone_number=outlet["phone_number"],
-            address_line2=outlet["address_line2"],
-            lga=outlet['lga'],
-            city_id=info["city_id"],
-            date_launched=outlet['date_launched'],
             business_id=self.business.id)
 
     def create_order(self, closed=True):

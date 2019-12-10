@@ -2,9 +2,13 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.outlets.models import City, Country, Outlet, OutletUser
+from healthid.apps.authentication.models import Role
+from healthid.apps.outlets.models import \
+    City, Country, Outlet, OutletUser
 from healthid.apps.outlets.schema.outlet_schema import (CityType, CountryType,
-                                                        OutletType)
+                                                        OutletType,
+                                                        OutletMetaType,
+                                                        OutletContactsType)
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -13,7 +17,9 @@ from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 from healthid.apps.authentication.schema.queries.auth_queries import UserType
 from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_is_active_in_outlet
+    get_user_active_outlet
+from healthid.utils.outlet_utils.metadata_handler import \
+    add_outlet_metadata, update_outlet_metadata
 
 
 class CreateOutlet(graphene.Mutation):
@@ -21,6 +27,8 @@ class CreateOutlet(graphene.Mutation):
     Creates an outlet
     """
     outlet = graphene.Field(OutletType)
+    outlet_meta = graphene.Field(OutletMetaType)
+    outlet_contacts = graphene.Field(OutletContactsType)
     success = graphene.String()
 
     class Arguments:
@@ -52,9 +60,12 @@ class CreateOutlet(graphene.Mutation):
         outlet = Outlet()
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
+        role_instance = get_model_object(Role, 'id', user.role_id)
         with SaveContextManager(outlet, model=Outlet) as outlet:
+            add_outlet_metadata(outlet, kwargs.items())
             OutletUser.objects.create(
-                user=user, outlet=outlet, is_active_outlet=True)
+                user=user, outlet=outlet, is_active_outlet=True,
+                role=role_instance)
             return CreateOutlet(
                 outlet=outlet,
                 success=SUCCESS_RESPONSES["creation_success"].format("Outlet")
@@ -80,18 +91,19 @@ class UpdateOutlet(graphene.Mutation):
         preference_id = graphene.String()
         kind_id = graphene.Int()
         city_id = graphene.Int()
+        role_id = graphene.String()
 
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         outlet_id = kwargs.get('id')
-        outlet = check_user_is_active_in_outlet(user, outlet_id=outlet_id)
+        outlet = get_user_active_outlet(user, outlet_id=outlet_id)
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
-        with SaveContextManager(outlet, model=Outlet) as outlet:
-            success = SUCCESS_RESPONSES["update_success"].format(outlet.name)
-            return UpdateOutlet(outlet=outlet, success=success)
+        update_outlet_metadata(outlet, kwargs.items())
+        success = SUCCESS_RESPONSES["update_success"].format(outlet.name)
+        return UpdateOutlet(outlet=outlet, success=success)
 
 
 class DeleteOutlet(graphene.Mutation):
@@ -111,7 +123,7 @@ class DeleteOutlet(graphene.Mutation):
         outlet = get_model_object(Outlet, 'id', id)
         outlet.delete(user)
         return DeleteOutlet(
-               success=SUCCESS_RESPONSES["deletion_success"].format("Outlet"))
+            success=SUCCESS_RESPONSES["deletion_success"].format("Outlet"))
 
 
 class CreateCountry(graphene.Mutation):
@@ -155,9 +167,9 @@ class CreateCity(graphene.Mutation):
         cities = [city['name'] for city in list(country.city_set.values())]
         if city_name in cities:
             raise GraphQLError(
-                  OUTLET_ERROR_RESPONSES[
-                      "city_double_creation_error"].format(
-                                                    "City " + city_name))
+                OUTLET_ERROR_RESPONSES[
+                    "city_double_creation_error"].format(
+                    "City " + city_name))
         city = City(name=city_name, country=country)
         with SaveContextManager(city, model=City):
             return CreateCity(city=city)
@@ -206,13 +218,13 @@ class EditCity(graphene.Mutation):
         country_cities = City.objects.filter(country=city.country).all()
         if name in [str(city) in country_cities]:
             raise GraphQLError(OUTLET_ERROR_RESPONSES[
-                      "city_double_creation_error"].format(
-                                                    "The city " + name))
+                "city_double_creation_error"].format(
+                "The city " + name))
         city.name = name
         city.save()
         return EditCity(city=city,
                         success=SUCCESS_RESPONSES[
-                                "update_success"].format("City"))
+                            "update_success"].format("City"))
 
 
 class DeleteCountry(graphene.Mutation):
@@ -232,8 +244,8 @@ class DeleteCountry(graphene.Mutation):
         country = get_model_object(Country, 'id', id)
         country.delete(user)
         return DeleteCountry(
-               success=SUCCESS_RESPONSES[
-                       "deletion_success"].format("Country"))
+            success=SUCCESS_RESPONSES[
+                "deletion_success"].format("Country"))
 
 
 class ActivateDeactivateOutletUser(graphene.Mutation):

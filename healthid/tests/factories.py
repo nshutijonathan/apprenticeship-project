@@ -145,13 +145,6 @@ class OutletFactory(factory.DjangoModelFactory):
 
     kind = factory.SubFactory(OutletKindFactory)
     name = factory.Sequence(lambda x: "Outlet %d" % x)
-    address_line1 = "Building 1"
-    address_line2 = "Some Street"
-    lga = "NO idea"
-    city = factory.SubFactory(CityFactory)
-    phone_number = "254700000000"
-    date_launched = datetime.today()
-    prefix_id = "Blah"
     business = factory.SubFactory(BusinessFactory)
 
     @factory.post_generation

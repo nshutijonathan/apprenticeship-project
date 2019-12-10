@@ -26,8 +26,7 @@ class TestSupplierOrders(TestCase):
         self.business = BusinessFactory.create(user=(self.user1,))
 
         self.outlet_kind = OutletKindFactory()
-        self.outlet = OutletFactory.create(kind=self.outlet_kind,
-                                           city=self.city1)
+        self.outlet = OutletFactory.create(kind=self.outlet_kind)
 
         self.order1 = OrderFactory()
         self.order_details2 = OrderDetailsFactory(order=self.order1)

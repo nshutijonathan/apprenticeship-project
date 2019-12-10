@@ -11,5 +11,19 @@
            "outlet": 1,
            "user": "aul5xrp73"
         }
+    },
+    {
+        "model": "outlets.outletMeta",
+        "pk": 1,
+        "fields":{
+            "outlet": 1
+        }
+    },
+    {
+        "model": "outlets.outletcontacts",
+        "pk": 1,
+        "fields": {
+            "outlet": 1
+        }
     }
 ]

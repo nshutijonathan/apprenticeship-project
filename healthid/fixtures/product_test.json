@@ -102,12 +102,7 @@
     "fields": {
       "kind": 1,
       "name": "dope",
-      "address_line1": "jkahsd",
-      "address_line2": "sdcs",
-      "lga": "sdfad",
       "city": 2,
-      "phone_number": "1234567890",
-      "date_launched": "2019-05-05",
       "business": "123456789"
     }
   },

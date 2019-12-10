@@ -50,7 +50,7 @@
       "twitter": "jkae",
       "instagram": "sjdkd",
       "logo": "http://127.0.0.1:8000/admin/outlets/country/",
-      "user": "aul5xrp73"
+      "user": "aul5xrp75"
     }
   },
   {
@@ -81,12 +81,6 @@
     "fields": {
       "kind": 1,
       "name": "dope",
-      "address_line1": "jkahsd",
-      "address_line2": "sdcs",
-      "lga": "sdfad",
-      "city": 1,
-      "phone_number": "1234567890",
-      "date_launched": "2019-05-05",
       "business": "123456789"
     }
   },
@@ -96,12 +90,6 @@
     "fields": {
       "kind": 1,
       "name": "cool",
-      "address_line1": "jkahsd",
-      "address_line2": "sdcs",
-      "lga": "sdfad",
-      "city": 1,
-      "phone_number": "1234567899",
-      "date_launched": "2019-05-05",
       "business": "123456789"
     }
   },

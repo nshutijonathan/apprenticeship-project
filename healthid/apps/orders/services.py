@@ -145,7 +145,6 @@ class SupplierOrderStatusChangeService:
         self.supplier_order_details_id = supplier_order_details_id
 
     def change_status(self):
-        print(type(self.supplier_order_details_id))
         if self.supplier_order_details_id[0] == "":
             raise GraphQLError(ORDERS_ERROR_RESPONSES[
                 'none_supplier_order_id'])

@@ -24,6 +24,6 @@ OUTLET_ERROR_RESPONSES = {
     "user_active_in_another_outlet": "This user is active in another outlet",
     "user_not_in_outlet": "User does not belong to this outlet",
     "one_user_active_in_outlet": "An outlet must have an active user",
-    "user_not_active_in_any_outlet": "You are not active in any outlet"
-
+    "user_not_active_in_any_outlet": "You are not active in any outlet",
+    "user_not_the_owner": "You are not the owner of this outlet"
 }

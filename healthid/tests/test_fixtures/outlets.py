@@ -18,7 +18,7 @@ def create_outlet(business_id, city_id, type_id):
             ''')
 
 
-def update_outlet(outlet_id, outlet_name):
+def update_outlet(outlet_id, outlet_name, city_id):
     return (f'''
             mutation{{
                 updateOutlet(
@@ -26,11 +26,12 @@ def update_outlet(outlet_id, outlet_name):
                     name: "{outlet_name}",
                     addressLine1: "10/11 Nagera",
                     addressLine2: "Nakawa, Kampala",
+                    cityId: {city_id},
                     lga: "Nakawa",
                     phoneNumber: "+2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
-                    outlet{{name, prefixId}}
+                    outlet{{name}}
                 }}
             }}
             ''')

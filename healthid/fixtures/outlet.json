@@ -551,13 +551,6 @@
     "fields": {
       "kind": 1,
       "name": "Palmw",
-      "address_line1": "Bukoto St",
-      "address_line2": "Bukoto",
-      "lga": "Jolof",
-      "city": 1,
-      "phone_number": "256705201617",
-      "date_launched": "2018-01-27",
-      "prefix_id": "",
       "business": "112t0mti8"
     }
   },
@@ -567,13 +560,6 @@
     "fields": {
       "kind": 1,
       "name": "Palmww",
-      "address_line1": "Bukoto St",
-      "address_line2": "Bukoto",
-      "lga": "Jolof",
-      "city": 1,
-      "phone_number": "256705201617",
-      "date_launched": "2018-01-27",
-      "prefix_id": "KY006-PAL",
       "business": "112t0mti8"
     }
   },
@@ -584,5 +570,49 @@
          "outlet": 6,
          "user": "aul5xrp73"
       }
+  },
+  {
+    "model": "outlets.outletuser",
+    "pk": 2,
+    "fields":{
+       "outlet": 4,
+       "user": "aul5xrp73"
+    }
+},
+  {
+    "model": "outlets.outletmeta",
+    "pk": 10,
+    "fields": {
+      "dataKey": "date_launched",
+      "dataValue": "2019-01-01",
+      "outlet": 4
+    }
+  },
+  {
+    "model": "outlets.outletcontacts",
+    "pk": 20,
+    "fields": {
+      "dataKey": "address_line1",
+      "dataValue": "Uganda",
+      "outlet": 4
+    }
+  },
+  {
+    "model": "outlets.outletmeta",
+    "pk": 6,
+    "fields": {
+      "dataKey": "date_launched",
+      "dataValue": "2019-01-01",
+      "outlet": 6
+    }
+  },
+  {
+    "model": "outlets.outletcontacts",
+    "pk": 6,
+    "fields": {
+      "dataKey": "address_line1",
+      "dataValue": "Uganda",
+      "outlet": 6
+    }
   }
 ]

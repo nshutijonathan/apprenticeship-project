@@ -1,6 +1,6 @@
 from django.db import models
 
-from healthid.apps.authentication.models import User
+from healthid.apps.authentication.models import User, Role
 from healthid.apps.business.models import Business
 from healthid.models import BaseModel
 from healthid.utils.outlet_utils.validators import \
@@ -36,16 +36,12 @@ class Outlet(BaseModel):
     id = models.AutoField(primary_key=True)
     kind = models.ForeignKey(OutletKind, on_delete=models.CASCADE)
     name = models.CharField(max_length=244)
-    address_line1 = models.CharField(max_length=244)
-    address_line2 = models.CharField(max_length=244)
-    lga = models.CharField(max_length=244)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=25)
-    date_launched = models.DateField()
-    prefix_id = models.CharField(max_length=9, null=False)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     users = models.ManyToManyField(
         User, related_name='outlets', through='OutletUser')
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, null=True
+    )
 
     class Meta:
         unique_together = (("name", "business"))
@@ -101,9 +97,51 @@ class Outlet(BaseModel):
             list(obj): user manager active in the outlet
         """
         outlet_user = self.outletuser_set.filter(
-                       is_active_outlet=True).filter(
-                       user__role__name='Manager').first()
+            is_active_outlet=True).filter(
+            user__role__name='Manager').first()
         return outlet_user.user
+
+
+class OutletMeta(models.Model):
+    """
+    This model is for outlet meta data
+
+    Attributes:
+        dataKey(string): key of the value
+        dataValue(string): Exact value of a key
+        outlet: foreign key from outlet
+    """
+    id = models.AutoField(primary_key=True)
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
+    dataKey = models.CharField(max_length=100, null=True)
+    dataValue = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        unique_together = (("outlet", "dataKey"))
+
+    def __int__(self):
+        return self.id
+
+
+class OutletContacts(models.Model):
+    """
+    This model is for outlet meta data
+
+    Attributes:
+        dataKey(string): key of the value
+        dataValue(string): Exact value of a key
+        outlet(obj): foreign key from outlet
+    """
+    id = models.AutoField(primary_key=True)
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
+    dataKey = models.CharField(max_length=100, null=True)
+    dataValue = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        unique_together = (("outlet", "dataKey"))
+
+    def __int__(self):
+        return self.id
 
 
 class OutletUser(models.Model):
@@ -119,3 +157,4 @@ class OutletUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE)
     is_active_outlet = models.BooleanField(default=False)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True)
