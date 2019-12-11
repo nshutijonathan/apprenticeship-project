@@ -33,6 +33,8 @@ class UserType(DjangoObjectType):
         Returns:
             obj: outlet user is active in
         """
+        if not self.active_outlet:
+            return None
         outlet = get_model_object(Outlet, 'id', self.active_outlet.id)
         outlets_meta = OutletMeta.objects.all()
         outlets_contact = OutletContacts.objects.all()
@@ -48,4 +50,3 @@ class UserType(DjangoObjectType):
                     'dataKey']] = outlet_contact.__dict__['dataValue']
             else:
                 outlet.__dict__[outlet_contact.__dict__['dataKey']] = None
-        return outlet
