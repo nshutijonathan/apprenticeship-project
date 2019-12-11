@@ -25,5 +25,7 @@ OUTLET_ERROR_RESPONSES = {
     "user_not_in_outlet": "User does not belong to this outlet",
     "one_user_active_in_outlet": "An outlet must have an active user",
     "user_not_active_in_any_outlet": "You are not active in any outlet",
-    "user_not_the_owner": "You are not the owner of this outlet"
+    "user_not_the_owner": "You are not the owner of this outlet",
+    "city_not_exist": "The city you entered doesn't exist",
+    "country_not_exist": "The country entered is doesn't exist"
 }

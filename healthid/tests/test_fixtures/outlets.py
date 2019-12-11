@@ -1,4 +1,4 @@
-def create_outlet(business_id, city_id, type_id):
+def create_outlet(business_id, type_id, country, city):
     return (f'''
             mutation{{
                 createOutlet(
@@ -8,7 +8,8 @@ def create_outlet(business_id, city_id, type_id):
                     addressLine1: "10/11 Nagera",
                     addressLine2: "Nakawa, Kampala",
                     lga: "Nakawa",
-                    cityId: {city_id},
+                    country: "{country}",
+                    cityName: "{city}",
                     phoneNumber: "+2567803201607",
                     dateLaunched: "2019-02-27",)
                    {{
@@ -18,7 +19,7 @@ def create_outlet(business_id, city_id, type_id):
             ''')
 
 
-def update_outlet(outlet_id, outlet_name, city_id):
+def update_outlet(outlet_id, outlet_name, country, city):
     return (f'''
             mutation{{
                 updateOutlet(
@@ -26,7 +27,8 @@ def update_outlet(outlet_id, outlet_name, city_id):
                     name: "{outlet_name}",
                     addressLine1: "10/11 Nagera",
                     addressLine2: "Nakawa, Kampala",
-                    cityId: {city_id},
+                    country: "{country}",
+                    cityName: "{city}",
                     lga: "Nakawa",
                     phoneNumber: "+2567803201607",
                     dateLaunched: "2019-02-27",)

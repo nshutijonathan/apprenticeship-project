@@ -2,6 +2,7 @@ from healthid.apps.outlets.models import City, Country, Outlet, OutletKind
 from healthid.tests.base_config import BaseConfiguration
 from healthid.tests.test_fixtures.outlets import (create_outlet, delete_outlet,
                                                   update_outlet)
+from healthid.utils.messages.outlet_responses import OUTLET_ERROR_RESPONSES
 
 
 class OutletTestCase(BaseConfiguration):
@@ -23,8 +24,9 @@ class OutletTestCase(BaseConfiguration):
             self.another_master_admin_token,
             create_outlet(
                 self.business.id,
-                info['city_id'],
-                info["outlet_kindid"]),
+                info["outlet_kindid"],
+                "Rwanda",
+                "Kigali"),
         )
 
         self.assertResponseNoErrors(
@@ -35,14 +37,42 @@ class OutletTestCase(BaseConfiguration):
                     }
             }})
 
+    def test_city_not_exist(self):
+        info = self.outlet_kind
+        response = self.query_with_token(
+            self.another_master_admin_token,
+            create_outlet(
+                self.business.id,
+                info["outlet_kindid"],
+                "Rwanda",
+                "Kig"),
+        )
+        message = OUTLET_ERROR_RESPONSES["city_not_exist"]
+        self.assertIn('errors', response)
+        self.assertEqual(message, response['errors'][0]['message'])
+
+    def test_country_not_exist(self):
+        info = self.outlet_kind
+        response = self.query_with_token(
+            self.another_master_admin_token,
+            create_outlet(
+                self.business.id,
+                info["outlet_kindid"],
+                "Rwan",
+                "Kigali"),
+        )
+        message = OUTLET_ERROR_RESPONSES["country_not_exist"]
+        self.assertIn('errors', response)
+        self.assertEqual(message, response['errors'][0]['message'])
+
     def test_update_outlet(self):
         outlet = self.outlet
-        info = self.outlet_kind
         response = self.query_with_token(
             self.access_token_master,
             update_outlet(outlet.id,
                           outlet.name,
-                          info['city_id']),
+                          "Uganda",
+                          "Kampala"),
         )
         self.assertResponseNoErrors(
             response, {"updateOutlet": {

@@ -20,6 +20,7 @@ from healthid.utils.app_utils.check_user_in_outlet import \
     get_user_active_outlet
 from healthid.utils.outlet_utils.metadata_handler import \
     add_outlet_metadata, update_outlet_metadata
+from healthid.utils.app_utils.get_city import get_city
 
 
 class CreateOutlet(graphene.Mutation):
@@ -37,16 +38,19 @@ class CreateOutlet(graphene.Mutation):
         address_line1 = graphene.String()
         address_line2 = graphene.String()
         lga = graphene.String()
-        city_id = graphene.Int()
         phone_number = graphene.String()
         date_launched = graphene.types.datetime.Date()
         prefix_id = graphene.String()
         business_id = graphene.String()
+        country = graphene.String()
+        city_name = graphene.String()
 
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
+        country_name = kwargs.get('country')
+        city_name = kwargs.get('city_name')
         outlet_name = kwargs.get('name')
         business_id = kwargs.get('business_id')
         find_outlets = \
@@ -61,6 +65,8 @@ class CreateOutlet(graphene.Mutation):
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
         role_instance = get_model_object(Role, 'id', user.role_id)
+        if country_name and city_name:
+            outlet.city = get_city(country_name, city_name)
         with SaveContextManager(outlet, model=Outlet) as outlet:
             add_outlet_metadata(outlet, kwargs.items())
             OutletUser.objects.create(
@@ -90,17 +96,21 @@ class UpdateOutlet(graphene.Mutation):
         prefix_id = graphene.String()
         preference_id = graphene.String()
         kind_id = graphene.Int()
-        city_id = graphene.Int()
-        role_id = graphene.String()
+        country = graphene.String()
+        city_name = graphene.String()
 
     @login_required
     @user_permission()
     def mutate(self, info, **kwargs):
         user = info.context.user
         outlet_id = kwargs.get('id')
+        country_name = kwargs.get('country')
+        city_name = kwargs.get('city_name')
         outlet = get_user_active_outlet(user, outlet_id=outlet_id)
         for(key, value) in kwargs.items():
             setattr(outlet, key, value)
+        if country_name and city_name:
+            outlet.city = get_city(country_name, city_name)
         update_outlet_metadata(outlet, kwargs.items())
         success = SUCCESS_RESPONSES["update_success"].format(outlet.name)
         return UpdateOutlet(outlet=outlet, success=success)

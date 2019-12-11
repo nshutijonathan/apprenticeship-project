@@ -1,11 +1,20 @@
 import graphene
 from graphene_django import DjangoObjectType
+from healthid.utils.app_utils.database import get_model_object
 
 from healthid.apps.authentication.models import User
-from healthid.apps.outlets.models import Outlet
+from healthid.apps.outlets.models import \
+    Outlet, OutletMeta, OutletContacts
 
 
 class ActiveOutletType(DjangoObjectType):
+    address_line1 = graphene.String()
+    phone_number = graphene.String()
+    date_launched = graphene.String()
+    address_line2 = graphene.String()
+    lga = graphene.String()
+    prefix_id = graphene.String()
+
     class Meta:
         model = Outlet
 
@@ -24,4 +33,19 @@ class UserType(DjangoObjectType):
         Returns:
             obj: outlet user is active in
         """
-        return self.active_outlet
+        outlet = get_model_object(Outlet, 'id', self.active_outlet.id)
+        outlets_meta = OutletMeta.objects.all()
+        outlets_contact = OutletContacts.objects.all()
+        for outlet_meta in outlets_meta:
+            if id == outlet_meta.__dict__['outlet_id']:
+                outlet.__dict__[outlet_meta.__dict__[
+                    'dataKey']] = outlet_meta.__dict__['dataValue']
+            else:
+                outlet.__dict__[outlet_meta.__dict__['dataKey']] = None
+        for outlet_contact in outlets_contact:
+            if id == outlet_contact.__dict__['outlet_id']:
+                outlet.__dict__[outlet_contact.__dict__[
+                    'dataKey']] = outlet_contact.__dict__['dataValue']
+            else:
+                outlet.__dict__[outlet_contact.__dict__['dataKey']] = None
+        return outlet
