@@ -142,7 +142,7 @@ class Query(graphene.AbstractType):
         is_approved = kwargs.get('is_approved', False)
         user = info.context.user
         suppliers_set = Suppliers.objects.filter(
-            business=user.business_user, is_approved=is_approved)\
+            business=user.active_outlet.business, is_approved=is_approved)\
             .order_by('id')
         if page_count or page_number:
             suppliers = pagination_query(
@@ -192,8 +192,9 @@ class Query(graphene.AbstractType):
     def resolve_approved_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
+        user = info.context.user
         approved_suppliers_set = Suppliers.objects.filter(
-            is_approved=True
+            is_approved=True, business=user.active_outlet.business
         ).order_by('id')
         if page_count or page_number:
             approved_suppliers = pagination_query(
@@ -222,8 +223,9 @@ class Query(graphene.AbstractType):
 
             kwargs[key] = kwargs[key].strip() \
                 if key == "name__icontains" else kwargs[key]
-
-        supplier = Suppliers.objects.filter(**kwargs, parent=None)
+        user = info.context.user
+        supplier = Suppliers.objects.filter(
+            **kwargs, business=user.active_outlet.business, parent=None)
         if not supplier:
             message = ORDERS_ERROR_RESPONSES[
                 "inexistent_supplier_search_error"]

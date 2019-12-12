@@ -46,7 +46,6 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             **self.auth_headers)
         view = HandleCSV.as_view()
         response = view(request, param='products')
-        print('=====>{}'.format(response.data))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('message', response.data)
         self.assertIn('noOfProductsAdded', response.data)

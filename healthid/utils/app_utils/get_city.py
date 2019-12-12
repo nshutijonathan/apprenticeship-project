@@ -21,16 +21,18 @@ def get_city(country_name, city_name):
         data = json.load(countries)
         country_data = [
             country_info for country_info
-            in data if country_info['country'] == country_name.capitalize()]
+            in data if country_info['country'].casefold()
+            == country_name.casefold()
+        ]
         city_data = [
             city_info for city_info
-            in data if city_info['name'] == city_name.capitalize()]
+            in data if city_info['name'].casefold() == city_name.casefold()
+        ]
         if len(city_data) > 0:
             city = City.objects.filter(name__icontains=city_name).first()
             if city:
                 return city
             else:
-                country_name = country_name.capitalize()
                 if len(country_data) > 0:
                     country = Country.objects.filter(
                         name__icontains=country_data[0]["country"]).first()

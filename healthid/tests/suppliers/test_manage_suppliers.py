@@ -120,7 +120,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
 
     def test_query_approved_suppliers(self):
         response = self.query_with_token(
-            self.access_token,
+            self.access_token_master,
             approved_suppliers
         )
         self.assertIsNotNone(response['data']['approvedSuppliers'][0])
@@ -190,7 +190,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
             self.access_token_master,
             approved_suppliers_custom_pagination_query.format(
                 pageCount=5, pageNumber=1))
-        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 3)
+        self.assertEqual(response["data"]["totalSuppliersPagesCount"], 1)
 
     def test_retrieve_all_suppliers_notes_custom_pagination(self):
         SupplierNoteFactory.create_batch(size=13)
