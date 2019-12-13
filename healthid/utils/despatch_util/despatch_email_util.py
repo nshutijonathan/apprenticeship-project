@@ -5,12 +5,13 @@ from healthid.apps.despatch_queue.models import DespatchQueue, Despatch_Meta
 from healthid.utils.app_utils.database import SaveContextManager
 from django.template.loader import render_to_string
 from healthid.utils.app_utils.database import get_model_object
-from healthid.utils.date_utils.is_same_date import is_same_date
+from healthid.utils.date_utils.is_same_date import (
+    is_same_date, remove_microseconds, remove_seconds)
 from smtplib import (
     SMTPException, SMTPAuthenticationError,
     SMTPServerDisconnected, SMTPConnectError)
 import threading
-import datetime
+from django.utils import timezone
 
 
 def notify(users, **kwargs):
@@ -33,24 +34,14 @@ def notify(users, **kwargs):
                     despatch = Despatch_Meta(
                         dataKey=key, dataValue=value, despatch=d_queue)
                     despatch.save()
-            if is_same_date(d_queue.due_date, datetime.datetime.now()):
-                try:
-                    change_send_status(d_queue, 'processing')
-                    thread = threading.Thread(
-                        target=send_email_notifications(subject,
-                                                        user,
-                                                        body),
-                        daemon=True)
-                    thread.start()
-                except (
-                        SMTPAuthenticationError,
-                        SMTPServerDisconnected,
-                        SMTPConnectError):
-                    change_send_status(d_queue, 'pending')
-                except SMTPException:
-                    change_send_status(d_queue, 'failed')
-                else:
-                    change_send_status(d_queue, 'sent')
+            if is_same_date(
+                    remove_seconds(d_queue.due_date),
+                    remove_seconds(remove_microseconds(timezone.now()))):
+                thread = threading.Thread(target=send_email_notifications(
+                    subject,
+                    user,
+                    body, d_queue))
+                thread.start()
             despatch_queues.append(d_queue)
     return despatch_queues
 
@@ -79,25 +70,13 @@ def resend_emails():
                         email_parts[despatch_meta.__dict__['dataKey']
                                     ] = despatch_meta.__dict__['dataValue']
                 if email_parts:
-                    try:
-                        send_email_notifications(
-                            email_parts['subject'],
-                            email_parts['email'],
-                            email_parts['body'])
-
-                        change_send_status(despatch_meta, 'processing')
-                    except (
-                            SMTPAuthenticationError,
-                            SMTPServerDisconnected,
-                            SMTPConnectError):
-                        change_send_status(despatch_meta, 'pending')
-                    except SMTPException:
-                        change_send_status(despatch_meta, 'failed')
-                    else:
-                        change_send_status(despatch_meta, 'sent')
+                    send_email_notifications(
+                        email_parts['subject'],
+                        email_parts['email'],
+                        email_parts['body'], despatch_meta)
 
 
-def send_email_notifications(subject, user, body):
+def send_email_notifications(subject, user, body, despatch_meta):
     '''Function to send email notifications
     '''
     template = \
@@ -112,9 +91,20 @@ def send_email_notifications(subject, user, body):
             template,
             context
         )
-        email = EmailMessage(subject=subject,
-                             body=html_body,
-                             from_email=settings.DEFAULT_FROM_EMAIL,
-                             to=[str(user.email)])
-        email.content_subtype = 'html'
-        email.send()
+        try:
+            email = EmailMessage(subject=subject,
+                                 body=html_body,
+                                 from_email=settings.DEFAULT_FROM_EMAIL,
+                                 to=[str(user.email)])
+            email.content_subtype = 'html'
+            email.send()
+            change_send_status(despatch_meta, 'processing')
+        except (
+                SMTPAuthenticationError,
+                SMTPServerDisconnected,
+                SMTPConnectError):
+            change_send_status(despatch_meta, 'pending')
+        except SMTPException:
+            change_send_status(despatch_meta, 'failed')
+        else:
+            change_send_status(despatch_meta, 'sent')

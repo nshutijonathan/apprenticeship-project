@@ -33,12 +33,12 @@ class CreateEmailNotifications(graphene.Mutation):
             User, 'id', recipients_id), recipients_ids))
         despatch_queue = DespatchQueue()
         due_date = kwargs.get('due_date')
-        if not due_date:
-            due_date = despatch_queue.add_due_date
-
         try:
-            due_date = make_aware(datetime.strptime(
-                str(due_date), '%Y-%m-%d %H:%M:%S'))
+            if not due_date:
+                due_date = despatch_queue.add_due_date
+            else:
+                due_date = make_aware(datetime.strptime(
+                    str(due_date), '%Y-%m-%d %H:%M:%S'))
         except ValueError as error:
             return error
         despatch_qs = notify(

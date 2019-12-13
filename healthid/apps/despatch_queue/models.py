@@ -2,6 +2,7 @@ from django.db import models
 from healthid.apps.authentication.models import User
 from healthid.models import BaseModel
 import datetime
+from django.utils import timezone
 from healthid.utils.app_utils.id_generator import id_gen
 
 
@@ -37,7 +38,7 @@ class DespatchQueue(BaseModel):
     @property
     def add_due_date(self):
         if self.due_date is None:
-            dt = datetime.datetime.now()
+            dt = timezone.now()
             self.due_date = dt - \
                 datetime.timedelta(microseconds=dt.microsecond)
         return self.due_date

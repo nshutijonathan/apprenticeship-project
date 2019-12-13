@@ -1,5 +1,4 @@
 import os
-import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.conf import settings
 from django.db.models.signals import post_delete
@@ -7,13 +6,11 @@ from django.dispatch import receiver
 from healthid.apps.authentication.models import User
 from healthid.utils.app_utils.database import get_model_object
 from healthid.utils.date_utils.is_same_date import \
-    (is_same_date)
+    (remove_microseconds, remove_seconds)
 from healthid.utils.despatch_util.despatch_email_util import (
-    resend_emails, change_send_status, send_email_notifications)
+    resend_emails, send_email_notifications)
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.despatch_queue.models import DespatchQueue, Despatch_Meta
-from smtplib import \
-    (SMTPException, SMTPAuthenticationError, SMTPServerDisconnected)
 
 from healthid.utils.product_utils.batch_expiries import \
     notify_about_expired_products, notify_pusher_about_expired_products
@@ -23,6 +20,7 @@ from healthid.utils.product_utils.product_expiry import \
     check_for_expiry_products
 from healthid.utils.orders_utils.inventory_notification import \
     inventory_check
+from django.utils import timezone
 
 time_interval = os.environ.get('EXPIRY_NOTIFICATION_DURATION', '43200')
 job_run_interval = int(settings.STOCK_JOB_TIME_INTERVAL)
@@ -49,38 +47,35 @@ scheduler.add_job(resend_emails, 'cron', day_of_week='wed',
 def queue_emails_job():
     sched = BackgroundScheduler()
     email_parts = {}
-    despatch_queue = DespatchQueue.objects.all()
-    despatch_queue_meta = Despatch_Meta.objects.all()
-    if len(despatch_queue) > 0:
-        for despatch_q in despatch_queue:
-            id = despatch_q.recipient_id
-            if despatch_q.due_date <= datetime.datetime.now(datetime.timezone.utc) and \
-                    despatch_q.status == 'pending':
-                email_part = get_model_object(User, 'id', id)
-                for despatch_meta in despatch_queue_meta:
-                    if despatch_meta.__dict__['despatch_id'] ==\
-                            despatch_q.__dict__['id']:
-                        email_parts['email'] = email_part
-                        email_parts[despatch_meta.__dict__['dataKey']
-                                    ] = despatch_meta.__dict__['dataValue']
-                if email_parts:
-                    try:
+    try:
+        despatch_queue = DespatchQueue.objects.all()
+        despatch_queue_meta = Despatch_Meta.objects.all()
+        if len(despatch_queue) > 0:
+            for despatch_q in despatch_queue:
+                id = despatch_q.recipient_id
+                if remove_seconds(despatch_q.due_date) <= \
+                        remove_seconds(
+                            remove_microseconds(timezone.now())) and \
+                        despatch_q.status == 'pending':
+                    email_part = get_model_object(User, 'id', id)
+                    for despatch_meta in despatch_queue_meta:
+                        if despatch_meta.__dict__['despatch_id'] ==\
+                                despatch_q.__dict__['id']:
+                            email_parts['email'] = email_part
+                            email_parts[despatch_meta.__dict__['dataKey']
+                                        ] = despatch_meta.__dict__['dataValue']
+                    if email_parts:
                         sched.add_job(send_email_notifications, trigger='date',
                                       next_run_time=str(
-                                          datetime.datetime.now()),
+                                          remove_seconds(despatch_q.due_date)),
                                       args=[
                                           email_parts['subject'],
                                           email_parts['email'],
-                                          email_parts['body']]
+                                          email_parts['body'], despatch_meta]
                                       )
                         sched.start()
-                        change_send_status(despatch_meta, 'processing')
-                    except (SMTPAuthenticationError, SMTPServerDisconnected):
-                        change_send_status(despatch_meta, 'pending')
-                    except SMTPException:
-                        change_send_status(despatch_meta, 'failed')
-                    else:
-                        change_send_status(despatch_meta, 'sent')
+    except Exception:
+        pass
 
 
 def alert_counting():
