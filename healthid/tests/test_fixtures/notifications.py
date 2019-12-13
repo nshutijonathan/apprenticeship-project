@@ -1,11 +1,16 @@
 view_notifications = '''
                     query{
                         notifications{
-                            id,
-                            message,
-                            createdAt
+                            id
+                            subject
+                            status
+                            notificationMeta{
+                                id
+                                dataKey
+                                dataValue
+                            }
                         }
-                        }
+                    }
             '''
 
 toggle_permissions = '''
@@ -18,10 +23,12 @@ toggle_permissions = '''
                 '''
 update_notification_status = '''
                 mutation {{
-                    updateReadStatus(id: "{notification_id}"){{
+                    updateNotificationStatus(id: "{notification_id}"){{
                         success
+                        error
                         notification {{
-                            message
+                            id
+                            status
                         }}
                     }}
                 }}
@@ -31,6 +38,7 @@ delete_notification = '''
                 mutation {{
                     deleteNotification(id: "{notification_id}"){{
                         success
+                        error
                     }}
                 }}
 '''

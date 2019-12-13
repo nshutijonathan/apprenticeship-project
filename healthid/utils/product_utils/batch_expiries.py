@@ -54,9 +54,11 @@ def trigger_notification(expired_batches):
             })
         subject = 'Expired Products!'
         event_name = 'batch-expiry-notification-event'
-        thread = threading.Thread(target=notify(
-            outlet_master_admins, message,
-            event_name, subject, html_body, ))
+        thread = threading.Thread(target=notify(users=outlet_master_admins,
+                                                subject=subject,
+                                                body=message,
+                                                event_name=event_name,
+                                                html_body=html_body))
         thread.start()
 
 
@@ -78,9 +80,10 @@ def generate_expiry_notification(expired_batches):
         }
         expired_products.append(message)
     event_name = 'expiry-notification-event'
-    thread = threading.Thread(target=notify(
-        outlet_user, expired_products,
-        event_name, ))
+    thread = threading.Thread(target=notify(users=outlet_user,
+                                            subject='Expired Products!',
+                                            body=message,
+                                            event_name=event_name, ))
     thread.start()
 
 

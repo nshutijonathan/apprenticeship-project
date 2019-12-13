@@ -1,11 +1,11 @@
 import threading
 from datetime import datetime, timedelta
 
-from healthid.apps.notifications.models import Notification, NotificationRecord
 from healthid.apps.stock.models import StockCountTemplate
 from healthid.apps.events.models import Event, EventType
 from healthid.utils.app_utils.database import (SaveContextManager)
 from healthid.utils.app_utils.send_mail import SendMail
+from healthid.utils.notifications_utils.handle_notifications import notify
 
 
 def generate_stock_counts_notifications():
@@ -41,13 +41,11 @@ def notify_users(send_mail, assigned_users, message):
     '''
         Method to triger notifications
     '''
-    notification = Notification.objects.create(message=message)
-    with SaveContextManager(notification) as notification:
-        for user in assigned_users:
-            notification_record = NotificationRecord.objects.create(
-                recipient=user
-            )
-            notification.notification_records.add(notification_record)
+    notify(
+        users=assigned_users,
+        subject='Stock counts alert',
+        body=message)
+
     send_mail.send()
 
 

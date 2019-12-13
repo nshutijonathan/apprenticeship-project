@@ -25,17 +25,6 @@ class NotificationTests(BaseConfiguration):
         self.id = self.response['data']['notifications'][0]['id']
         self.non_existent_id = "ThanosSnapped123"
 
-    def test_no_notification(self):
-        """
-        Test that an error message is returned
-        when there are no notifications.
-        """
-        # delete existing notification
-        Notification.objects.all().delete()
-
-        response = self.query_with_token(self.access_token, view_notifications)
-        self.assertIn('no notifications', response['errors'][0]['message'])
-
     def test_get_all_notifications(self):
         """
         Method to check if all available notifications
@@ -49,9 +38,11 @@ class NotificationTests(BaseConfiguration):
         Method to test if a notification can be created for
         low quantity products in a batch.
         """
-        message = self.response['data']['notifications'][0]['message']
+        subject = self.response['data']['notifications'][0]['subject']
+        message = self.response['data']['notifications'][0][
+            'notificationMeta'][0]['dataValue']
 
-        self.assertIn('Low quantity alert', message)
+        self.assertIn('Low quantity alert', subject)
         self.assertIn(self.product.product_name, message)
 
     def test_mark_notification_as_read(self):
@@ -61,9 +52,9 @@ class NotificationTests(BaseConfiguration):
         """
         status_response = self.query_with_token(
             self.access_token, update_notification_status.format(
-                notification_id=self.id))
-
-        message = status_response['data']['updateReadStatus']['success']
+                notification_id=self.notification.id))
+        message = status_response['data'][
+            'updateNotificationStatus']['success']
         self.assertIn('Notification was marked as read', message)
 
     def test_delete_notification(self):
@@ -72,8 +63,7 @@ class NotificationTests(BaseConfiguration):
         """
         response = self.query_with_token(
             self.access_token, delete_notification.format(
-                notification_id=self.id))
-
+                notification_id=self.notification.id))
         message = response['data']['deleteNotification']['success']
         self.assertIn('was successfully deleted', message)
 
@@ -86,8 +76,8 @@ class NotificationTests(BaseConfiguration):
             self.access_token, delete_notification.format(
                 notification_id=self.non_existent_id))
 
-        message = response['errors'][0]['message']
-        self.assertIn('does not exist', message)
+        error = response['data']['deleteNotification']['error']
+        self.assertIn('cannot delete this notification', error)
 
     def test_mark_non_existent_as_read(self):
         """
@@ -99,5 +89,16 @@ class NotificationTests(BaseConfiguration):
             self.access_token, update_notification_status.format(
                 notification_id=self.non_existent_id))
 
-        message = status_response['errors'][0]['message']
-        self.assertIn('does not exist', message)
+        error = status_response['data']['updateNotificationStatus']['error']
+        self.assertIn('are not among the recipients', error)
+
+    def test_no_notification(self):
+        """
+        Test that an error message is returned
+        when there are no notifications.
+        """
+        # delete existing notification
+        Notification.objects.all().delete()
+
+        response = self.query_with_token(self.access_token, view_notifications)
+        self.assertIn('no notifications', response['errors'][0]['message'])

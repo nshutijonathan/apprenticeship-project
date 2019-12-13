@@ -91,8 +91,11 @@ class UpdateStockCount(graphene.Mutation):
                 }
                 notify(
                     users=users_instance,
-                    message=subject, event_name=event_name,
-                    subject=context, html_body=email_stock_count,
+                    subject=subject,
+                    event_name=event_name,
+                    body=context,
+                    html_subject=context,
+                    html_body=email_stock_count,
                 )
         message = [SUCCESS_RESPONSES["update_success"].format("Stock Count")]
         return UpdateStockCount(

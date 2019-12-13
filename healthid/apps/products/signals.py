@@ -66,7 +66,11 @@ def notify_quantity(sender, instance, created, **kwargs):
                     all_users.append(user)
             message = PRODUCTS_SUCCESS_RESPONSES[
                 "batch_edit_proposal"].format(batch.batch_no)
-            notify(all_users, message, event_name='batch_quantity')
+            notify(
+                users=all_users,
+                subject='Proposed change in batch quantity',
+                event_name='batch_quantity',
+                body=message)
     # if quantity instance is not a proposal,
     # we can check if the product quantity is low
     if not instance.parent_id:
@@ -83,7 +87,11 @@ def notify_quantity(sender, instance, created, **kwargs):
                 "low_quantity_alert"].format(
                 product.product_name,
                 product.quantity_in_stock)
-            notify(outlet_users, message, event_name='product_quantity')
+            notify(
+                users=outlet_users,
+                subject='Low quantity alert',
+                event_name='product_quantity',
+                body=message)
 
 
 @receiver(post_save, sender=Quantity)

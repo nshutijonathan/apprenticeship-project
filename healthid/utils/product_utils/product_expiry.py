@@ -63,4 +63,4 @@ def create_promotion(products, title, discount, outlet):
         roles = ('Master Admin', 'Manager')
         users = [user for user in users if str(user.role) in roles]
         message = f'Products have been added to promotion {title}.'
-        notify(users, message)
+        notify(users=users, subject='Products about to expire.', body=message)

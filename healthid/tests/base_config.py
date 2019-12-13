@@ -22,6 +22,7 @@ from healthid.tests.test_fixtures.authentication import login_user_query
 from healthid.utils.business_utils.create_business import create_business
 from healthid.apps.receipts.models import ReceiptTemplate
 from healthid.apps.consultation.models import CustomerConsultation
+from healthid.apps.notifications.models import Notification, NotificationMeta
 
 
 class BaseConfiguration(TestCase):
@@ -218,6 +219,9 @@ class BaseConfiguration(TestCase):
         OutletUser.objects.create(user=self.master_admin_user,
                                   outlet=self.outlet,
                                   is_active_outlet=True)
+
+        self.notification = self.create_notification(
+            self.user, 'general_notification', 'subject')
 
         self.create_customer_data = {
             "first_name": "Habib",
@@ -489,3 +493,16 @@ class BaseConfiguration(TestCase):
 
         )
         return consultation
+
+    def create_notification(self, user, event_name, subject):
+        notification = Notification.objects.create(subject=subject,
+                                                   user=user,
+                                                   event_name=event_name or
+                                                   Notification().event_name)
+        notification_meta = NotificationMeta.objects.create(
+            notification=notification,
+            body='body')
+
+        notification.notification_meta = notification_meta
+
+        return notification

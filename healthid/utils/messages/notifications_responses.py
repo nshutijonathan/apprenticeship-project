@@ -1,6 +1,6 @@
 NOTIFICATION_SUCCESS_RESPONSES = {
     "notification_toggle": "Notification was marked as {}",
-    "notification_deletion_success": "Notification with id {}"
+    "notification_deletion_success": "Notification with id {} "
                                      "was successfully deleted"
 }
 
