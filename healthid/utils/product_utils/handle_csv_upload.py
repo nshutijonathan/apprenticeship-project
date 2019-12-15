@@ -3,7 +3,8 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.outlets.models import OutletUser
-from healthid.apps.orders.models.suppliers import Suppliers, SuppliersContacts
+from healthid.apps.orders.models.suppliers import Suppliers,\
+    SuppliersMeta
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -24,11 +25,9 @@ class HandleCsvValidations(object):
         """
         Parses products information from an appropriately formatted CSV file
         and save them.
-
         arguments:
             io_string(obj): 'io.StringIO' object containing a list
                             of products in CSV format
-
         returns:
             int: the number of saved products
         """
@@ -49,17 +48,17 @@ class HandleCsvValidations(object):
             product_category = get_product_category(
                 user_outlets, product_categories, category, row_count)
 
-            supplier = get_model_object(SuppliersContacts,
-                                        'email__iexact',
+            supplier = get_model_object(SuppliersMeta,
+                                        'display_name__iexact',
                                         row.get('preferred supplier'),
                                         error_type=NotFound,
-                                        label='email')
+                                        label='display name')
 
-            backup_supplier = get_model_object(SuppliersContacts,
-                                               'email__iexact',
+            backup_supplier = get_model_object(SuppliersMeta,
+                                               'display_name__iexact',
                                                row.get('backup supplier'),
                                                error_type=NotFound,
-                                               label='email')
+                                               label='display name')
 
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
@@ -110,12 +109,10 @@ class HandleCsvValidations(object):
         Parses batch information from an appropriately formatted CSV file.
         Creates and saves new 'BatchInfo' instances.
         Updates the product quantities based on the new batches.
-
         arguments:
             user(obj): contains a 'User' instance
             batch_info_csv(obj): 'io.StringIO' object representing
                                  the batch info CSV
-
         returns:
             None
         """
