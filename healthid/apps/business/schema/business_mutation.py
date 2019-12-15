@@ -13,6 +13,7 @@ from healthid.utils.business_utils.validators import ValidateBusiness
 from healthid.utils.messages.business_responses import\
      BUSINESS_ERROR_RESPONSES, BUSINESS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
+from healthid.apps.products.models import ProductCategory
 
 
 class BusinesType(DjangoObjectType):
@@ -59,7 +60,15 @@ class CreateBusiness(graphene.Mutation):
         with SaveContextManager(business, model=Business) as business:
             success = [SUCCESS_RESPONSES[
                        "creation_success"].format(business.legal_name)]
+            ProductCategory.objects.bulk_create(
+            [ProductCategory(name="Prescription", business=business, is_default=True),
+            ProductCategory(name="OTC", business=business, is_default=True),
+            ProductCategory(name="Daily Essentials", business=business, is_default=True),
+            ProductCategory(name="Beauty", business=business,is_default=True)
+            ])
+            
             return CreateBusiness(business=business, success=success)
+
 
 
 class UpdateBusiness(graphene.Mutation):

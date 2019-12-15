@@ -23,7 +23,7 @@ class CreateProductCategory(graphene.Mutation):
 
     class Arguments:
         name = graphene.String(required=True)
-        outlet_id = graphene.Int(required=True)
+        business_id = graphene.String(required=True)
         loyalty_weight = graphene.Int()
         amount_paid = graphene.Int()
         markup = graphene.Int(required=True)
@@ -32,13 +32,11 @@ class CreateProductCategory(graphene.Mutation):
     message = graphene.String()
 
     @login_required
-    @user_permission('Operations Admin')
+    @user_permission('Master Admin')
     def mutate(self, info, **kwargs):
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
-        check_user_is_active_in_outlet(info.context.user,
-                                       outlet_id=kwargs.get('outlet_id'))
         params = {'model': ProductCategory,
                   'field': 'name', 'value': kwargs.get('name')}
         product_category = ProductCategory(**kwargs)
@@ -65,16 +63,13 @@ class EditProductCategory(graphene.Mutation):
         is_vat_applicable = graphene.Boolean()
 
     @login_required
-    @user_permission('Operations Admin')
+    @user_permission('Master Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         name = kwargs.get('name')
         if name.strip() == "":
             raise GraphQLError(PRODUCTS_ERROR_RESPONSES["invalid_input_error"])
         product_category = get_model_object(ProductCategory, 'id', id)
-        check_user_is_active_in_outlet(info.context.user,
-                                       outlet_id=product_category.outlet.id)
-        # add fields with changed values to new dictionary
         changed_fields = {
             key: kwargs.get(key)
             for key, value in model_to_dict(product_category).items()
@@ -104,13 +99,13 @@ class DeleteProductCategory(graphene.Mutation):
         id = graphene.Int()
 
     @login_required
-    @user_permission('Operations Admin')
+    @user_permission('Master Admin')
     def mutate(self, info, **kwargs):
         id = kwargs.get('id')
         user = info.context.user
         product_category = get_model_object(ProductCategory, 'id', id)
-        check_user_is_active_in_outlet(info.context.user,
-                                       outlet_id=product_category.outlet.id)
+        if product_category.is_default:
+            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["default_product_category_error"])
         product_category.delete(user)
         message = SUCCESS_RESPONSES[
             "deletion_success"].format(

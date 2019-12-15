@@ -10,6 +10,7 @@ from taggit.managers import TaggableManager
 from healthid.apps.authentication.models import User
 from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.outlets.models import Outlet
+from healthid.apps.business.models import Business
 from healthid.apps.products.managers import ProductManager, QuantityManager
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
@@ -35,10 +36,11 @@ class ProductCategory(BaseModel):
     loyalty_weight = models.PositiveIntegerField(default=0)
     markup = models.PositiveIntegerField(default=25)
     is_vat_applicable = models.BooleanField(default=False)
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, null=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True)
+    is_default = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (("name", "outlet"))
+       unique_together = ['name', 'business']
 
 
 class DispensingSize(BaseModel):

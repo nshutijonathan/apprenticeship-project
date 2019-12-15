@@ -372,9 +372,9 @@ create_product_category = '''
     mutation {{
     createProductCategory(
         name:"panadol",
-        outletId: {outlet_id}
-        isVatApplicable: true
-        loyaltyWeight: 1
+        businessId: "{business_id}",
+        isVatApplicable: true,
+        loyaltyWeight: 1,
         markup: 20
         ){{
         productCategory{{

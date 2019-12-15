@@ -22,6 +22,7 @@ from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.utils.app_utils.validators import validate_expire_months
+from django.db.models import Q
 
 
 @convert_django_field.register(TaggableManager)
@@ -154,7 +155,7 @@ class Query(graphene.AbstractType):
     expired_batches = graphene.Field(product_batch_info)
     deactivated_products = graphene.List(ProductType)
     product_categories = graphene.List(
-        ProductCategoryType, outlet_id=graphene.Int(required=True))
+        ProductCategoryType, business_id=graphene.String(required=False))
     dispensing_size = graphene.List(DispensingSizeType)
     total_products_pages_count = graphene.Int()
     products_total_number = graphene.Int()
@@ -326,8 +327,8 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_product_categories(self, info, **kwargs):
-        outlet_id = kwargs.get('outlet_id')
-        return ProductCategory.objects.filter(outlet_id=outlet_id)
+        business_id = kwargs.get('business_id')
+        return ProductCategory.objects.filter(business_id=business_id)
 
     @login_required
     def resolve_dispensing_size(self, info):

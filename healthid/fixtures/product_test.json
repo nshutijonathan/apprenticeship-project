@@ -126,7 +126,7 @@
     "pk": 1,
     "fields": {
       "name": "prescription",
-      "outlet": 1
+      "business": "123456789"
     }
   },
   {
