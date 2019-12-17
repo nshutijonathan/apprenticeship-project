@@ -6,7 +6,7 @@ def get_product_category(user_outlets, product_categories,
     product_category = None
     for user_outlet in user_outlets:
         for category in product_categories:
-            if category.get('outlet_id') == user_outlet.get('outlet_id'):
+            if category.get('business_id') == user_outlet.outlet.business.id:
                 product_category = category
                 break
         if product_category:

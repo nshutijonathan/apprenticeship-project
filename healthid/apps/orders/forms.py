@@ -77,7 +77,8 @@ class BarcodeScanForm(forms.Form):
         order = get_model_object(Order, 'id',
                                  cleaned_data['order_id'])
         product = get_model_object(Product, 'id', cleaned_data['product_id'])
-        outlet = product.outlet
+        outlet = product.business.outlet_set.filter(
+            id=cleaned_data['outlet_id']).first()
         preference = get_model_object(OutletPreference, 'outlet_id', outlet.id)
 
         if not preference.barcode_preference:
@@ -86,7 +87,7 @@ class BarcodeScanForm(forms.Form):
         if not order.closed:
             raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_order_rejection"])
 
-        if cleaned_data['outlet_id'] != product.outlet.id:
+        if cleaned_data['outlet_id'] != outlet.id:
             raise GraphQLError(ORDERS_ERROR_RESPONSES["scan_batch_rejection"])
 
         product_batch_ids = product.batch_info.values_list('id', flat=True)

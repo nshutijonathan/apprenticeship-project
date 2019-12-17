@@ -6,8 +6,7 @@ view_notifications = '''
                             status
                             notificationMeta{
                                 id
-                                dataKey
-                                dataValue
+                                body
                             }
                         }
                     }

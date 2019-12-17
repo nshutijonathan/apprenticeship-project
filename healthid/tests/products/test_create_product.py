@@ -26,7 +26,7 @@ class TestCreateProduct(BaseConfiguration):
         self.backup_id = self.supplier2['data']['addSupplier']['supplier'][
             'id']
         self.product = create_product_2(
-            self.supplier_id, self.backup_id, self.user, self.outlet)
+            self.supplier_id, self.backup_id, self.user, self.business)
         self.product_2 = create_new_product(
             name="Cod Liver Oil",
             description="Fish oil",
@@ -36,7 +36,7 @@ class TestCreateProduct(BaseConfiguration):
             supplier_id=self.supplier_id,
             backup_id=self.backup_id,
             user=self.user,
-            outlet=self.outlet
+            business=self.business
         )
         self.product_3 = create_new_product(
             name="Lozenge",
@@ -47,7 +47,7 @@ class TestCreateProduct(BaseConfiguration):
             supplier_id=self.supplier_id,
             backup_id=self.backup_id,
             user=self.user,
-            outlet=self.outlet
+            business=self.business
         )
 
     def test_create_product(self):

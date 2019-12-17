@@ -33,7 +33,7 @@ class HandleCsvValidations(object):
         """
         params = {'model': Product, 'error_type': ValidationError}
         [product_count, row_count, duplicated_products] = [0, 0, []]
-        user_outlets = OutletUser.objects.filter(user_id=user.id).values()
+        user_outlets = OutletUser.objects.filter(user_id=user.id)
         products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
 
@@ -80,7 +80,7 @@ class HandleCsvValidations(object):
             if product_name.lower() not in map(str.lower, product_names):
                 product_instance = Product(
                     product_category_id=product_category.get('id'),
-                    outlet_id=product_category.get('outlet_id'),
+                    business_id=product_category.get('business_id'),
                     product_name=product_name,
                     dispensing_size_id=dispensing_size.id,
                     description=row.get('description') or '',

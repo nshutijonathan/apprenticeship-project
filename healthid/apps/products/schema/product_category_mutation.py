@@ -4,8 +4,6 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
 from healthid.apps.products.models import ProductCategory
-from healthid.utils.app_utils.check_user_in_outlet import \
-    check_user_is_active_in_outlet
 from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.auth_utils.decorator import user_permission
@@ -105,7 +103,8 @@ class DeleteProductCategory(graphene.Mutation):
         user = info.context.user
         product_category = get_model_object(ProductCategory, 'id', id)
         if product_category.is_default:
-            raise GraphQLError(PRODUCTS_ERROR_RESPONSES["default_product_category_error"])
+            raise GraphQLError(
+                PRODUCTS_ERROR_RESPONSES["default_product_category_error"])
         product_category.delete(user)
         message = SUCCESS_RESPONSES[
             "deletion_success"].format(

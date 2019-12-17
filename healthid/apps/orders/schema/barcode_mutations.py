@@ -63,19 +63,16 @@ class RecordScan(graphene.Mutation):
         }
 
         form = BarcodeScanForm(data)
-
         if form.is_valid():
             cleaned_data = form.cleaned_data
         else:
             raise GraphQLError(form.errors)
-
         barcode_scan = BarcodeScan(
             scanned_number=cleaned_data['scanned_number'],
             order_id=cleaned_data['order_id'],
             batch_info_id=cleaned_data['batch_id'],
             count=cleaned_data['count'],
         )
-
         with SaveContextManager(barcode_scan) as barcode_scan:
             message = ORDERS_SUCCESS_RESPONSES["scan_save_success"]
             return RecordScan(barcode_scan=barcode_scan, message=message)

@@ -164,7 +164,7 @@ query{
 '''
 
 
-def create_product_2(supplier_id, backup_id, user, outlet):
+def create_product_2(supplier_id, backup_id, user, business):
     return Product.objects.create(
         product_category_id=1,
         product_name='Panadol',
@@ -178,12 +178,12 @@ def create_product_2(supplier_id, backup_id, user, outlet):
         backup_supplier_id=backup_id,
         tags="painkillers",
         is_approved=True,
-        outlet=outlet,
+        business=business,
         user=user)
 
 
 def create_new_product(name, description, brand, manufacturer,
-                       category, supplier_id, backup_id, user, outlet):
+                       category, supplier_id, backup_id, user, business):
     return Product.objects.create(
         product_category=category,
         product_name=name,
@@ -197,7 +197,7 @@ def create_new_product(name, description, brand, manufacturer,
         backup_supplier_id=backup_id,
         tags="painkillers",
         is_approved=True,
-        outlet=outlet,
+        business=business,
         user=user)
 
 

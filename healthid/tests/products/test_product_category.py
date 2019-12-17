@@ -15,6 +15,7 @@ class TestProductCategory(BaseConfiguration):
         """
         response = self.query_with_token(
             self.access_token_master,
+            # create_product_category.format(outlet_id=self.outlet.id)
             create_product_category.format(business_id=self.business.id)
         )
         self.assertIn(SUCCESS_RESPONSES[

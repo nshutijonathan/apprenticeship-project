@@ -13,7 +13,7 @@ def check_for_expiry_products():
 
     batches = BatchInfo.objects.filter(sold_out=False)
     batches_by_outlets = [list(result) for key, result in groupby(
-        batches, key=lambda batch: batch.product.outlet)]
+        batches, key=lambda batch: batch.product.business.outlet_set.first())]
     today = datetime.today().date()
     for batches_per_outlet in batches_by_outlets:
         expire_in_six_months = []
@@ -22,7 +22,7 @@ def check_for_expiry_products():
         for batch in batches_per_outlet:
             expiry_date = batch.expiry_date
             days_to_expiry = (expiry_date - today).days
-            outlet = batch.product.outlet
+            outlet = batch.product.business.outlet_set.first()
             if 182 >= days_to_expiry > 91:
                 expire_in_six_months.append(batch.product)
             elif 91 >= days_to_expiry > 30:

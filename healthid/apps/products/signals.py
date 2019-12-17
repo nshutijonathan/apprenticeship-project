@@ -47,7 +47,7 @@ def set_nearest_expiry_date(sender, instance, **kwargs):
         product.save()
 
 
-@receiver(post_save, sender=Quantity)
+@receiver(post_save, sender=Quantity)  # noqa
 def notify_quantity(sender, instance, created, **kwargs):
     """
     Method to generate notifications for proposed change in batch quantity.
@@ -58,19 +58,25 @@ def notify_quantity(sender, instance, created, **kwargs):
             instance.save()
         if instance.parent_id:
             batch = instance.batch
-            outlet_users = [user for user in batch.product.outlet.active_outlet_users if user.id != instance.proposed_by.id]  # noqa
-            all_users = []
-            for user in outlet_users:
-                if str(user.role) == "Master Admin" or str(user.role) == \
-                        "Operations Admin":
-                    all_users.append(user)
-            message = PRODUCTS_SUCCESS_RESPONSES[
-                "batch_edit_proposal"].format(batch.batch_no)
-            notify(
-                users=all_users,
-                subject='Proposed change in batch quantity',
-                event_name='batch_quantity',
-                body=message)
+            if len(batch.product.business.outlet_set.all()) > 0:
+                outlet_users = [user for user in
+                                batch.product.business.outlet_set.first().
+                                active_outlet_users
+                                if user.id != instance.proposed_by.id]
+                all_users = []
+                if outlet_users:
+                    for user in outlet_users:
+                        if str(user.role) == "Master\
+                            Admin" or str(user.role) == \
+                                "Operations Admin":
+                            all_users.append(user)
+                    message = PRODUCTS_SUCCESS_RESPONSES[
+                        "batch_edit_proposal"].format(batch.batch_no)
+                    notify(
+                        users=all_users,
+                        subject='Proposed change in batch quantity',
+                        event_name='batch_quantity',
+                        body=message)
     # if quantity instance is not a proposal,
     # we can check if the product quantity is low
     if not instance.parent_id:
@@ -79,19 +85,21 @@ def notify_quantity(sender, instance, created, **kwargs):
         # goes below this threshold
         quantity_threshold = 50
         product = instance.batch.product
-        outlet_users = product.outlet.active_outlet_users
-
-        # notify all outlet users.
-        if product.quantity_in_stock < quantity_threshold:
-            message = PRODUCTS_SUCCESS_RESPONSES[
-                "low_quantity_alert"].format(
-                product.product_name,
-                product.quantity_in_stock)
-            notify(
-                users=outlet_users,
-                subject='Low quantity alert',
-                event_name='product_quantity',
-                body=message)
+        if len(product.business.outlet_set.all()) > 0:
+            outlet_users = \
+                product.business.outlet_set.first().active_outlet_users
+            if len(outlet_users) > 0:
+                # notify all outlet users.
+                if product.quantity_in_stock < quantity_threshold:
+                    message = PRODUCTS_SUCCESS_RESPONSES[
+                        "low_quantity_alert"].format(
+                        product.product_name,
+                        product.quantity_in_stock)
+                    notify(
+                        users=outlet_users,
+                        subject='Low quantity alert',
+                        event_name='product_quantity',
+                        body=message)
 
 
 @receiver(post_save, sender=Quantity)

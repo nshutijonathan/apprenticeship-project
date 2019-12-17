@@ -228,7 +228,7 @@ class ProductFactory(factory.DjangoModelFactory):
     sales_price = 100.00
     preferred_supplier = factory.SubFactory(SuppliersFactory)
     backup_supplier = factory.SubFactory(SuppliersFactory)
-    outlet = factory.SubFactory(OutletFactory)
+    business = factory.SubFactory(BusinessFactory)
     user = factory.SubFactory(UserFactory)
     admin_comment = ""
     markup = 25

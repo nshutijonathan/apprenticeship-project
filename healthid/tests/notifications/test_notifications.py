@@ -40,7 +40,7 @@ class NotificationTests(BaseConfiguration):
         """
         subject = self.response['data']['notifications'][0]['subject']
         message = self.response['data']['notifications'][0][
-            'notificationMeta'][0]['dataValue']
+            'notificationMeta'][0]['body']
 
         self.assertIn('Low quantity alert', subject)
         self.assertIn(self.product.product_name, message)

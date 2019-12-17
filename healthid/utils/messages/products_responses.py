@@ -51,7 +51,8 @@ PRODUCTS_ERROR_RESPONSES = {
     "closed_survey_error": "This survey has already been closed",
     "product_category_no_edits": "Product category unchanged, "
                                  "nothing to edit.",
-    "default_product_category_error": "You cannot delete a default product category",
+    "default_product_category_error": "You cannot delete a default\
+        product category",
     "invalid_batch_quality": "Service quality must be an integer "
                              "between 1 and 5",
     "wrong_param": "Please provide a valid param in the url",

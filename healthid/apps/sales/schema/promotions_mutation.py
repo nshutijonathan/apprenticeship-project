@@ -11,6 +11,7 @@ from healthid.apps.products.schema.product_query import (
 from healthid.apps.sales.models import (
     Promotion, PromotionType as PromotionTypeModel
 )
+from healthid.apps.outlets.models import Outlet
 from healthid.apps.sales.schema.promotions_query import (
     PromotionType, PromotionTypeModelType
 )
@@ -137,8 +138,9 @@ class CreateRecommendedPromotion(graphene.Mutation):
         check_user_is_active_in_outlet(user, outlet_id=outlet_id)
         today_date = datetime.now()
         twelve_month = today_date + relativedelta(months=+12)
+        outlet = get_model_object(Outlet, 'id', outlet_id)
         near_expired_products = Product.objects \
-            .for_outlet(outlet_id) \
+            .for_business(outlet.business.id) \
             .filter(nearest_expiry_date__range=(today_date, twelve_month))
         promotion_set = set_recommended_promotion(Promotion,
                                                   near_expired_products)

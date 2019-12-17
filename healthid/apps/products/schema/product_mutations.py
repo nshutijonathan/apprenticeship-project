@@ -102,8 +102,7 @@ class CreateProduct(CreateEditProduct):
 
         product_category = get_model_object(
             ProductCategory, 'id', product_category_id)
-
-        product = Product(outlet=product_category.outlet,
+        product = Product(business=product_category.business,
                           product_category=product_category,
                           markup=product_category.markup)
         output = set_product_attributes(product, **kwargs)

@@ -27,8 +27,8 @@ class ProductManager(BaseManager):
             queryset = queryset.filter(is_approved=True)
         return queryset
 
-    def for_outlet(self, outlet_id):
-        return self.filter(outlet_id=outlet_id)
+    def for_business(self, business_id):
+        return self.filter(business_id=business_id)
 
 
 class QuantityManager(BaseManager):

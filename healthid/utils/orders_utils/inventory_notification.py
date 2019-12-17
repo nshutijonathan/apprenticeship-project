@@ -30,20 +30,20 @@ def send_manager_email(products, managers_email):
     mail.send()
 
 
-def product_below_stock(outlet, outlet_products, is_cron_job=True):
+def product_below_stock(outlet, business_products, is_cron_job=True):
     """
     Auto searches for products below specified reorder point/max
 
     Args:
         outlet (cls): Outlet instance.
-        outlet_products (cls): Outlet's product instance.
+        business_products (cls): Business's product instance.
         is_cron_job (bool): check to ensure function can be a cron
 
     Returns:
         list: tuple(product_name, quantity)
     """
     products_below_stock = []
-    for product in outlet_products:
+    for product in business_products:
         reorder_point = product.reorder_point
         reorder_max = product.reorder_max
 
@@ -56,7 +56,7 @@ def product_below_stock(outlet, outlet_products, is_cron_job=True):
         remaining_stock = product.quantity_in_stock
         sales_velocity = SalesVelocity(
             product_id=product.id,
-            outlet_id=product.outlet_id
+            outlet_id=outlet.id
         ).velocity_calculator()
 
         (default_sales_velocity, calculated_sales_velocity,
@@ -109,9 +109,9 @@ def autosuggest_product_order(outlet):
     Returns:
         [], list of products and quantity to order for
     """
-    outlet_products = Product.objects.filter(outlet=outlet.id)
+    business_products = Product.objects.filter(business=outlet.business.id)
     products_to_reorder = product_below_stock(outlet,
-                                              outlet_products,
+                                              business_products,
                                               is_cron_job=False)
     if products_to_reorder:
         return products_to_reorder

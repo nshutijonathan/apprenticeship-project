@@ -37,7 +37,6 @@ class AddCartItem(graphene.Mutation):
 
         cart, _ = Cart.objects.get_or_create(user=info.context.user)
         product = get_model_object(Product, 'id', product_id)
-
         if not product.is_approved:
             raise GraphQLError(
                 SALES_ERROR_RESPONSES[

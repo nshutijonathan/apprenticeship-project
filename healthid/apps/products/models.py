@@ -40,7 +40,7 @@ class ProductCategory(BaseModel):
     is_default = models.BooleanField(default=False)
 
     class Meta:
-       unique_together = ['name', 'business']
+        unique_together = ['name', 'business']
 
 
 class DispensingSize(BaseModel):
@@ -83,8 +83,8 @@ class Product(BaseModel):
         Suppliers, related_name='prefered', on_delete=models.CASCADE)
     backup_supplier = models.ForeignKey(
         Suppliers, related_name='backup', on_delete=models.CASCADE)
-    outlet = models.ForeignKey(
-        Outlet, related_name='outlet_products',
+    business = models.ForeignKey(
+        Business, related_name='business_products',
         on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True,
@@ -121,7 +121,7 @@ class Product(BaseModel):
         unique_together = ((
             "product_name",
             "manufacturer",
-            "outlet",
+            "business",
             "description",
             "dispensing_size"))
 
@@ -177,7 +177,7 @@ class Product(BaseModel):
     @property
     def get_sales_price(self):
         selling_price = self.pre_tax_retail_price
-        preference = self.outlet.outletpreference
+        preference = self.business.outlet_set.first().outletpreference
         if self.vat_status:
             vat_rate = selling_price * Decimal(preference.vat_rate.rate)
             selling_price = selling_price + vat_rate
@@ -202,7 +202,7 @@ class Product(BaseModel):
         product_dict = model_to_dict(proposed_edit)
         exclude_list = [
             'auto_price', 'parent', 'is_active', 'is_approved', 'sku_number',
-            'user', 'outlet'
+            'user', 'business'
         ]
         [product_dict.pop(item) for item in exclude_list]
         product_dict['preferred_supplier_id'] = product_dict.pop(

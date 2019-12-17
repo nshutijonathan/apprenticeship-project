@@ -68,14 +68,14 @@ def generate_expiry_notification(expired_batches):
     expired_products = []
     outlet_user = []
     for batch in expired_batches:
-        outlet = batch['batch'].product.outlet
+        outlet = batch['batch'].product.business.outlet_set.first()
         for user in outlet.active_outlet_users:
             outlet_user.append(user)
         message = {
             'id': batch['batch'].id,
             'batch': batch['batch'].batch_no,
             'product': batch['batch'].product.product_name,
-            'outlet': batch['batch'].product.outlet.name,
+            'outlet': batch['batch'].product.business.outlet_set.first().name,
             'days_to_expiry': batch["days_to_expiry"]
         }
         expired_products.append(message)

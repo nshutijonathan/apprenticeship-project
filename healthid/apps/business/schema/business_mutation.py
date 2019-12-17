@@ -11,7 +11,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.business_utils.validators import ValidateBusiness
 from healthid.utils.messages.business_responses import\
-     BUSINESS_ERROR_RESPONSES, BUSINESS_SUCCESS_RESPONSES
+    BUSINESS_ERROR_RESPONSES, BUSINESS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.apps.products.models import ProductCategory
 
@@ -61,14 +61,17 @@ class CreateBusiness(graphene.Mutation):
             success = [SUCCESS_RESPONSES[
                        "creation_success"].format(business.legal_name)]
             ProductCategory.objects.bulk_create(
-            [ProductCategory(name="Prescription", business=business, is_default=True),
-            ProductCategory(name="OTC", business=business, is_default=True),
-            ProductCategory(name="Daily Essentials", business=business, is_default=True),
-            ProductCategory(name="Beauty", business=business,is_default=True)
-            ])
-            
-            return CreateBusiness(business=business, success=success)
+                [ProductCategory(
+                    name="Prescription", business=business, is_default=True),
+                 ProductCategory(name="OTC", business=business,
+                                 is_default=True),
+                 ProductCategory(name="Daily Essentials",
+                                 business=business, is_default=True),
+                 ProductCategory(
+                     name="Beauty", business=business, is_default=True)
+                 ])
 
+            return CreateBusiness(business=business, success=success)
 
 
 class UpdateBusiness(graphene.Mutation):
@@ -141,8 +144,8 @@ class AddUserBusiness(graphene.Mutation):
         message = [
             BUSINESS_SUCCESS_RESPONSES[
                 "add_user_to_business_success"
-                 ].format(user_instance.email,
-                          business_instance.legal_name)
+            ].format(user_instance.email,
+                     business_instance.legal_name)
         ]
         return AddUserBusiness(user=user_instance, message=message)
 

@@ -242,7 +242,7 @@
       "preferred_supplier": 1,
       "backup_supplier": 1,
       "loyalty_weight": 1,
-      "outlet": 1
+      "business": "123456789"
     }
   },
   {
@@ -263,7 +263,7 @@
       "preferred_supplier": 1,
       "backup_supplier": 1,
       "loyalty_weight": 2,
-      "outlet": 1
+      "business": "123456789"
     }
   },
   {
@@ -284,7 +284,7 @@
       "preferred_supplier": 1,
       "backup_supplier": 1,
       "loyalty_weight": 3,
-      "outlet": 1
+      "business": "123456789"
     }
   },
   {

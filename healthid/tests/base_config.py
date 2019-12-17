@@ -409,7 +409,7 @@ class BaseConfiguration(TestCase):
             dispensing_size=self.dispensing_size,
             preferred_supplier=self.supplier,
             backup_supplier=self.supplier,
-            outlet=self.outlet,
+            business=self.business,
             is_approved=True)
 
     def create_batch_info(self):
