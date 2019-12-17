@@ -3,8 +3,7 @@ from graphene_django import DjangoObjectType
 from healthid.utils.app_utils.database import get_model_object
 
 from healthid.apps.authentication.models import User
-from healthid.apps.outlets.models import \
-    Outlet, OutletMeta, OutletContacts
+from healthid.apps.outlets.models import Outlet
 
 
 class ActiveOutletType(DjangoObjectType):
@@ -36,17 +35,19 @@ class UserType(DjangoObjectType):
         if not self.active_outlet:
             return None
         outlet = get_model_object(Outlet, 'id', self.active_outlet.id)
-        outlets_meta = OutletMeta.objects.all()
-        outlets_contact = OutletContacts.objects.all()
+        outlets_meta = outlet.outletmeta_set.all()
+        outlets_contact = outlet.outletcontacts_set.all()
         for outlet_meta in outlets_meta:
-            if id == outlet_meta.__dict__['outlet_id']:
+            if outlet.id == outlet_meta.__dict__['outlet_id']:
                 outlet.__dict__[outlet_meta.__dict__[
                     'dataKey']] = outlet_meta.__dict__['dataValue']
             else:
                 outlet.__dict__[outlet_meta.__dict__['dataKey']] = None
         for outlet_contact in outlets_contact:
-            if id == outlet_contact.__dict__['outlet_id']:
+            if outlet.id == outlet_contact.__dict__['outlet_id']:
                 outlet.__dict__[outlet_contact.__dict__[
                     'dataKey']] = outlet_contact.__dict__['dataValue']
             else:
                 outlet.__dict__[outlet_contact.__dict__['dataKey']] = None
+
+        return outlet
