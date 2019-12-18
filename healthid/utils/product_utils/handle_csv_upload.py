@@ -1,4 +1,5 @@
 import csv
+from re import sub
 from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
@@ -118,6 +119,7 @@ class HandleCsvValidations(object):
         """
 
         batch_record_format = [
+            'Batch No',
             'Product',
             'Supplier',
             'Date Received',
@@ -139,47 +141,48 @@ class HandleCsvValidations(object):
                 product_id = get_model_object(
                     Product,
                     'product_name',
-                    batch_record[0],
+                    batch_record[1],
                     error_type=NotFound
                 ).id
                 supplier_id = get_model_object(
                     Suppliers,
                     'name',
-                    batch_record[1],
+                    batch_record[2],
                     error_type=NotFound
                 ).id
 
                 # check if batch expiry date occurs before delivery date.
                 # 'batch_record[3]' and 'batch_record[2]' represent the
                 # 'Expiry Date' and 'Delivery Date' CSV records respectively.
-                if batch_record[3] < batch_record[2]:
+                if batch_record[4] < batch_record[3]:
                     raise ValidationError(
                         PRODUCTS_ERROR_RESPONSES["batch_expiry_error"].format
-                        (batch_record[0])
+                        (batch_record[1])
                     )
 
                 # converts a 'True' or 'False' string from the
                 # 'Delivery Promptness' CSV column into a Python boolean.
                 # 'batch_record[7]' represents the 'Delivery Promptness'
                 #  CSV record.
-                if batch_record[7] in true_strings:
-                    batch_record[7] = True
-                elif batch_record[7] in false_strings:
-                    batch_record[7] = False
+                if batch_record[8] in true_strings:
+                    batch_record[8] = True
+                elif batch_record[8] in false_strings:
+                    batch_record[8] = False
                 else:
                     raise ValidationError(
                         PRODUCTS_ERROR_RESPONSES["batch_bool_error"]
                     )
 
                 batch_info_args = {
+                    'batch_no': batch_record[0],
                     'product_id': product_id,
                     'supplier_id': supplier_id,
-                    'date_received': batch_record[2],
-                    'expiry_date': batch_record[3],
-                    'unit_cost': float(batch_record[4]),
-                    'quantity': int(batch_record[5]),
-                    'service_quality': int(batch_record[6]),
-                    'delivery_promptness': batch_record[7]
+                    'date_received': batch_record[3],
+                    'expiry_date': batch_record[4],
+                    'unit_cost': float(batch_record[5]),
+                    'quantity': int(batch_record[6]),
+                    'service_quality': int(batch_record[7]),
+                    'delivery_promptness': batch_record[8]
                 }
                 self.create_batch_info(user, **batch_info_args)
         else:
@@ -190,8 +193,17 @@ class HandleCsvValidations(object):
         quantity = kwargs.pop('quantity')
         kwargs['date_received'] = parse_date(kwargs.get('date_received'))
         kwargs['expiry_date'] = parse_date(kwargs.get('expiry_date'))
-
         batch_info = BatchInfo(user=user)
+        datetime_str = sub('[-]', '', str(kwargs['date_received']))
+        batch_no_auto = f'BN{datetime_str}'
+        if not kwargs.get('batch_no'):
+            kwargs['batch_no'] = batch_no_auto
+        batch_ = BatchInfo.objects.filter(batch_no=kwargs.get('batch_no'))
+        batch__l = list(
+            map(lambda batch__: batch__.quantity == quantity, batch_))
+        if True in batch__l:
+            raise ValidationError(
+                ERROR_RESPONSES['batch_exist'].format(kwargs.get('batch_no')))
         for key, value in kwargs.items():
             setattr(batch_info, key, value)
 

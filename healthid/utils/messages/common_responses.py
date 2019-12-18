@@ -10,6 +10,7 @@ SUCCESS_RESPONSES = {
 }
 
 ERROR_RESPONSES = {
+    "batch_exist": "batch number {} exists",
     "inexistent_record_query_error": "{} record does not exist",
     "invalid_field_error": "Please input a valid {}",
     "empty_field_error": "{} cannot be empty",
