@@ -4,7 +4,7 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.business.models import Business
-from healthid.apps.orders.models.suppliers import Suppliers, SuppliersMeta
+from healthid.apps.orders.models.suppliers import SuppliersMeta
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -20,6 +20,8 @@ from healthid.utils.product_utils.get_product_category import\
     get_product_category
 from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
+from healthid.utils.product_utils.get_product import\
+    get_product
 
 
 class HandleCsvValidations(object):
@@ -37,9 +39,9 @@ class HandleCsvValidations(object):
             on_duplication)
         params = {'model': Product, 'error_type': ValidationError}
         [product_count, row_count, duplicated_products] = [0, 0, []]
-        user_bussinesses = Business.objects.filter(user_id=user.id).values()
         products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
+        user_bussinesses = Business.objects.filter(user_id=user.id).values()
 
         for row in products:
             row_count += 1
@@ -50,7 +52,6 @@ class HandleCsvValidations(object):
             product_name = row.get('name') or row.get('product name')
             on_duplicate_action = on_duplication_actions.get(
                 product_name.lower()) or ''
-
             product_category = get_product_category(
                 user_bussinesses, product_categories, category, row_count)
 
@@ -145,22 +146,24 @@ class HandleCsvValidations(object):
 
         # produces the column header row of the CSV
         # from the iterator returned by csv.reader()
+        row_count = 0
         column_header = next(csv.reader(batch_info_csv))
+        user_bussinesses = Business.objects.filter(user_id=user.id).values()
 
         if column_header == batch_record_format:
             for batch_record in csv.reader(batch_info_csv):
-                product_id = get_model_object(
-                    Product,
-                    'product_name',
-                    batch_record[1],
-                    error_type=NotFound
-                ).id
+                row_count += 1
+                products = Product.objects.filter(
+                    product_name__iexact=batch_record[1]).values()
+                product = get_product(
+                    user_bussinesses, products, batch_record[1], row_count)
+
                 supplier_id = get_model_object(
-                    Suppliers,
-                    'name',
+                    SuppliersMeta,
+                    'display_name',
                     batch_record[2],
                     error_type=NotFound
-                ).id
+                ).supplier_id
 
                 # check if batch expiry date occurs before delivery date.
                 # 'batch_record[3]' and 'batch_record[2]' represent the
@@ -186,7 +189,7 @@ class HandleCsvValidations(object):
 
                 batch_info_args = {
                     'batch_no': batch_record[0],
-                    'product_id': product_id,
+                    'product_id': product.get('id'),
                     'supplier_id': supplier_id,
                     'date_received': batch_record[3],
                     'expiry_date': batch_record[4],
