@@ -43,6 +43,7 @@ supplier_mutation = '''
               countryId:1,
             },
             metaInput: {
+              displayName: "this is a display name"
               creditDays:4,
               logo:"logo",
               paymentTerms: "ON_CREDIT",

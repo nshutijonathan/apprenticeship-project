@@ -1,10 +1,10 @@
 from rest_framework.exceptions import ValidationError
 
 
-def get_product_category(user_outlets, product_categories,
+def get_product_category(user_bussinesses, product_categories,
                          searched_category, row_count):
     product_category = None
-    for user_outlet in user_outlets:
+    for user_outlet in user_bussinesses:
         for category in product_categories:
             if category.get('business_id') == user_outlet.outlet.business.id:
                 product_category = category

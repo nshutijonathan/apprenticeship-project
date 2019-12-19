@@ -104,8 +104,7 @@ class DeleteProductCategory(graphene.Mutation):
         product_category = get_model_object(ProductCategory, 'id', id)
         if product_category.is_default:
             raise GraphQLError(
-                PRODUCTS_ERROR_RESPONSES[
-                    "default_product_category_error"])
+                PRODUCTS_ERROR_RESPONSES["default_product_category_error"])
         product_category.delete(user)
         message = SUCCESS_RESPONSES[
             "deletion_success"].format(

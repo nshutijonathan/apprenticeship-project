@@ -65,9 +65,10 @@ class HandleCSV(APIView):
         data_set = csv_file.read().decode('UTF-8')
 
         io_string = io.StringIO(data_set)
+        on_duplication = request.POST.get('on_duplication')
+
         try:
             if param == 'suppliers':
-                on_duplication = request.POST.get('on_duplication')
                 user = request.user
                 res = handle_supplier_csv(user=user,
                                           io_string=io_string,
@@ -78,7 +79,7 @@ class HandleCSV(APIView):
                     "noOfSuppliersAdded": res['supplier_count'],
                     "duplicatedSuppliers": res['duplicated_suppliers'],
                 }
-                if added_suppliers == 0:
+                if added_suppliers == 0 and len(res['duplicated_suppliers']):
                     return Response(
                         {
                             "message":
@@ -90,7 +91,9 @@ class HandleCSV(APIView):
                 return Response(message, status.HTTP_201_CREATED)
             if param == 'products':
                 user = request.user
-                result = handle_csv(io_string=io_string, user=user)
+                result = handle_csv(io_string=io_string,
+                                    user=user,
+                                    on_duplication=on_duplication)
                 message = {
                     "message": ("Products successfully added"
                                 if result['product_count']

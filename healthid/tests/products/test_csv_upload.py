@@ -37,6 +37,8 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         call_command('loaddata', 'healthid/fixtures/orders_products')
 
     def test_csv_file_upload_products(self):
+        self.business.user = self.user
+        self.business.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(base_path, 'product.csv')

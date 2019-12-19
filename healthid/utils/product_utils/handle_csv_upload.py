@@ -3,9 +3,8 @@ from re import sub
 from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
-from healthid.apps.outlets.models import OutletUser
-from healthid.apps.orders.models.suppliers import Suppliers,\
-    SuppliersMeta
+from healthid.apps.business.models import Business
+from healthid.apps.orders.models.suppliers import Suppliers, SuppliersMeta
 from healthid.apps.products.models import (BatchInfo, DispensingSize, Product,
                                            ProductCategory, Quantity)
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -19,10 +18,12 @@ from healthid.utils.product_utils.validate_products_csv_upload import\
     validate_products_csv_upload
 from healthid.utils.product_utils.get_product_category import\
     get_product_category
+from healthid.utils.get_on_duplication_csv_upload_actions import\
+    get_on_duplication_csv_upload_actions
 
 
 class HandleCsvValidations(object):
-    def handle_csv_upload(self, io_string, user):
+    def handle_csv_upload(self, io_string, user, on_duplication):
         """
         Parses products information from an appropriately formatted CSV file
         and save them.
@@ -32,9 +33,11 @@ class HandleCsvValidations(object):
         returns:
             int: the number of saved products
         """
+        on_duplication_actions = get_on_duplication_csv_upload_actions(
+            on_duplication)
         params = {'model': Product, 'error_type': ValidationError}
         [product_count, row_count, duplicated_products] = [0, 0, []]
-        user_outlets = OutletUser.objects.filter(user_id=user.id)
+        user_bussinesses = Business.objects.filter(user_id=user.id).values()
         products = validate_products_csv_upload(io_string)
         product_names = Product.objects.values_list('product_name', flat=True)
 
@@ -45,21 +48,23 @@ class HandleCsvValidations(object):
                 name__iexact=category).values()
 
             product_name = row.get('name') or row.get('product name')
+            on_duplicate_action = on_duplication_actions.get(
+                product_name.lower()) or ''
 
             product_category = get_product_category(
-                user_outlets, product_categories, category, row_count)
+                user_bussinesses, product_categories, category, row_count)
 
             supplier = get_model_object(SuppliersMeta,
                                         'display_name__iexact',
                                         row.get('preferred supplier'),
                                         error_type=NotFound,
-                                        label='display name')
+                                        label='Display name')
 
             backup_supplier = get_model_object(SuppliersMeta,
                                                'display_name__iexact',
                                                row.get('backup supplier'),
                                                error_type=NotFound,
-                                               label='display name')
+                                               label='Display name')
 
             dispensing_size = get_model_object(DispensingSize,
                                                'name__iexact',
@@ -96,10 +101,16 @@ class HandleCsvValidations(object):
 
                 with SaveContextManager(product_instance, **params):
                     product_count += 1
-            else:
-                duplicated_products.append(
-                    ERROR_RESPONSES['duplication_error'].
-                    format(row.get('name') or row.get('product name')))
+            elif on_duplicate_action.lower() != 'skip':
+                duplicated_products.append({
+                    'row': row_count,
+                    'message': ERROR_RESPONSES['duplication_error'].format(
+                        product_name),
+                    'data': row,
+                    'conflicts': Product.objects.filter(
+                        product_name__iexact=product_name).values(
+                        'id', 'product_name', 'sku_number')
+                })
         return {
             'product_count': product_count,
             'duplicated_products': duplicated_products

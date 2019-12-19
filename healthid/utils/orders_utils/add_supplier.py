@@ -14,8 +14,8 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
     validate_suppliers_csv_upload
-from healthid.utils.orders_utils.get_on_duplication_actions import\
-    get_on_duplication_actions
+from healthid.utils.get_on_duplication_csv_upload_actions import\
+    get_on_duplication_csv_upload_actions
 
 
 class AddSupplier:
@@ -26,15 +26,14 @@ class AddSupplier:
         :param io_string:
         :return total number csv rows uploaded into the DB:
         """
-        on_duplication_actions = get_on_duplication_actions(on_duplication)
+        on_duplication_actions = get_on_duplication_csv_upload_actions(
+            on_duplication)
         business = get_user_business(user)
         params = {'model': Suppliers, 'error_type': ValidationError}
         [supplier_count, row_count, error] = [0, 0, '']
         duplicated_suppliers = []
         suppliers = validate_suppliers_csv_upload(io_string)
         supplier_names = Suppliers.objects.values_list('name', flat=True)
-        supplier_emails = SuppliersContacts.objects.values_list(
-            'email', flat=True)
 
         for row in suppliers:
             row_count += 1
@@ -68,13 +67,6 @@ class AddSupplier:
                     credit_days = int(row.get('credit days')) or 0
                 except Exception:
                     credit_days = 0
-
-                # check if email is already used
-                if row.get('email') in supplier_emails and \
-                        on_duplicate_action.lower() != 'new':
-                    error = "supplier with email "
-                    error += ERROR_RESPONSES['duplication_error'].format(
-                        row.get('email'))
 
                 # validate payment terms
                 if int(credit_days) > 0 and \
@@ -127,17 +119,15 @@ class AddSupplier:
                         pass
                     pass
                 supplier_count += 1
-            else:
+            elif on_duplicate_action.lower() != 'skip':
                 duplicated_suppliers.append({
-                    row.get('name'): {
-                        'row': row_count,
-                        'message': ERROR_RESPONSES['duplication_error'].format(
-                            row.get('name')),
-                        'data': row,
-                        'conflicts': Suppliers.objects.filter(
-                            name__iexact=row.get('name')).values(
-                                'name', 'id', 'supplier_id')
-                    }
+                    'row': row_count,
+                    'message': ERROR_RESPONSES['duplication_error'].format(
+                        name),
+                    'data': row,
+                    'conflicts': Suppliers.objects.filter(
+                        name__iexact=name).values(
+                        'id', 'name', 'supplier_id')
                 })
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}

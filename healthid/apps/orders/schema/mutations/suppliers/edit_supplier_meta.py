@@ -81,9 +81,8 @@ class EditSupplierMeta(graphene.Mutation):
         if payment_terms == 'ON_CREDIT' and fields['credit_days'] <= 0:
             raise GraphQLError(ERROR_RESPONSES['payment_terms_on_credit'])
 
-        if payment_terms == 'CASH_ON_DELIVERY' and fields['credit_days'] > 0:
-            raise GraphQLError(
-                ERROR_RESPONSES['payment_terms_cash_on_deliver'])
+        if payment_terms == 'CASH_ON_DELIVERY':
+            fields['credit_days'] = 0
 
         return fields
 
