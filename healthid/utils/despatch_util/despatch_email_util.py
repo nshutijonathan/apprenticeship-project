@@ -36,7 +36,9 @@ def notify(users, **kwargs):
                     despatch.save()
             if is_same_date(
                     remove_seconds(d_queue.due_date),
-                    remove_seconds(remove_microseconds(timezone.now()))):
+                    timezone.localtime(
+                        remove_seconds(
+                            remove_microseconds(timezone.now())))):
                 thread = threading.Thread(target=send_email_notifications(
                     subject,
                     user,
@@ -46,34 +48,40 @@ def notify(users, **kwargs):
     return despatch_queues
 
 
+def queue_emails_job():
+    email_parts = {}
+    try:
+        despatch_queue = DespatchQueue.objects.all()
+        despatch_queue_meta = Despatch_Meta.objects.all()
+        if len(despatch_queue) > 0:
+            for despatch_q in despatch_queue:
+                id = despatch_q.recipient_id
+                if timezone.localtime(remove_seconds(despatch_q.due_date)) <= \
+                    timezone.localtime(
+                    remove_seconds(remove_microseconds(timezone.now()))) and \
+                        despatch_q.status == 'pending':
+                    email_part = get_model_object(User, 'id', id)
+                    for despatch_meta in despatch_queue_meta:
+                        if despatch_meta.__dict__['despatch_id'] ==\
+                                despatch_q.__dict__['id']:
+                            email_parts['email'] = email_part
+                            email_parts[despatch_meta.__dict__['dataKey']
+                                        ] = despatch_meta.__dict__['dataValue']
+                    if email_parts:
+                        send_email_notifications(
+                            email_parts['subject'],
+                            email_parts['email'],
+                            email_parts['body'], despatch_q)
+    except Exception:
+        pass
+
+
 def change_send_status(d_queue, status):
     '''Function to change received status
     '''
     d_queue.status = status
     with SaveContextManager(d_queue, model=DespatchQueue):
         return
-
-
-def resend_emails():
-    email_parts = {}
-    despatch_queues = DespatchQueue.objects.all()
-    despatch_queue_meta = Despatch_Meta.objects.all()
-    if len(despatch_queues) > 0:
-        for despatch_q in despatch_queues:
-            user_id = despatch_q.recipient_id
-            if despatch_q.status == "pending":
-                email_part = get_model_object(User, 'id', user_id)
-                for despatch_meta in despatch_queue_meta:
-                    if despatch_meta.__dict__['despatch_id'] ==\
-                            despatch_q.__dict__['id']:
-                        email_parts['email'] = email_part
-                        email_parts[despatch_meta.__dict__['dataKey']
-                                    ] = despatch_meta.__dict__['dataValue']
-                if email_parts:
-                    send_email_notifications(
-                        email_parts['subject'],
-                        email_parts['email'],
-                        email_parts['body'], despatch_meta)
 
 
 def send_email_notifications(subject, user, body, despatch_meta):
@@ -97,8 +105,9 @@ def send_email_notifications(subject, user, body, despatch_meta):
                                  from_email=settings.DEFAULT_FROM_EMAIL,
                                  to=[str(user.email)])
             email.content_subtype = 'html'
-            email.send()
-            change_send_status(despatch_meta, 'processing')
+            is_sent = email.send()
+            if is_sent == 1:
+                change_send_status(despatch_meta, 'sent')
         except (
                 SMTPAuthenticationError,
                 SMTPServerDisconnected,

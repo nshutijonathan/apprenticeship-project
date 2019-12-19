@@ -12,5 +12,6 @@ NOTIFICATION_ERROR_RESPONSES = {
                                               "since you are not a recipient!",
     "empty_notifications": "Oops! There are no "
                            "notifications yet!",
+    "include_pm_or_am": "Include PM or AM in the due date"
 
 }

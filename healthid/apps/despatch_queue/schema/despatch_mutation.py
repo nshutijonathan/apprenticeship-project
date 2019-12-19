@@ -2,11 +2,14 @@ import graphene
 from datetime import datetime
 from django.utils.timezone import make_aware
 from graphene_django import DjangoObjectType
+from graphql import GraphQLError
 from healthid.apps.authentication.models import User
 from graphql_jwt.decorators import login_required
 from healthid.apps.despatch_queue.models import DespatchQueue
 from healthid.utils.despatch_util.despatch_email_util import notify
 from healthid.utils.app_utils.database import get_model_object
+from healthid.utils.messages.notifications_responses import \
+    NOTIFICATION_ERROR_RESPONSES
 
 
 class DespatchQueueType(DjangoObjectType):
@@ -37,8 +40,16 @@ class CreateEmailNotifications(graphene.Mutation):
             if not due_date:
                 due_date = despatch_queue.add_due_date
             else:
-                due_date = make_aware(datetime.strptime(
-                    str(due_date), '%Y-%m-%d %H:%M:%S'))
+                bool_ = any(
+                    substring in due_date for substring in ['AM', 'PM'])
+                if bool_:
+                    due_date = due_date.replace("PM", " PM")
+                    due_date = due_date.replace("AM", " AM")
+                    due_date = make_aware(datetime.strptime(
+                        due_date, '%Y-%m-%d %I:%M %p'))
+                else:
+                    raise GraphQLError(
+                        NOTIFICATION_ERROR_RESPONSES['include_pm_or_am'])
         except ValueError as error:
             return error
         despatch_qs = notify(
