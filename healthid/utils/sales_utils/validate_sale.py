@@ -141,7 +141,7 @@ class SalesValidator:
                 payment_method not in ['cash', 'card', 'credit']:
             raise GraphQLError(message)
         if preferences.payment_method != 'both' and \
-                payment_method not in ['others', 'credit']:
+                payment_method not in ['others', 'credit', 'card']:
             if preferences.payment_method != payment_method:
                 raise GraphQLError(message)
 

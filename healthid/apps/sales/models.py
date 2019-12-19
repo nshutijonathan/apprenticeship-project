@@ -127,7 +127,8 @@ class Sale(BaseModel):
     """
     CASH = 'Cash'
     CREDIT = 'Credit'
-    PAYMENT_METHODS = ((CASH, 'Cash'), (CREDIT, 'Credit'))
+    CARD = 'Card'
+    PAYMENT_METHODS = ((CASH, 'Cash'), (CREDIT, 'Credit'), (CARD, 'Card'))
     sales_person = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='sold_by')
     customer = models.ForeignKey(
