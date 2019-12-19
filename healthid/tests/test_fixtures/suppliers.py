@@ -146,6 +146,7 @@ suppliers_query = '''
 
 '''
 
+
 supplier_query_by_id = '''
             query{{
               singleSupplier(id: "{id}"){{
@@ -163,7 +164,16 @@ supplier_query_by_name = '''
               }}
             }}
 '''
+suppliers_totalnumber_query = '''
+        query{
+            allSuppliers{
+                id
+                name
+            }
+            totalNumberOfSuppliers
+        }
 
+'''
 approved_suppliers = '''
         query{
             approvedSuppliers{

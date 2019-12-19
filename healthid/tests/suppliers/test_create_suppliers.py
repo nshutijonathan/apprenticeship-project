@@ -6,12 +6,11 @@ from graphql_jwt.testcases import JSONWebTokenTestCase
 from healthid.apps.orders.models import PaymentTerms, Suppliers, Tier
 from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
-from healthid.tests.test_fixtures.suppliers import (supplier_mutation,
-                                                    suppliers_query,
-                                                    supplier_query_by_id,
-                                                    supplier_query_by_name,
-                                                    email_invalid,
-                                                    mobile_invalid)
+from healthid.tests.test_fixtures.suppliers import (
+    supplier_mutation, suppliers_query, suppliers_totalnumber_query,
+    supplier_query_by_id, supplier_query_by_name, email_invalid,
+    mobile_invalid
+)
 from healthid.views import HandleCSV
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from rest_framework.test import APIClient
@@ -69,6 +68,13 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
                                          suppliers_query)
         self.assertIn('data', response)
         self.assertNotIn('errors', response)
+
+    def test_suppliers_totalnumber_query(self):
+        response = self.query_with_token(
+            self.access_token_master, suppliers_totalnumber_query)
+        self.assertIn('data', response)
+        self.assertNotIn('errors', response)
+        self.assertEqual(1, response["data"]["totalNumberOfSuppliers"])
 
     def test_supplier_query_by_id(self):
         response = self.query_with_token(self.access_token_master,

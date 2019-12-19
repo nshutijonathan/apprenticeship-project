@@ -55,7 +55,6 @@ class SuppliersType(DjangoObjectType):
     def resolve_supplier_contacts(self, info, **kwargs):
         """
         get contacts of a supplier
-
         Returns:
             list: contacts of a single supplier
         """
@@ -64,7 +63,6 @@ class SuppliersType(DjangoObjectType):
     def resolve_supplier_meta(self, info, **kwargs):
         """
         get meta data of a supplier
-
         Returns:
             list: meta data of a single supplier
         """
@@ -94,11 +92,9 @@ class SupplierRatingType(DjangoObjectType):
 class Query(graphene.AbstractType):
     """
     Query data related to the 'Suppliers' model
-
     args:
         id(str): supplier note id used to make the 'suppliersNote' query.
                  Returns a single supplier's note
-
     returns:
         all_suppliers(list): returns all suppliers in the database with a null
                              'parent' field
@@ -130,6 +126,7 @@ class Query(graphene.AbstractType):
     suppliers_note = graphene.List(SupplierNoteType,
                                    id=graphene.String(required=True))
     total_suppliers_pages_count = graphene.Int()
+    total_number_of_suppliers = graphene.Int()
     pagination_result = None
 
     supplier_rating = graphene.Float(
@@ -187,6 +184,12 @@ class Query(graphene.AbstractType):
         if not Query.pagination_result:
             return 0
         return Query.pagination_result[1]
+
+    @login_required
+    def resolve_total_number_of_suppliers(self, info, **kwargs):
+        if not Query.pagination_result:
+            return 0
+        return Query.pagination_result[2]
 
     @login_required
     def resolve_approved_suppliers(self, info, **kwargs):

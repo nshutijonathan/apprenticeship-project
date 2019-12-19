@@ -370,7 +370,8 @@ class BaseConfiguration(TestCase):
         return Suppliers.objects.create(
             name='Sport Direct',
             tier=tier,
-            user=user)
+            user=user,
+            business=self.business)
 
     def create_suppliers_contacts(self, supplier):
         city = City.objects.get(name="Chiclayo")
