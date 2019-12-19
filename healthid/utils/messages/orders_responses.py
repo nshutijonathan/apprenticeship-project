@@ -5,7 +5,7 @@ ORDERS_SUCCESS_RESPONSES = {
     "order_addition_success": "Successfully added order details!",
     "supplier_approval_success": "supplier {} has been approved!",
     "supplier_deletion_success": "supplier {} has been deleted!",
-    "supplier_edit_request_success": "Edit request for Supplier {}"
+    "supplier_edit_request_success": "Edit request for Supplier {} "
                                      "has been sent!",
     "supplier_edit_request_update_success": "Edit request for Supplier {} "
                                             "has been updated!",
@@ -40,7 +40,7 @@ ORDERS_ERROR_RESPONSES = {
     "supplier_search_key_error": "Please provide a valid search keyword",
     "inexistent_supplier_search_error": "Supplier matching query"
                                         "does not exist!",
-    "supplier_request_denied": "Edit request for supplier {}"
+    "supplier_request_denied": "Edit request for supplier {} "
                                "has been declined!",
     "scan_order_rejection": "Scan rejected: this order"
                             " is not marked closed.",

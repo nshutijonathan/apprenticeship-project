@@ -1,7 +1,8 @@
 import graphene
 from django.forms.models import model_to_dict
 
-from healthid.apps.orders.models import Suppliers
+from healthid.apps.orders.models import Suppliers, SuppliersContacts,\
+    SuppliersMeta
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.orders.schema.suppliers_query import SuppliersType
@@ -34,7 +35,7 @@ class ApproveEditRequest(graphene.Mutation):
         dict_object = model_to_dict(request_instance)
         parent_id = dict_object.get('parent')
         pop_list = \
-            ['supplier_id', 'parent', 'is_approved']
+            ['supplier_id', 'parent', 'is_approved', 'business']
         [dict_object.pop(key) for key in pop_list]
         dict_object['user_id'] = dict_object.pop('user')
         dict_object['tier_id'] = dict_object.pop('tier')
@@ -45,5 +46,29 @@ class ApproveEditRequest(graphene.Mutation):
                 setattr(supplier, key, value)
         request_instance.hard_delete()
         supplier.save()
+
+        request_edit_contacts = SuppliersContacts.objects.filter(
+            edit_request_id=id).first()
+        request_edit_meta = SuppliersMeta.objects.filter(
+            edit_request_id=id).first()
+
+        if request_edit_contacts:
+            edit_request_parent_id = request_edit_contacts.parent_id
+            request_edit_contacts.parent_id = None
+            request_edit_contacts.edit_request_id = None
+            request_edit_contacts.save()
+            if edit_request_parent_id != request_edit_contacts.id:
+                SuppliersContacts.objects.filter(
+                    id=edit_request_parent_id).hard_delete()
+
+        if request_edit_meta:
+            edit_request_parent_id = request_edit_meta.parent_id
+            request_edit_meta.parent_id = None
+            request_edit_meta.edit_request_id = None
+            request_edit_meta.save()
+            if edit_request_parent_id != request_edit_meta.id:
+                SuppliersMeta.objects.filter(
+                    id=edit_request_parent_id).hard_delete()
+
         message = SUCCESS_RESPONSES["update_success"].format("Supplier" + name)
         return cls(message, supplier)

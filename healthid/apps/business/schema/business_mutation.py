@@ -61,8 +61,10 @@ class CreateBusiness(graphene.Mutation):
             success = [SUCCESS_RESPONSES[
                        "creation_success"].format(business.legal_name)]
             ProductCategory.objects.bulk_create(
-                [ProductCategory(name="Prescription",
-                                 business=business, is_default=True),
+                [ProductCategory(
+                    name="Prescription",
+                    business=business,
+                    is_default=True),
                  ProductCategory(name="OTC", business=business,
                                  is_default=True),
                  ProductCategory(name="Daily Essentials",

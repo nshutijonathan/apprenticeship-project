@@ -51,25 +51,28 @@ class EditSupplierContacts(graphene.Mutation):
     def validate_fields(cls, contacts, kwargs):
         fields = kwargs
 
-        fields['id'] = contacts.id
-        fields['supplier_id'] = contacts.supplier_id
+        fields['supplier_id'] = kwargs.get('supplier_id')
         fields['email'] = validator.validate_email(
-            fields['email']) if fields.get('email') else contacts.email
+            fields['email']) if fields.get('email') else\
+            (contacts and contacts.email) or None
 
         fields['mobile_number'] = validator.validate_mobile(
             fields['mobile_number']) if fields.get('mobile_number') \
-            else contacts.mobile_number
+            else (contacts and contacts.mobile_number) or None
 
         fields['address_line_1'] = fields.get(
-            'address_line_1') or contacts.address_line_1
+            'address_line_1') or (contacts and contacts.address_line_1) or None
 
         fields['address_line_2'] = fields.get(
-            'address_line_2') or contacts.address_line_2
+            'address_line_2') or (contacts and contacts.address_line_2) or None
 
-        fields['lga'] = fields.get('lga') or contacts.lga
-        fields['city_id'] = fields.get('city_id') or contacts.city_id
-        fields['country_id'] = fields.get('country_id') or contacts.country_id
-
+        fields['lga'] = fields.get('lga') or (
+            contacts and contacts.lga) or None
+        fields['city_id'] = fields.get('city_id') or (
+            contacts and contacts.city_id) or None
+        fields['country_id'] = fields.get(
+            'country_id') or (contacts and contacts.country_id) or None
+        fields['edit_request_id'] = kwargs.get('edit_request_id')
         return fields
 
     @classmethod
@@ -97,6 +100,9 @@ class EditSupplierContacts(graphene.Mutation):
                                 model=SuppliersContacts) as supplier_contacts:
             name = supplier.name
             supplier.supplier_contacts = supplier_contacts
+            supplier_contacts.parent_id = contacts.id if \
+                contacts else supplier_contacts.id
+            supplier_contacts.save()
             msg = SUCCESS_RESPONSES["update_success"].format(
                 f"Supplier '{name}'")
             return cls(supplier, msg)

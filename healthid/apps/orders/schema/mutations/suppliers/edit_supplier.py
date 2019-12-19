@@ -9,6 +9,28 @@ from healthid.utils.app_utils.database import (
     SaveContextManager, get_model_object)
 from healthid.utils.messages.orders_responses import \
     ORDERS_ERROR_RESPONSES, ORDERS_SUCCESS_RESPONSES
+from healthid.apps.orders.schema.mutations.suppliers.edit_supplier_contacts \
+    import EditSupplierContacts
+from healthid.apps.orders.schema.mutations.suppliers.edit_supplier_meta \
+    import EditSupplierMeta
+
+
+class SuppliersContacts(graphene.InputObjectType):
+    email = graphene.String()
+    mobile_number = graphene.String()
+    address_line_1 = graphene.String()
+    address_line_2 = graphene.String()
+    lga = graphene.String()
+    city_id = graphene.Int()
+    country_id = graphene.Int()
+
+
+class SuppliersMeta(graphene.InputObjectType):
+    display_name = graphene.String()
+    credit_days = graphene.Int()
+    logo = graphene.String()
+    payment_terms = graphene.String(required=True)
+    commentary = graphene.String()
 
 
 class EditSupplier(graphene.Mutation):
@@ -17,8 +39,19 @@ class EditSupplier(graphene.Mutation):
 
     args:
         id(str): id of the supplier to be edited
-        name(str): supplier name
-        tier_id(int): id of the supplier's category
+        name(str): name of the supplier
+        email(str): contact email
+        mobile_number(str): contact number
+        address_line_1(str): address line 1
+        address_line_2(str): address line 2
+        lga(str): lga/region name
+        city_id(int): id of the city
+        tier_id(int): id of the tier
+        country_id(int): id of the country
+        credit_days(int): credit_days
+        logo(str): logo
+        payment_terms(str): payment_terms
+        commentary(str): commentary
 
     returns:
         edit_request(obj): 'Suppliers' model object detailing the edit request
@@ -27,8 +60,10 @@ class EditSupplier(graphene.Mutation):
 
     class Arguments:
         id = graphene.String(required=True)
-        name = graphene.String(required=True)
+        name = graphene.String()
         tier_id = graphene.Int()
+        contacts = SuppliersContacts()
+        meta = SuppliersMeta()
 
     edit_request = graphene.Field(SuppliersType)
     message = graphene.Field(graphene.String)
@@ -46,6 +81,7 @@ class EditSupplier(graphene.Mutation):
         fields['user'] = info.context.user
         fields['parent'] = supplier
         fields['is_approved'] = True
+        fields['business_id'] = supplier.business_id
 
         del fields['id']
         return fields
@@ -55,6 +91,8 @@ class EditSupplier(graphene.Mutation):
     def mutate(cls, root, info, **kwargs):
         edit_request = Suppliers()
         id = kwargs.get('id')
+        contacts = kwargs.get('contacts') or None
+        meta = kwargs.get('meta') or None
         supplier = get_model_object(Suppliers, 'id', id)
 
         if not supplier.is_approved:
@@ -72,4 +110,15 @@ class EditSupplier(graphene.Mutation):
             name = supplier.name
             msg = ORDERS_SUCCESS_RESPONSES[
                 "supplier_edit_request_success"].format(name)
+
+            if contacts:
+                contacts['supplier_id'] = id
+                contacts['edit_request_id'] = edit_request.id
+                EditSupplierContacts.mutate(root, info, **contacts)
+
+            if meta:
+                meta['supplier_id'] = id
+                meta['edit_request_id'] = edit_request.id
+                EditSupplierMeta.mutate(root, info, **meta)
+
             return cls(edit_request, msg)

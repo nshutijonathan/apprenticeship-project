@@ -51,18 +51,19 @@ class EditSupplierMeta(graphene.Mutation):
     def validate_fields(cls, meta, kwargs):
         fields = kwargs
 
-        fields['id'] = meta.id
-        fields['supplier_id'] = meta.supplier_id
+        fields['supplier_id'] = kwargs.get('supplier_id')
         fields['display_name'] = fields.get(
-            'display_name') or meta.display_name
-        fields['logo'] = fields.get('logo') or meta.logo
-        fields['commentary'] = fields.get('commentary') or meta.commentary
+            'display_name') or (meta and meta.display_name) or None
+        fields['logo'] = fields.get('logo') or (meta and meta.logo) or None
+        fields['commentary'] = fields.get('commentary') or (
+            meta and meta.commentary) or None
         fields['admin_comment'] = fields.get(
-            'admin_comment') or meta.admin_comment
+            'admin_comment') or (meta and meta.admin_comment) or None
         fields['payment_terms'] = fields.get(
-            'payment_terms') or meta.payment_terms
+            'payment_terms') or (meta and meta.payment_terms) or ''
         fields['credit_days'] = fields.get(
-            'credit_days') or meta.credit_days
+            'credit_days') or (meta and meta.credit_days) or 0
+        fields['edit_request_id'] = kwargs.get('edit_request_id')
 
         # check payment terms
         is_payment_term_valid = False
@@ -95,7 +96,7 @@ class EditSupplierMeta(graphene.Mutation):
         meta = get_model_object(SuppliersMeta, 'id', meta_id) if \
             meta_id else \
             SuppliersMeta.objects.filter(supplier_id=supplier_id).first()
-        supplier = get_model_object(Suppliers, 'id', meta.supplier_id)
+        supplier = get_model_object(Suppliers, 'id', supplier_id)
 
         if not supplier.is_approved:
             msg = ORDERS_ERROR_RESPONSES['supplier_edit_validation_error']
@@ -111,6 +112,8 @@ class EditSupplierMeta(graphene.Mutation):
                                 model=SuppliersMeta) as supplier_meta:
             name = supplier.name
             supplier.supplier_meta = supplier_meta
+            supplier_meta.parent_id = meta.id if meta else supplier_meta.id
+            supplier_meta.save()
             msg = SUCCESS_RESPONSES["update_success"].format(
                 f"Supplier '{name}'")
             return cls(supplier, msg)

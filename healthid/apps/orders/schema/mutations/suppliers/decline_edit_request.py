@@ -1,6 +1,6 @@
 import graphene
 
-from healthid.apps.orders.models import Suppliers
+from healthid.apps.orders.models import Suppliers, SuppliersMeta
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.apps.orders.schema.suppliers_query import SuppliersType
 from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES
@@ -31,8 +31,10 @@ class DeclineEditRequest(graphene.Mutation):
         id = kwargs.get('id')
         comment = kwargs.get('comment')
         edit_request = Suppliers.objects.get(id=id)
-        edit_request.admin_comment = comment
-        edit_request.save()
+        edit_request_meta = SuppliersMeta.objects.filter(
+            edit_request_id=edit_request.id).first()
+        edit_request_meta.admin_comment = comment
+        edit_request_meta.save()
         supplier_name = edit_request.name
         msg = ORDERS_ERROR_RESPONSES[
             "supplier_request_denied"].format(supplier_name)

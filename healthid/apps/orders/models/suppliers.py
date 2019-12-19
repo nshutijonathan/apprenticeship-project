@@ -49,7 +49,8 @@ class Suppliers(BaseModel):
         Returns:
             list: contacts of a single supplier
         """
-        return SuppliersContacts.objects.all().filter(supplier=self.id)
+        return SuppliersContacts.objects.all().filter(
+            supplier=(self.parent or self.id))
 
     @property
     def get_supplier_meta(self):
@@ -59,18 +60,23 @@ class Suppliers(BaseModel):
         Returns:
             list: meta data of a single supplier
         """
-        return SuppliersMeta.objects.all().filter(supplier=self.id)
+        return SuppliersMeta.objects.all().filter(
+            supplier=(self.parent or self.id))
 
 
 class SuppliersContacts(BaseModel):
     supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
     email = models.EmailField(max_length=100, null=True)
-    mobile_number = models.CharField(max_length=100)
-    address_line_1 = models.CharField(max_length=255)
+    mobile_number = models.CharField(max_length=100, null=True)
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
-    lga = models.CharField(max_length=255)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True)
+    lga = models.CharField(max_length=255, null=True)
+    edit_request_id = models.CharField(max_length=255, null=True)
+    parent = models.ForeignKey("self", on_delete=models.CASCADE,
+                               related_name="proposedEdit",
+                               null=True, blank=True)
 
 
 class SuppliersMeta(BaseModel):
@@ -82,6 +88,10 @@ class SuppliersMeta(BaseModel):
     credit_days = models.IntegerField(null=True)
     commentary = models.TextField(null=True)
     admin_comment = models.TextField(null=True)
+    edit_request_id = models.CharField(max_length=255, null=True)
+    parent = models.ForeignKey("self", on_delete=models.CASCADE,
+                               related_name="proposedEdit",
+                               null=True, blank=True)
 
 
 class SupplierNote(BaseModel):

@@ -118,7 +118,7 @@ class Query(graphene.AbstractType):
     single_supplier = graphene.Field(SuppliersType,
                                      name=graphene.String(),
                                      id=graphene.String())
-    edit_requests = graphene.List(SuppliersType)
+    edit_suppliers_requests = graphene.List(SuppliersType)
     approved_suppliers = graphene.List(SuppliersType,
                                        page_count=graphene.Int(),
                                        page_number=graphene.Int())
@@ -139,7 +139,7 @@ class Query(graphene.AbstractType):
     def resolve_all_suppliers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        is_approved = kwargs.get('is_approved', False)
+        is_approved = kwargs.get('is_approved', True)
         user = info.context.user
         suppliers_set = Suppliers.objects.filter(
             business=user.active_outlet.business, is_approved=is_approved)\
@@ -170,7 +170,7 @@ class Query(graphene.AbstractType):
         return supplier
 
     @user_permission('Operations Admin')
-    def resolve_edit_requests(self, info):
+    def resolve_edit_suppliers_requests(self, info):
         return Suppliers.objects.exclude(parent=None)
 
     @login_required
