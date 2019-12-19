@@ -39,6 +39,8 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
     def test_csv_file_upload_products(self):
         self.business.user = self.user
         self.business.save()
+        self.product_category.business = self.business
+        self.product_category.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(base_path, 'product.csv')
@@ -84,6 +86,10 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
                          .format('not allowed column'))
 
     def test_successful_batch_upload(self):
+        self.business.user = self.user
+        self.business.save()
+        self.product.business = self.business
+        self.product.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(
@@ -103,6 +109,10 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         )
 
     def test_invalid_batch_column_header_upload(self):
+        self.business.user = self.user
+        self.business.save()
+        self.product.business = self.business
+        self.product.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(
@@ -122,6 +132,10 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
                          )
 
     def test_invalid_batch_boolean(self):
+        self.business.user = self.user
+        self.business.save()
+        self.product.business = self.business
+        self.product.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(
@@ -140,6 +154,10 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
                          )
 
     def test_invalid_batch_expiry_date(self):
+        self.business.user = self.user
+        self.business.save()
+        self.product.business = self.business
+        self.product.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(
