@@ -98,7 +98,7 @@ class AddUser(graphene.Mutation):
                 user.email
             ]
             email_verify_template = \
-                'email_alerts/authentication/add_user_verification.html'
+                'email_alerts/authentication/verification_email.html'
             subject = 'Account Verification'
             context = {
                 'template_type': 'Verify your email',
