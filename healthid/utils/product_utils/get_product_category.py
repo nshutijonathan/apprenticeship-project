@@ -4,9 +4,9 @@ from rest_framework.exceptions import ValidationError
 def get_product_category(user_bussinesses, product_categories,
                          searched_category, row_count):
     product_category = None
-    for user_outlet in user_bussinesses:
+    for user_business in user_bussinesses:
         for category in product_categories:
-            if category.get('business_id') == user_outlet.outlet.business.id:
+            if category.get('business_id') == user_business.get('id'):
                 product_category = category
                 break
         if product_category:
