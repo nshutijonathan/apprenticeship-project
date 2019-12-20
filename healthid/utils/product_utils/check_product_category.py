@@ -1,8 +1,8 @@
 from rest_framework.exceptions import ValidationError
 
 
-def get_product_category(user_bussinesses, product_categories,
-                         searched_category, row_count):
+def check_product_category(user_bussinesses, product_categories,
+                           searched_category, row_count):
     product_category = None
     for user_business in user_bussinesses:
         for category in product_categories:

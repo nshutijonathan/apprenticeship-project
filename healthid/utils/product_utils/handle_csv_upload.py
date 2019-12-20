@@ -16,12 +16,12 @@ from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.product_utils.batch_utils import batch_info_instance
 from healthid.utils.product_utils.validate_products_csv_upload import\
     validate_products_csv_upload
-from healthid.utils.product_utils.get_product_category import\
-    get_product_category
+from healthid.utils.product_utils.check_product_category import\
+    check_product_category
 from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
-from healthid.utils.product_utils.get_product import\
-    get_product
+from healthid.utils.product_utils.check_product import\
+    check_product
 
 
 class HandleCsvValidations(object):
@@ -40,7 +40,6 @@ class HandleCsvValidations(object):
         params = {'model': Product, 'error_type': ValidationError}
         [product_count, row_count, duplicated_products] = [0, 0, []]
         products = validate_products_csv_upload(io_string)
-        product_names = Product.objects.values_list('product_name', flat=True)
         user_bussinesses = Business.objects.filter(user_id=user.id).values()
 
         for row in products:
@@ -52,7 +51,7 @@ class HandleCsvValidations(object):
             product_name = row.get('name') or row.get('product name')
             on_duplicate_action = on_duplication_actions.get(
                 product_name.lower()) or ''
-            product_category = get_product_category(
+            product_category = check_product_category(
                 user_bussinesses, product_categories, category, row_count)
 
             supplier = get_model_object(SuppliersMeta,
@@ -84,7 +83,15 @@ class HandleCsvValidations(object):
 
             image = row.get('image') or row.get('product image')
 
-            if product_name.lower() not in map(str.lower, product_names):
+            current_products = Product.objects.filter(
+                product_name__iexact=product_name).values()
+            product = check_product(user_bussinesses,
+                                    current_products,
+                                    product_name,
+                                    row_count,
+                                    True)
+
+            if not product:
                 product_instance = Product(
                     product_category_id=product_category.get('id'),
                     business_id=product_category.get('business_id'),
@@ -155,7 +162,7 @@ class HandleCsvValidations(object):
                 row_count += 1
                 products = Product.objects.filter(
                     product_name__iexact=batch_record[1]).values()
-                product = get_product(
+                product = check_product(
                     user_bussinesses, products, batch_record[1], row_count)
 
                 supplier_id = get_model_object(

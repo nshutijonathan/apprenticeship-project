@@ -78,6 +78,7 @@ class AddSupplier(graphene.Mutation):
     @classmethod
     def validate_fields(cls, input, on_duplicate):
         fields = input
+        fields['name'] = input['name'].strip()
         fields['name'] = validator.special_character_validation(
             input['name'], 'supplier name')
         if on_duplicate != 'new' and \

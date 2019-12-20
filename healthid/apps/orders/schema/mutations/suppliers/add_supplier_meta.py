@@ -47,6 +47,8 @@ class AddSupplierMeta(graphene.Mutation):
     @classmethod
     def validate_fields(cls, input):
         fields = input
+        fields['display_name'] = input['display_name'].strip(
+        ) if input.get('display_name') else None
         fields['credit_days'] = fields.get('credit_days') or 0
         is_payment_term_valid = False
         payment_terms = fields['payment_terms'].upper().replace(' ', '_')

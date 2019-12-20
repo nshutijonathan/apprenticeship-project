@@ -73,6 +73,7 @@ class EditSupplier(graphene.Mutation):
         fields = kwargs
 
         if fields.get('name'):
+            fields['name'] = fields['name'].strip()
             fields['name'] = validator.special_character_validation(
                 fields.get('name'), 'supplier name')
 
