@@ -49,6 +49,11 @@ class AddSupplierContacts(graphene.Mutation):
             input['email']) if input.get('email') else None
         fields['mobile_number'] = validator.validate_mobile(
             input.mobile_number)
+        fields['lga'] = input['lga'].strip() if input.get('lga') else None
+        fields['address_line_1'] = input['address_line_1'].strip(
+        ) if input.get('address_line_1') else None
+        fields['address_line_2'] = input['address_line_2'].strip(
+        ) if input.get('address_line_2') else None
         return fields
 
     @classmethod
