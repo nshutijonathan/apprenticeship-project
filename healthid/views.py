@@ -54,6 +54,7 @@ class HandleCSV(APIView):
         handle_customer_csv_object = HandleCustomerCSVValidation()
         handle_supplier_csv_object = AddSupplier()
         handle_csv = handle_csv_object.handle_csv_upload
+        retail_pro_csv_upload = handle_csv_object.handle_retail_pro_csv_upload
         handle_supplier_csv = handle_supplier_csv_object.handle_csv_upload
         handle_customer_csv_upload =\
             handle_customer_csv_object.handle_customer_csv_upload
@@ -105,6 +106,22 @@ class HandleCSV(APIView):
                                 status.HTTP_201_CREATED
                                 if result['product_count']
                                 else status.HTTP_400_BAD_REQUEST)
+            if param == 'retail_pro_products':
+                user = request.user
+                result = retail_pro_csv_upload(io_string=io_string,
+                                               user=user)
+
+                message = {
+                    "message": ("Products successfully added"
+                                if result['product_count']
+                                else "No new products added"),
+                    "noOfProductsAdded": result['product_count']
+                }
+                return Response(message,
+                                status.HTTP_201_CREATED
+                                if result['product_count']
+                                else status.HTTP_400_BAD_REQUEST
+                                )
             if param == 'customers':
                 next(io_string)
                 customers_added = handle_customer_csv_upload(io_string)
