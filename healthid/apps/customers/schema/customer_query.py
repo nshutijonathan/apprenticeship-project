@@ -73,13 +73,14 @@ class Query(graphene.AbstractType):
         customer_id=graphene.String())
     filter_customers = DjangoFilterConnectionField(CustomerCustomerType)
     total_customers_pages_count = graphene.Int()
+    total_customers_count = graphene.Int()
     pagination_result = None
 
     @login_required
     def resolve_customers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        resolved_value = Profile.objects.all().order_by('id')
+        resolved_value = Profile.objects.all().order_by('-id')
         if page_count or page_number:
             customers = pagination_query(
                 resolved_value, page_count, page_number)
@@ -91,6 +92,11 @@ class Query(graphene.AbstractType):
                                               )
         Query.pagination_result = paginated_response
         return paginated_response[0]
+
+    @login_required
+    def resolve_total_customers_count(self, info, **kwargs):
+        customers_list = Profile.objects.all()
+        return len(customers_list)
 
     @login_required
     def resolve_total_customers_pages_count(self, info, **kwargs):

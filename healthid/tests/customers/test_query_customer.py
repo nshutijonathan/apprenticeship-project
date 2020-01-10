@@ -24,7 +24,7 @@ class TestQueryCustomer(BaseConfiguration):
         self.assertIn('data', response)
         self.assertEqual(
             expected_name,
-            response['data']['customers'][1]['lastName'])
+            response['data']['customers'][-0]['lastName'])
 
     def test_query_customer_using_name(self):
         response = self.query_with_token(

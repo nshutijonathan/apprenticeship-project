@@ -1,4 +1,3 @@
-
 from django.db import models
 from healthid.models import BaseModel
 from healthid.apps.outlets.models import City, Country
@@ -10,7 +9,7 @@ class BaseProfile(BaseModel):
 
     CUSTOMER = 0
     USER_TYPES = (
-     (CUSTOMER, "Customer"),)
+        (CUSTOMER, "Customer"),)
     email = models.EmailField(
         max_length=100, null=True, unique=True, default=None, blank=True)
     user_type = models.IntegerField(choices=USER_TYPES, default=CUSTOMER)
@@ -37,7 +36,7 @@ class CustomerProfile(models.Model):
     emergency_contact_number = models.CharField(max_length=100, null=True)
     emergency_contact_email = models.EmailField(max_length=100, null=True)
     loyalty_member = models.BooleanField(default=False, null=True)
-    loyalty_points = models.PositiveIntegerField(default=0)
+    loyalty_points = models.IntegerField(default=0, blank=True, null=True)
 
     class Meta:
         abstract = True
