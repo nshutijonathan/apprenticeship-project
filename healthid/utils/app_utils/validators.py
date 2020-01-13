@@ -98,4 +98,4 @@ def validate_mobile(mobile):
     Arguments:
         mobile_number {string} -- [string mobile number format]
     """
-    return re.match(r'(^[+0-9]{1,3})*([0-9]{10,11}$)', str(mobile).strip())
+    return re.match(r'(^[+0-9]{1,3})*([0-9]{7,15}$)', str(mobile).strip())

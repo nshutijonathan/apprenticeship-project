@@ -22,18 +22,22 @@ def validate_suppliers_csv_upload(io_string):
     valid_columns = {
         'name': 'required',
         'email': 'required',
-        'mobile number': 'required',
+        'mobile number': 'not required',
         'address line 1': 'not required',
         'address line 2': 'not required',
         'lga': 'not required',
-        'city': 'required',
+        'city': 'not required',
         'tier': 'not required',
         'country': 'required',
         'logo': 'not required',
         'commentary': 'not required',
         'payment terms': 'required',
         'credit days': 'not required',
+        'is_approved': 'not required'
     }
+    min_column_lenght = \
+        list(map(lambda column: valid_columns[column]
+                 == 'required', valid_columns)).count(True)
     for row in csv.reader(io_string):
         csv_columns = list(map(lambda column: column.lower().strip(), row))
         break
@@ -93,10 +97,14 @@ def validate_suppliers_csv_upload(io_string):
 
         suppliers = [*suppliers, supplier]
 
-    if len(csv_columns) < 13 or len(csv_columns) > 13:
+    if len(csv_columns) < min_column_lenght \
+            or len(csv_columns) > len(valid_columns):
+
         message = {
+
             'error': ERROR_RESPONSES['csv_missing_field']
-            if len(csv_columns) < 13 else ERROR_RESPONSES['csv_many_field']
+            if len(csv_columns) < min_column_lenght
+            else ERROR_RESPONSES['csv_many_field']
         }
         raise ValidationError(message)
 
