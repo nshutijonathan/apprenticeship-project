@@ -10,7 +10,7 @@ from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES, \
     ORDERS_SUCCESS_RESPONSES
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.app_utils.database import get_model_object
-
+from healthid.apps.authentication.models import User
 
 class Order(BaseModel):
     '''Class to handle order data
@@ -20,6 +20,9 @@ class Order(BaseModel):
         max_length=9, default=id_gen, editable=False
     )
     name = models.TextField(null=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True,
+        related_name='created_orders')
     product_autofill = models.BooleanField(default=True)
     supplier_autofill = models.BooleanField(default=True)
     destination_outlet = models.ForeignKey(
