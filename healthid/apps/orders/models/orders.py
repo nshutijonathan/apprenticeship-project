@@ -12,6 +12,7 @@ from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.authentication.models import User
 
+
 class Order(BaseModel):
     '''Class to handle order data
     '''
@@ -118,7 +119,7 @@ class OrderDetails(BaseModel):
                 detail_object.supplier_order_number = \
                     str(detail_object.order.order_number) + '-' + supplier_id
                 detail_object.supplier_order_name = \
-                    detail_object.supplier.name+'-'+detail_object.order.name
+                    detail_object.supplier.name + '-' + detail_object.order.name
                 detail_object_list.append(detail_object)
                 created_order = detail_object
             else:

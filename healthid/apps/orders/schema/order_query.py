@@ -19,8 +19,13 @@ class AutosuggestOrder(graphene.ObjectType):
 
 
 class OrderType(DjangoObjectType):
+    outlet = graphene.String()
+
     class Meta:
         model = Order
+
+    def resolve_outlet(self, info):
+        return self.name
 
 
 class OrderDetailsType(DjangoObjectType):

@@ -11,7 +11,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
                                                get_model_object)
 from healthid.utils.app_utils.validators import validate_empty_field
 from healthid.utils.messages.orders_responses import\
-     ORDERS_ERROR_RESPONSES
+    ORDERS_ERROR_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
@@ -56,12 +56,12 @@ class UploadInvoice(graphene.Mutation):
 
         if invoice_exist:
             raise GraphQLError(
-                  ORDERS_ERROR_RESPONSES["duplicate_upload_error"])
+                ORDERS_ERROR_RESPONSES["duplicate_upload_error"])
 
         # check if order belongs to an outlet
         if order.destination_outlet_id != outlet.id:
             raise GraphQLError(
-                  ORDERS_ERROR_RESPONSES["initiation_invoice_upload_error"])
+                ORDERS_ERROR_RESPONSES["initiation_invoice_upload_error"])
 
         image_url = cloudinary.uploader.upload(invoice_document).get('url')
 

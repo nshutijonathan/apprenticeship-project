@@ -100,7 +100,7 @@ class CreateBatchInfo(graphene.Mutation):
             map(lambda batch__: batch__.quantity == quantity, batch_))
         if True in batch__l:
             raise GraphQLError(ERROR_RESPONSES[
-                        'batch_exist'].format(kwargs['batch_no']))
+                'batch_exist'].format(kwargs['batch_no']))
         for key, value in kwargs.items():
             setattr(batch_info, key, value)
 

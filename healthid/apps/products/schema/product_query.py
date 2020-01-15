@@ -59,6 +59,7 @@ class ProductType(DjangoObjectType):
     sales_price = graphene.Float()
     pre_tax_retail_price = graphene.Float()
     unit_cost = graphene.Int()
+    pre_ordered_quantity = graphene.Int()
 
     class Meta:
         model = Product
@@ -69,6 +70,10 @@ class ProductType(DjangoObjectType):
             'tags__name': ['exact', 'icontains', 'istartswith']
         }
         interfaces = (graphene.relay.Node,)
+
+
+    def resolve_pre_ordered_quantity(self, info):
+        return self.pre_ordered_quantity()
 
     def resolve_quantity_in_stock(self, info, **kwargs):
         return self.quantity_in_stock
@@ -133,6 +138,7 @@ class Query(graphene.AbstractType):
     declined_quantities = graphene.List(QuantityType)
 
     product_autofill = graphene.List(ProductType)
+    supplier_autofill = graphene.List(ProductType)
     product = graphene.Field(
         ProductType,
         id=graphene.Int(),
@@ -166,6 +172,20 @@ class Query(graphene.AbstractType):
                                          page_count=graphene.Int(),
                                          page_number=graphene.Int(),
                                          expire_month=graphene.Int())
+
+    @login_required
+    def resolve_supplier_autofill(self, info):
+        user = info.context.user
+        outlet = check_user_has_an_active_outlet(user)
+        product_list = []
+
+        for product in Product.objects.for_business(outlet.business.id):
+            pre_ordered_product_quantity = Product.pre_ordered_quantity(product)
+
+            if (product.quantity_in_stock +
+                    pre_ordered_product_quantity) < product.reorder_point:
+                product_list.append(product)
+        return product_list
 
     @login_required
     def resolve_products(self, info, **kwargs):
@@ -354,8 +374,12 @@ class Query(graphene.AbstractType):
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
         product_list = []
+
         for product in Product.objects.for_business(outlet.business.id):
-            if product.quantity_in_stock < product.reorder_point:
+            pre_ordered_product_quantity = Product.pre_ordered_quantity(product)
+
+            if (product.quantity_in_stock +
+                    pre_ordered_product_quantity) < product.reorder_point:
                 product_list.append(product)
         return product_list
 

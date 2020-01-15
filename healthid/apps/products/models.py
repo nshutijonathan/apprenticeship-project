@@ -143,9 +143,18 @@ class Product(BaseModel):
         """
         return sum([batch.quantity for batch in self.batch_info.all()])
 
+    def pre_ordered_quantity(self):
+        pre_ordered_quantity = 0
+
+        for order_detail in list(self.orderdetails_set.all()):
+            pre_ordered_quantity = order_detail.__dict__["ordered_quantity"]
+
+        return pre_ordered_quantity
+
     @property
     def autofill_quantity(self):
-        return self.reorder_max - self.quantity_in_stock
+        return self.reorder_max - (
+            self.quantity_in_stock + self.pre_ordered_quantity())
 
     @property
     def avarage_unit_cost(self):

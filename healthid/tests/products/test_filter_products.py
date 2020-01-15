@@ -3,6 +3,11 @@ from healthid.tests.test_fixtures.products import (
     product_search_query,
     generalised_product_search_query
 )
+
+from healthid.tests.test_fixtures.orders import (
+    supplier_autofill_query
+)
+
 from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 
 
@@ -17,6 +22,11 @@ class TestFilterProducts(TestCreateProduct):
         self.assertEquals(response['errors'][0]['message'],
                           PRODUCTS_ERROR_RESPONSES[
             "invalid_search_key"])
+
+    def test_return_of_supplier_autofill(self):
+        response = self.query_with_token(
+            self.access_token, supplier_autofill_query)
+        self.assertNotIn('errors', response)
 
     def test_return_search_result(self):
         "method that tests correct search result is returned"

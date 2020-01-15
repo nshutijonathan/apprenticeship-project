@@ -181,6 +181,23 @@ query{
 }
 '''
 
+supplier_autofill_query = '''
+query{
+  supplierAutofill {
+    preferredSupplier {
+      id
+      supplierId
+      name
+    }
+    backupSupplier {
+      id
+      supplierId
+      name
+    }
+  }
+}
+'''
+
 suppliers_order_details = '''
 query {{
   suppliersOrderDetails(orderId: {order_id}){{
