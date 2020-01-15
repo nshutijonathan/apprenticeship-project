@@ -4,34 +4,34 @@ jobs:
   docker_compose_job:
     runs-on: ubuntu-latest
     name: Build Project and Test
-    env: 
-        API_KEY: ${{ secrets.API_KEY }}
-        PUSHER_APP_ID: ${{ secrets.PUSHER_APP_ID }}
-        PUSHER_CLUSTER: ${{ secrets.PUSHER_CLUSTER }}
-        PUSHER_KEY: ${{ secrets.PUSHER_KEY }}
-        PUSHER_SECRET: ${{ secrets.PUSHER_SECRET }}
-        SECRET: ${{ secrets.SECRET }}
-        DEBUG: ${{ secrets.DEBUG }}
-        HOST: ${{ secrets.HOST }}
-        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-        EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
-        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
-        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
-        DOMAIN: ${{ secrets.DOMAIN }}
-        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-        DB_USER: ${{ secrets.DB_USER }}
-        CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
-        API_SECRET: ${{ secrets.API_SECRET }}
-        PASSWORD: ${{ secrets.PASSWORD }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_NAME: ${{ secrets.DB_NAME }}
+    env:
+      API_KEY: ${{ secrets.API_KEY }}
+      PUSHER_APP_ID: ${{ secrets.PUSHER_APP_ID }}
+      PUSHER_CLUSTER: ${{ secrets.PUSHER_CLUSTER }}
+      PUSHER_KEY: ${{ secrets.PUSHER_KEY }}
+      PUSHER_SECRET: ${{ secrets.PUSHER_SECRET }}
+      SECRET: ${{ secrets.SECRET }}
+      DEBUG: ${{ secrets.DEBUG }}
+      HOST: ${{ secrets.HOST }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+      DOMAIN: ${{ secrets.DOMAIN }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      DB_USER: ${{ secrets.DB_USER }}
+      CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
+      API_SECRET: ${{ secrets.API_SECRET }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
     steps:
       - uses: actions/checkout@v1
       - uses: harmon758/postgresql-action@v1
         with:
-          postgresql version: '11.4'  
+          postgresql version: "11.4"
           postgresql db: ${{ secrets.DB_NAME }}
           postgresql user: ${{ secrets.DB_USER }}
           postgresql password: ${{ secrets.DB_PASSWORD }}

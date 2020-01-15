@@ -94,7 +94,7 @@ class ManageSuppliersTestCase(BaseConfiguration):
             self.access_token_master,
             edit_requests
         )
-        self.assertIsNotNone(response['data']['editRequests'])
+        self.assertIsNotNone(response['data']['editSuppliersRequests'])
 
     def test_approve_edit_request(self):
         response = self.query_with_token(

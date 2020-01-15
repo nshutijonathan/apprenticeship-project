@@ -21,7 +21,6 @@ job_run_interval = int(settings.STOCK_JOB_TIME_INTERVAL)
 generate_promotion_interval = os.environ.get('GENERATE_PROMOTION_INTERVAL',
                                              1440)
 
-sched = BackgroundScheduler()
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(notify_about_expired_products,
@@ -34,7 +33,9 @@ scheduler.add_job(notify_pusher_about_expired_products, 'cron',
                   day_of_week='mon', hour=9, minute=30)
 scheduler.add_job(notify_pusher_about_expired_products, 'cron',
                   day_of_week='mon', hour=9, minute=30)
-scheduler.add_job(queue_emails_job, 'interval', seconds=5)
+
+if not settings.TESTING:
+    scheduler.add_job(queue_emails_job, 'interval', seconds=5)
 
 scheduler.start()
 
@@ -54,13 +55,13 @@ def start_schedule_templates():
     """
     Shedules a job for each of the template filtered
     """
-    if not sched.state:
-        sched.start()
+    if not scheduler.state:
+        scheduler.start()
 
     stock_templates = StockCountTemplate.objects.filter(
         scheduled=False, interval__gt=0)
     for template in stock_templates:
-        sched.add_job(
+        scheduler.add_job(
             lambda: schedule_templates(template), 'interval',
             id='{}'.format(template.id),
             days=template.interval,
@@ -76,5 +77,5 @@ def remove_scheduled_jobs(sender, instance, using, **kwargs):
     Stops a schedule when a template is deleted if necessary
     """
     job_id = '{}'.format(instance.id)
-    if sched.get_job(job_id) in sched.get_jobs():
-        sched.remove_job(job_id)
+    if scheduler.get_job(job_id) in scheduler.get_jobs():
+        scheduler.remove_job(job_id)

@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import sys
 import django_heroku
 import cloudinary
 # Helps load enviromental variable in .env file
@@ -219,5 +220,6 @@ pusher = pusher.Pusher(
 STOCK_JOB_TIME_INTERVAL = os.environ.get('STOCK_JOB_TIME_INTERVAL', '1440')
 MOCK_AVERAGE_WEEKLY_SALES = int(
     os.environ.get('MOCK_AVERAGE_WEEKLY_SALES', '2'))
+TESTING = sys.argv[1:2] == ['test']
 
 django_heroku.settings(locals())

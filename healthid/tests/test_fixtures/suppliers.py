@@ -207,6 +207,13 @@ edit_request = '''
             id: "{supplier_id}"
             name: "shack",
             tierId:1,
+            meta: {{
+              creditDays:4,
+              logo:"logo",
+              paymentTerms: "ON_CREDIT",
+              commentary: "no comment",
+              displayName: "Shak 2"
+            }}
           ){{
             message,
             editRequest{{
@@ -235,7 +242,7 @@ edit_proposal = '''
 
 edit_requests = '''
         query{
-            editRequests{
+            editSuppliersRequests{
             id
             name
             isApproved
