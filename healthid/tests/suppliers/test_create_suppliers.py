@@ -202,3 +202,19 @@ class SuppliersTestCase(BaseConfiguration, JSONWebTokenTestCase):
                                    format='json', **self.admin_auth_headers)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data, ERROR_RESPONSES['wrong_param'])
+
+    def test_retail_pro_suppliers(self):
+        factory = RequestFactory()
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(base_path, 'retail_pro_suppliers.csv')
+        file = open(path, 'rb')
+        request = factory.post(
+            reverse('handle_csv', args=['suppliers']), {'file': file},
+            **self.admin_auth_headers)
+        view = HandleCSV.as_view()
+        response = view(request, param='retail_pro_suppliers')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["success"],
+                         "Successfully added supplier(s)")
+        self.assertEqual(response.data["noOfSuppliersAdded"], 1)
+        self.assertEqual(response.data["duplicatedSuppliers"], [])

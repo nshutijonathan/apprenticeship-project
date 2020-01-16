@@ -1,3 +1,4 @@
+import csv
 from rest_framework.exceptions import NotFound, ValidationError
 
 from healthid.apps.orders.models.suppliers import (
@@ -16,6 +17,7 @@ from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
     validate_suppliers_csv_upload
 from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
+from healthid.utils.app_utils.generate_csv_file import generate_csv_file
 
 
 class AddSupplier:
@@ -47,17 +49,20 @@ class AddSupplier:
                                         'name__iexact',
                                         row.get('city'),
                                         error_type=NotFound,
-                                        label='name')
+                                        label='name') \
+                    if row.get('city') else None
                 country = get_model_object(Country,
                                            'name__iexact',
                                            row.get('country'),
                                            error_type=NotFound,
-                                           label='name')
+                                           label='name') \
+                    if row.get('country') else None
                 tier = get_model_object(Tier,
                                         'name__iexact',
                                         row.get('tier'),
                                         error_type=NotFound,
-                                        label='name')
+                                        label='name') \
+                    if row.get('tier') else None
                 user_id = get_model_object(User,
                                            'id',
                                            user.pk,
@@ -84,7 +89,8 @@ class AddSupplier:
                     name=name,
                     tier=tier,
                     user=user_id,
-                    business=business
+                    business=business,
+                    is_approved=True if row.get('is_approved') else False
                 )
 
                 with SaveContextManager(suppliers_instance,
@@ -111,12 +117,14 @@ class AddSupplier:
                         credit_days=credit_days,
                         supplier_id=supplier.id
                     )
+
                     with SaveContextManager(suppliers_contacts_instance,
                                             model=SuppliersContacts):
                         pass
                     with SaveContextManager(
                             suppliers_meta_instance, model=SuppliersMeta):
                         pass
+
                     pass
                 supplier_count += 1
             elif on_duplicate_action.lower() != 'skip':
@@ -131,3 +139,47 @@ class AddSupplier:
                 })
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}
+
+    def retail_pro_suppliers(self, io_string, user, on_duplication):
+        rows = []
+        for row in csv.DictReader(io_string):
+            rows.append([
+                (row.get('Vend Name') and row.get('Vend Name').replace(
+                    '"', '').capitalize()) or 'N/A',
+                (row.get('E-Mail') and row.get('E-Mail').replace('"', ''))
+                or 'N/A',
+                row.get('Phone1') or '+2359094444',
+                user.active_outlet.business.country,
+                (row.get('Addr1') and row.get('Addr1').replace(
+                    '"', '').capitalize()) or 'N/A',
+                (row.get('Addr2') and row.get('Addr2').replace(
+                    '"', '').capitalize()) or 'N/A',
+                (row.get('Addr3') and row.get('Addr3').replace(
+                    '"', '').capitalize()) or 'N/A',
+                user.active_outlet.business.city,
+                row.get('Tier') or '3t+ wholesaler',
+                'N/A',
+                'N/A',
+                'CASH_ON_DELIVERY',
+                0,
+                True
+            ])
+        header = [
+            "Name",
+            "Email",
+            "Mobile Number",
+            "country",
+            "address line 1",
+            "address line 2",
+            "lga",
+            "city",
+            "tier",
+            "logo",
+            "commentary",
+            "payment terms",
+            "credit days",
+            'is_approved',
+        ]
+        custom_csv = generate_csv_file(header=header, rows=rows)
+        return AddSupplier.handle_csv_upload(self,
+                                             user, custom_csv, on_duplication)

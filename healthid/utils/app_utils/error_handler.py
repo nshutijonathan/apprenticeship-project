@@ -28,7 +28,9 @@ class ErrorHandler():
         raise GraphQLError(message)
 
     def custom_message(self, message, error_type=None):
+
         # custom message error
+
         if error_type is not None:
             raise error_type({'error': message})
         raise GraphQLError(message)
