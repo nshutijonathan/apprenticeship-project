@@ -3,11 +3,12 @@ from graphql_jwt.decorators import login_required
 
 from healthid.apps.orders.models.orders import Order
 from healthid.utils.app_utils.database import get_model_object
+from healthid.apps.orders.services import OrderStatusChangeService
 
 
 class CloseOrder(graphene.Mutation):
     """
-    Mutation to initiate an order in the database
+    Mutation to initiate closing an open order in the database
 
      arguments:
          order_id(int): name of the order to initiate
@@ -24,4 +25,5 @@ class CloseOrder(graphene.Mutation):
     def mutate(self, info, order_id):
         order = get_model_object(Order, 'id', order_id)
         message = order.close(info.context.user)
+        OrderStatusChangeService(order_id, "Closed").change_status()
         return CloseOrder(message=message)

@@ -25,7 +25,7 @@ class SupplierOrderDetailsFetcher:
     def fetch(self):
         """Get Supplier Order Details
 
-        Get all supplieer order details belong to provided order and match
+        Get all supplier order details belong to provided order and match
         the provided ids.
 
         Returns:
@@ -36,7 +36,7 @@ class SupplierOrderDetailsFetcher:
         results = results.filter(
             id__in=self.supplier_order_details_ids, order=order)
         if not results:
-            raise ValueError("No supplier Order Details found matching"
+            raise ValueError("No supplier Order Details found matching "
                              "provided ids and Order")
         return results
 
@@ -167,3 +167,34 @@ class SupplierOrderStatusChangeService:
                 ].format(self.supplier_order_details_id)
         raise GraphQLError(ORDERS_ERROR_RESPONSES[
             'no_supplier_order_id'].format(self.supplier_order_details_id))
+
+
+class OrderStatusChangeService:
+    """A service object that changes order status
+
+    - once an order has been initiated, system should give the order a status of
+        `Incomplete order form`
+    - when order list has been populated and generated, the system should give the
+        supplier order a status of `waiting for order to be placed`
+    - when the order has been placed and auto-sent to the supplier, the system should
+        give the supplier order a status of `Open`
+    - when all ordered products have been assigned batches and the user has closed the
+        order, system should give the supplier order a status of `Closed`
+
+    Args:
+        order_id: an order id
+        status: new status of the order
+
+    Returns:
+        (Obj:) updated_order
+    """
+
+    def __init__(self, order_id, status):
+        self.order_id = order_id
+        self.status = status
+
+    def change_status(self):
+        update_order_status = Order.objects.filter(
+            id=self.order_id).first()
+        update_order_status.status = self.status
+        update_order_status.save()

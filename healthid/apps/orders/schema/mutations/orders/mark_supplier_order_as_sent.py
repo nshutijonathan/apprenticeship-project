@@ -1,10 +1,10 @@
 import graphene
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models.orders import SupplierOrderDetails
+from healthid.apps.orders.models.orders import SupplierOrderDetails, Order
 from healthid.utils.app_utils.database import SaveContextManager
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
-from healthid.apps.orders.services import SupplierOrderDetailsFetcher
+from healthid.apps.orders.services import SupplierOrderDetailsFetcher, OrderStatusChangeService
 
 
 class MarkSupplierOrderAsSent(graphene.Mutation):
@@ -39,7 +39,7 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):
                 pass
-
+        OrderStatusChangeService(order_id, "Open").change_status()
         message = ORDERS_SUCCESS_RESPONSES[
             "supplier_order_marked_closed"].format(
                 ",".join(id for id in ids))

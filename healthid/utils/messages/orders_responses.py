@@ -15,7 +15,7 @@ ORDERS_SUCCESS_RESPONSES = {
     "supplier_order_approval_success": "Supplier Order Details"
                                        " of id {} successfully approved.",
     "supplier_order_marked_closed": "Supplier Order Details"
-                                    " of id {} succefully closed.",
+                                    " of id {} placed and auto-sent successfully to the supplier.",
     "already_closed_order": "Order {} already closed",
     "order_close_success": "Order {} closed successfully",
     "supplier_order_mark_status": "Supplier Order Details"

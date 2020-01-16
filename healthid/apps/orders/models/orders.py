@@ -2,7 +2,7 @@ from datetime import timedelta
 from django.db import models
 from django.conf import settings
 
-from healthid.apps.orders.models.suppliers import Suppliers
+from healthid.apps.orders.models.suppliers import Suppliers, SuppliersMeta
 from healthid.apps.outlets.models import Outlet
 from healthid.apps.products.models import Product
 from healthid.models import BaseModel
@@ -11,6 +11,7 @@ from healthid.utils.messages.orders_responses import ORDERS_ERROR_RESPONSES, \
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.authentication.models import User
+
 
 class Order(BaseModel):
     '''Class to handle order data
@@ -31,6 +32,8 @@ class Order(BaseModel):
         default=1
     )
     delivery_date = models.DateField()
+    status = models.CharField(
+        default="Incomplete order form", null=True, max_length=50)
     sent_status = models.BooleanField(default=False)
     closed = models.BooleanField(default=False)
 
@@ -112,7 +115,6 @@ class OrderDetails(BaseModel):
                 product__id=detail_object.product_id,
                 supplier__id=supplier_id
             ).exists()
-
             if not check_duplicate:
                 detail_object.supplier_id = supplier_id
                 detail_object.supplier_order_number = \
@@ -237,8 +239,10 @@ class SupplierOrderDetails(BaseModel):
         Returns:
             date: when the supplier expects to be paid for thr order
         """
+        supplier_meta = SuppliersMeta.objects.all().filter(
+            supplier=(self.supplier)).first()
         return self.delivery_due_date + timedelta(
-            days=self.supplier.credit_days)
+            days=supplier_meta.credit_days if supplier_meta else 0)
 
     @property
     def order_status(self):

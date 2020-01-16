@@ -108,8 +108,8 @@ class Query(graphene.AbstractType):
     orders = graphene.List(OrderType, page_count=graphene.Int(),
                            page_number=graphene.Int())
     order = graphene.Field(OrderType, order_id=graphene.Int(required=True))
-    open_orders = graphene.List(OrderType, page_count=graphene.Int(),
-                                page_number=graphene.Int())
+    orders_sorted_by_status = graphene.List(OrderType, page_count=graphene.Int(),
+                                            page_number=graphene.Int(), status=graphene.String(required=True))
     closed_orders = graphene.List(OrderType, page_count=graphene.Int(),
                                   page_number=graphene.Int())
     total_orders_pages_count = graphene.Int()
@@ -124,15 +124,9 @@ class Query(graphene.AbstractType):
         Returns:
             list: supplier order details of a particular order
         """
+
         order = get_model_object(Order, 'id', kwargs.get('order_id'))
         return SupplierOrderDetails.objects.filter(order=order)
-
-    @login_required
-    def resolve_supplier_order_details(self, info, **kwargs):
-        order = get_model_object(Order, 'id', kwargs.get('order_id'))
-        supplier = get_model_object(Suppliers, 'id', kwargs.get('supplier_id'))
-        return SupplierOrderDetails.objects.filter(order=order,
-                                                   supplier=supplier).first()
 
     @login_required
     def resolve_orders(self, info, **kwargs):
@@ -184,22 +178,24 @@ class Query(graphene.AbstractType):
         return get_model_object(Order, 'id', kwargs.get('order_id'))
 
     @login_required
-    def resolve_open_orders(self, info, **kwargs):
+    def resolve_orders_sorted_by_status(self, info, **kwargs):
         """
-        gets orders that are open
+        gets orders that are based on their status
 
         Returns:
-            list: open orders
+            list: orders
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        open_orders_set = Order.objects.filter(closed=False).order_by('id')
+        status = kwargs.get('status')
+        orders_set = Order.objects.filter(
+            closed=False, status=status).order_by('id')
         if page_count or page_number:
-            open_orders = pagination_query(
-                open_orders_set, page_count, page_number)
-            Query.pagination_result = open_orders
-            return open_orders[0]
-        paginated_response = pagination_query(open_orders_set,
+            orders_sorted_by_status = pagination_query(
+                orders_set, page_count, page_number)
+            Query.pagination_result = orders_sorted_by_status
+            return orders_sorted_by_status[0]
+        paginated_response = pagination_query(orders_set,
                                               PAGINATION_DEFAULT[
                                                   "page_count"],
                                               PAGINATION_DEFAULT[
