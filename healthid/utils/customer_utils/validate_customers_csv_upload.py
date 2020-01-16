@@ -49,7 +49,7 @@ def validate_customers_csv_upload(io_string):
             **csv_errors,
             'columns': [
                 *(csv_errors.get('column') or []),
-                ERROR_RESPONSES['not_allowed_field'].format(column)
+                ERROR_RESPONSES['not_allowed_column'].format(column)
             ]
         } if column.lower().strip() not in valid_columns else csv_errors
 
@@ -82,6 +82,7 @@ def validate_customers_csv_upload(io_string):
         customers = [*customers, customer]
 
     if len(csv_errors):
-        raise ValidationError(csv_errors)
+        raise ValidationError({
+            "error": csv_errors})
 
     return customers

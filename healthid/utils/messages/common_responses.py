@@ -16,6 +16,7 @@ ERROR_RESPONSES = {
     "empty_field_error": "{} cannot be empty",
     "required_field": "{} is required!",
     "not_allowed_field": "{} is not allowed!",
+    "not_allowed_column": "{} column is not allowed!",
     "duplication_error": "{}, already exists!",
     "authorization_error": "You do not have permission to perform this action",
     "invalid_login_credentials": "Please, enter valid credentials",
