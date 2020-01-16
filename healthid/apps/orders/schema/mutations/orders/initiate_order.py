@@ -37,9 +37,11 @@ class InitiateOrder(graphene.Mutation):
         product_autofill = graphene.Boolean(required=True)
         supplier_autofill = graphene.Boolean(required=True)
         destination_outlet = graphene.Int(required=True)
+        user = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
+        user = info.context.user
         outlet = get_model_object(
             Outlet, 'id', kwargs.get('destination_outlet'))
         order = Order(
@@ -47,7 +49,8 @@ class InitiateOrder(graphene.Mutation):
             delivery_date=kwargs['delivery_date'],
             product_autofill=kwargs['product_autofill'],
             supplier_autofill=kwargs['supplier_autofill'],
-            destination_outlet=outlet
+            destination_outlet=outlet,
+            user = user
         )
         with SaveContextManager(order) as order:
             success = ORDERS_SUCCESS_RESPONSES["order_initiation_success"]
