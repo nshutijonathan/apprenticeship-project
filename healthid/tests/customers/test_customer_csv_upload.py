@@ -6,7 +6,6 @@ from healthid.tests.authentication.test_data import loginUser_mutation
 from healthid.tests.base_config import BaseConfiguration
 from healthid.views import HandleCSV
 from healthid.tests.factories import CountryFactory, CityFactory
-from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
 
 
 class TestCustomerCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
@@ -38,6 +37,22 @@ class TestCustomerCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         view = HandleCSV.as_view()
         response = view(request, param='customers')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data["success"],
-                         SUCCESS_RESPONSES["csv_upload_success"])
-        self.assertEqual(response.data["noOfCustomersAdded"], 4)
+        self.assertEqual(response.data["message"],
+                         "Customers successfully added")
+        self.assertEqual(response.data["noOfCustomersAdded"], 10)
+
+    def test_customers_csv_file_upload_retail_pro(self):
+        factory = RequestFactory()
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(base_path, 'retail_pro_test.csv')
+        file = open(path, 'rb')
+        request = factory.post(
+            reverse('handle_csv', args=['customers']), {'file': file},
+            **self.auth_headers)
+        view = HandleCSV.as_view()
+        response = view(request, param='customers_retail_pro')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["message"],
+                         "Customers successfully added"
+                         )
+        self.assertEqual(response.data["noOfCustomersAdded"], 1)

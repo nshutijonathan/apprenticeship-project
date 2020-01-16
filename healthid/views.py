@@ -27,7 +27,6 @@ from healthid.utils.constants.suppliers_infor_constants import \
 from healthid.utils.csv_export.generate_csv import generate_csv_response
 from healthid.utils.customer_utils.handle_customer_csv_upload import\
     HandleCustomerCSVValidation
-from healthid.utils.messages.customer_responses import SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import ERROR_RESPONSES
 from healthid.utils.messages.products_responses import (
     PRODUCTS_SUCCESS_RESPONSES
@@ -59,6 +58,8 @@ class HandleCSV(APIView):
         handle_supplier_csv = handle_supplier_csv_object.handle_csv_upload
         handle_customer_csv_upload =\
             handle_customer_csv_object.handle_customer_csv_upload
+        handle_cutomer_retail_pro_csv_upload =\
+            handle_customer_csv_object.handle_cutomer_retail_pro_csv_upload
         csv_file = request.FILES['file']
 
         if not csv_file.name.endswith('.csv'):
@@ -147,13 +148,36 @@ class HandleCSV(APIView):
                                 else status.HTTP_400_BAD_REQUEST
                                 )
             if param == 'customers':
-                next(io_string)
-                customers_added = handle_customer_csv_upload(io_string)
+                user = request.user
+                result = handle_customer_csv_upload(
+                    io_string=io_string, user=user)
                 message = {
-                    "success": SUCCESS_RESPONSES["csv_upload_success"],
-                    "noOfCustomersAdded": customers_added,
+                    "message": ("Customers successfully added"
+                                if result
+                                else "No new customers added"),
+                    "noOfCustomersAdded": result
                 }
-                return Response(message, status.HTTP_201_CREATED)
+                return Response(message,
+                                status.HTTP_201_CREATED
+                                if result
+                                else status.HTTP_400_BAD_REQUEST
+                                )
+
+            if param == 'customers_retail_pro':
+                user = request.user
+                result = handle_cutomer_retail_pro_csv_upload(
+                    io_string=io_string, user=user)
+                message = {
+                    "message": ("Customers successfully added"
+                                if result
+                                else "No new customers added"),
+                    "noOfCustomersAdded": result
+                }
+                return Response(message,
+                                status.HTTP_201_CREATED
+                                if result
+                                else status.HTTP_400_BAD_REQUEST
+                                )
             if param == 'batch_info':
                 user = request.user
                 handle_csv_object.handle_batch_csv_upload(user, io_string)
