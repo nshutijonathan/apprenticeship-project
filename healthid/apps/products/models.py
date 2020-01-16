@@ -45,7 +45,7 @@ class ProductCategory(BaseModel):
 
 
 class DispensingSize(BaseModel):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=150, unique=True)
 
 
 class Product(BaseModel):
@@ -249,6 +249,27 @@ class Product(BaseModel):
             Q(sku_number__exact=search_term)
         )
         return search_filter
+
+
+class ProductMeta(models.Model):
+    """
+    This model is for product meta data
+
+    Attributes:
+        dataKey(string): key of the value
+        dataValue(string): Exact value of a key
+        product: foreign key from product
+    """
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
+    dataKey = models.CharField(max_length=100, null=True)
+    dataValue = models.CharField(max_length=100, null=True)
+
+    class Meta:
+        unique_together = (("product", "dataKey"))
+
+    def __int__(self):
+        return self.id
 
 
 class BatchInfo(BaseModel):

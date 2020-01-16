@@ -55,16 +55,23 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         self.assertIn('noOfProductsAdded', response.data)
         self.assertGreater(response.data['noOfProductsAdded'], 0)
 
-        # duplicated products
+    def test_retail_pro_csv_file_upload_products(self):
+        self.business.user = self.user
+        self.business.save()
+        self.product_category.business = self.business
+        self.product_category.save()
+        factory = RequestFactory()
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(base_path, 'retail_pro_product.csv')
         file = open(path, 'rb')
-        request_two = factory.post(
+        request = factory.post(
             reverse('handle_csv', args=['products']), {'file': file},
             **self.auth_headers)
-        view_two = HandleCSV.as_view()
-        response_two = view_two(request_two, param='products')
-        self.assertEqual(response_two.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('duplicatedProducts', response_two.data)
-        self.assertGreater(len(response_two.data['duplicatedProducts']), 0)
+        view = HandleCSV.as_view()
+        response = view(request, param='retail_pro_products')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('message', response.data)
+        self.assertIn('noOfProductsAdded', response.data)
 
     def test_invalid_csv_file_upload_products(self):
         factory = RequestFactory()

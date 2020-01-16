@@ -22,6 +22,8 @@ from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
 from healthid.utils.product_utils.check_product import\
     check_product
+from healthid.utils.product_utils.metadata_handler import add_product_metadata
+from healthid.apps.orders.models.suppliers import Suppliers
 
 
 class HandleCsvValidations(object):
@@ -41,7 +43,6 @@ class HandleCsvValidations(object):
         [product_count, row_count, duplicated_products] = [0, 0, []]
         products = validate_products_csv_upload(io_string)
         user_bussinesses = Business.objects.filter(user_id=user.id).values()
-
         for row in products:
             row_count += 1
             category = row.get('category') or row.get('product category')
@@ -234,3 +235,79 @@ class HandleCsvValidations(object):
                 quantity_remaining=quantity, is_approved=True)
             quantity.save()
             generate_reorder_points_and_max(batch_info.product)
+
+    def handle_retail_pro_csv_upload(self, io_string, user):
+        """
+        Maps products information from a retail pro csv file to a Health ID
+        formatted CSV file
+        and save them.
+        arguments:
+            io_string(obj): 'io.StringIO' object containing a list
+                            of products in CSV format
+        returns:
+            int: the number of saved products
+        """
+
+        business = Business.objects.filter(user_id=user.id).first()
+        product_count = 0
+        for row in csv.DictReader(io_string):
+            desc1 = (((row.get('Desc1')).replace('"', ''))).title()
+            desc2 = (((row.get('Desc2')).replace('"', ''))).title()
+            Attr = row.get('Attr')
+            size = row.get('Size')
+            str_oh_qty = row.get('Store OH Qty')
+            cost = row.get('Cost')
+            price = row.get('Price')
+            global_upc = row.get('Global UPC')
+            vend_code = row.get('Vend Code')
+            global_upc = row.get('Global UPC')
+            str_oh_qty = row.get('Store OH QTY')
+            cost = row.get('Cost')
+            price = row.get('Price')
+            dcs = row.get('DCS')
+            dispensing_size_name = desc1+desc2+size
+
+            if not desc2:
+                desc2 = 'n/a'
+
+            product_meta_args = {
+                'global_upc': global_upc,
+                'str_oh_qty': str_oh_qty,
+                'cost': cost,
+                'price': price
+            }
+
+            supplier = Suppliers.objects.filter(supplier_id=vend_code).first()
+            check_product_duplicates = Product.objects.filter(
+                product_name=desc1 + ' '+Attr + ' ' + size,
+                business_id=business.id
+            )
+            if not check_product_duplicates:
+                get_product_category, create_product_category =\
+                    ProductCategory.objects.get_or_create(
+                        name=dcs, business_id=business.id
+                    )
+                get_dispensing_size_id, create_dispensing_size_id =\
+                    DispensingSize.objects.get_or_create(
+                        name=dispensing_size_name)
+                product = Product.objects.create(
+                    product_name=desc1 + ' '+Attr + ' ' + size,
+                    description=desc2,
+                    brand='n/a',
+                    manufacturer='n/a',
+                    backup_supplier_id=supplier.id,
+                    dispensing_size_id=get_dispensing_size_id.id or
+                    create_dispensing_size_id.id,
+                    preferred_supplier_id=supplier.id,
+                    product_category_id=get_product_category.id or
+                    create_product_category.id,
+                    loyalty_weight=2,
+                    sales_price=price,
+                    vat_status=True,
+                    is_approved=True,
+                    business_id=business.id
+                )
+                add_product_metadata(product, product_meta_args)
+                product_count += 1
+
+        return {'product_count': product_count}
