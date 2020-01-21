@@ -216,6 +216,7 @@ query {{
     deliverTo
     deliveryDue
     additionalNotes
+    grandTotal
   }}
 }}
 '''
@@ -284,6 +285,21 @@ retrieve_orders = '''
 query {
   orders {
     id
+    name
+    orderNumber
+    status
+    
+    supplierorderdetailsSet {
+      id
+      supplierOrderName
+      supplierOrderNumber
+      numberOfProducts
+      
+      supplier {
+        id
+        name
+      }
+    }
   }
 }
 '''

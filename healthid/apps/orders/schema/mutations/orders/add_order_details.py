@@ -12,6 +12,15 @@ from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
 from healthid.apps.orders.services import OrderStatusChangeService
 
 
+class OrderDetailsObject(graphene.InputObjectType):
+    order_id = graphene.Int(required=True)
+    products = graphene.Int(required=True)
+    quantities = graphene.Int()
+    suppliers = graphene.String()
+    prices = graphene.String()
+    cost_per_items = graphene.String()
+
+
 class AddOrderDetails(graphene.Mutation):
     """
     Mutation that creates a new record in the 'OrderDetails' model.
@@ -35,12 +44,7 @@ class AddOrderDetails(graphene.Mutation):
     """
 
     class Arguments:
-        order_id = graphene.Int(required=True)
-        products = graphene.List(graphene.Int, required=True)
-        quantities = graphene.List(graphene.Int)
-        suppliers = graphene.List(graphene.String)
-        prices = graphene.List(graphene.String)
-        cost_per_items = graphene.List(graphene.String)
+        order_details_data = graphene.List(OrderDetailsObject)
 
     order_details = graphene.Field(OrderDetailsType)
     message = graphene.Field(graphene.String)
@@ -49,12 +53,30 @@ class AddOrderDetails(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, **kwargs):
-        order_id = kwargs.get('order_id')
-        products = kwargs.get('products')
-        quantities = kwargs.get('quantities', None)
-        cost_per_items = kwargs.get('cost_per_items', None)
-        prices = kwargs.get('prices', None)
-        suppliers = kwargs.get('suppliers', None)
+        order_details_data = kwargs.get('order_details_data')
+        order_id = None
+        products = []
+        quantities = []
+        cost_per_items = []
+        prices = []
+        suppliers = []
+        kwargs = {}
+
+        for order_details_datum in order_details_data:
+            order_id = order_details_datum.get('order_id')
+            products.append(order_details_datum.get('products'))
+            quantities.append(order_details_datum.get('quantities', None))
+            cost_per_items.append(
+                order_details_datum.get('cost_per_items', None))
+            prices.append(order_details_datum.get('prices', None))
+            suppliers.append(order_details_datum.get('suppliers', None))
+            kwargs["order_id"] = order_id
+            kwargs["products"] = products
+            kwargs["quantities"] = quantities
+            kwargs["cost_per_items"] = cost_per_items
+            kwargs["prices"] = prices
+            kwargs["suppliers"] = suppliers
+
         order = get_model_object(Order, 'id', order_id)
 
         if quantities and prices and cost_per_items:

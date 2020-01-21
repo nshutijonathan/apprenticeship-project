@@ -71,7 +71,6 @@ class ProductType(DjangoObjectType):
         }
         interfaces = (graphene.relay.Node,)
 
-
     def resolve_pre_ordered_quantity(self, info):
         return self.pre_ordered_quantity()
 
@@ -180,7 +179,8 @@ class Query(graphene.AbstractType):
         product_list = []
 
         for product in Product.objects.for_business(outlet.business.id):
-            pre_ordered_product_quantity = Product.pre_ordered_quantity(product)
+            pre_ordered_product_quantity = Product.pre_ordered_quantity(
+                product)
 
             if (product.quantity_in_stock +
                     pre_ordered_product_quantity) < product.reorder_point:
@@ -376,7 +376,8 @@ class Query(graphene.AbstractType):
         product_list = []
 
         for product in Product.objects.for_business(outlet.business.id):
-            pre_ordered_product_quantity = Product.pre_ordered_quantity(product)
+            pre_ordered_product_quantity = Product.pre_ordered_quantity(
+                product)
 
             if (product.quantity_in_stock +
                     pre_ordered_product_quantity) < product.reorder_point:

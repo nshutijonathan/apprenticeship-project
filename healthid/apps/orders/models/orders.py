@@ -209,7 +209,7 @@ class SupplierOrderDetails(BaseModel):
             string: combination of order number and supplier order
                     details id
         """
-        return self.order.order_number + '-' + self.supplier_id
+        return self.order.order_number + '-' + self.supplier.supplier_id
 
     @property
     def deliver_to_outlets(self):

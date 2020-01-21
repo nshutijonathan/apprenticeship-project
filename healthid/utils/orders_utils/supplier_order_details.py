@@ -27,6 +27,17 @@ def create_suppliers_order_details(order, supplier=None):
         supplier_order_details = SupplierOrderDetails(
             order=order,
             supplier=order_details_per_supplier[0].supplier)
+
+        grand_total = 0
+
+        # calculate the grand total of products of a given supplier
+        for order_detail in order_details:
+            if order_details_per_supplier[0].supplier_id == order_detail.supplier_id:
+                grand_total += int(order_detail.price)
+
+        # set the grand total
+        supplier_order_details.grand_total = grand_total
+
         if not check_duplicate:
             with SaveContextManager(
                 supplier_order_details, model=SupplierOrderDetails
@@ -37,5 +48,13 @@ def create_suppliers_order_details(order, supplier=None):
                 order=order,
                 supplier=supplier_name
             )
+
+            # if the price is updated then update the grand total amount
+            if (current_supplier_detail.grand_total != grand_total):
+                obj = SupplierOrderDetails.objects.get(
+                    supplier_id=current_supplier_detail.supplier_id)
+                obj.grand_total = grand_total
+                obj.save()
+
             suppliers_order_details.append(current_supplier_detail)
     return suppliers_order_details
