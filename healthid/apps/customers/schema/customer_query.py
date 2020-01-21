@@ -80,7 +80,7 @@ class Query(graphene.AbstractType):
     def resolve_customers(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        resolved_value = Profile.objects.all().order_by('-id')
+        resolved_value = Profile.objects.all().order_by('-created_at')
         if page_count or page_number:
             customers = pagination_query(
                 resolved_value, page_count, page_number)

@@ -1,7 +1,9 @@
 import csv
-from rest_framework.exceptions import ValidationError
-from healthid.utils.app_utils.database import (SaveContextManager)
+from rest_framework.exceptions import ValidationError, NotFound
+from healthid.utils.app_utils.database import (
+    SaveContextManager, get_model_object)
 from healthid.apps.profiles.models import Profile
+from healthid.apps.outlets.models import City, Country
 from healthid.utils.customer_utils.validate_customers_csv_upload import (
     validate_customers_csv_upload)
 from healthid.utils.customer_utils.customer_meta_handler import (
@@ -32,8 +34,18 @@ class HandleCustomerCSVValidation:
                     row.get('email')).replace(
                     '"',
                     ''),
-                city=row.get('City'),
-                country=row.get('Country'),
+                city=get_model_object(City,
+                                      'name__iexact',
+                                      row.get('city'),
+                                      error_type=NotFound,
+                                      label='name')
+                if row.get('city') else None,
+                country=get_model_object(Country,
+                                         'name__iexact',
+                                         row.get('country'),
+                                         error_type=NotFound,
+                                         label='name')
+                if row.get('country') else None,
                 primary_mobile_number=row.get('primary mobile number'),
                 secondary_mobile_number=row.get('secondary mobile number'),
                 loyalty_points=row.get('loyalty points'),
@@ -118,7 +130,19 @@ class HandleCustomerCSVValidation:
                     primary_mobile_number=phone1,
                     secondary_mobile_number=phone2,
                     loyalty_member=loyalty_member,
-                    loyalty_points=lty_balance
+                    loyalty_points=lty_balance,
+                    city=get_model_object(City,
+                                          'name__iexact',
+                                          "Lagos",
+                                          error_type=NotFound,
+                                          label='name')
+                    if "Lagos" else None,
+                    country=get_model_object(Country,
+                                             'name__iexact',
+                                             "Nigeria",
+                                             error_type=NotFound,
+                                             label='name')
+                    if "Nigeria" else None,
                 )
                 add_customer_metadata(customer, customer_meta_args)
                 customer_count += 1
