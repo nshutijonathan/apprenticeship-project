@@ -50,7 +50,7 @@ class InitiateOrder(graphene.Mutation):
             product_autofill=kwargs['product_autofill'],
             supplier_autofill=kwargs['supplier_autofill'],
             destination_outlet=outlet,
-            user = user
+            user=user
         )
         with SaveContextManager(order) as order:
             success = ORDERS_SUCCESS_RESPONSES["order_initiation_success"]

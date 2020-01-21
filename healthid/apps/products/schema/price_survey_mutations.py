@@ -12,7 +12,7 @@ from healthid.utils.app_utils.database import (SaveContextManager,
 from healthid.utils.app_utils.validators import validate_empty_field
 from healthid.utils.auth_utils.decorator import user_permission
 from healthid.utils.messages.products_responses import\
-     PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
+    PRODUCTS_ERROR_RESPONSES, PRODUCTS_SUCCESS_RESPONSES
 from healthid.utils.messages.common_responses import SUCCESS_RESPONSES
 
 
@@ -66,7 +66,7 @@ class CreatePriceCheckSurvey(graphene.Mutation):
                     price_check_survey.save()
                     price_check_survey.survey.add(survey_instance)
             success = SUCCESS_RESPONSES[
-                      "creation_success"].format("Master survey, " + name)
+                "creation_success"].format("Master survey, " + name)
             return CreatePriceCheckSurvey(success=success,
                                           survey=survey_instance)
 
@@ -94,7 +94,7 @@ class DeletePriceCheckSurvey(graphene.Mutation):
         survey.survey_price_checks.all().delete(user)
         survey.delete(user)
         message = PRODUCTS_SUCCESS_RESPONSES[
-                  "survey_deletion_success"].format(survey_id)
+            "survey_deletion_success"].format(survey_id)
         return DeletePriceCheckSurvey(success=message)
 
 
@@ -158,6 +158,6 @@ class UpdatePriceCheckSurvey(graphene.Mutation):
                     price_check_survey.survey.add(survey_instance)
 
         success = SUCCESS_RESPONSES["update_success"].format(
-                                                      survey_instance.id)
+            survey_instance.id)
         return UpdatePriceCheckSurvey(success=success,
                                       survey=survey_instance)
