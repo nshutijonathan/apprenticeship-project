@@ -90,7 +90,8 @@ class AddSupplier:
                     tier=tier,
                     user=user_id,
                     business=business,
-                    is_approved=True if row.get('is_approved') else False
+                    is_approved=True if row.get('is_approved') else False,
+                    supplier_id=row.get('supplier_id')
                 )
 
                 with SaveContextManager(suppliers_instance,
@@ -161,7 +162,8 @@ class AddSupplier:
                 'N/A',
                 'CASH_ON_DELIVERY',
                 0,
-                True
+                True,
+                row.get('Vendor Code'),
             ])
         header = [
             "Name",
@@ -177,7 +179,8 @@ class AddSupplier:
             "commentary",
             "payment terms",
             "credit days",
-            'is_approved',
+            "is_approved",
+            "supplier_id",
         ]
         custom_csv = generate_csv_file(header=header, rows=rows)
         return AddSupplier.handle_csv_upload(self,

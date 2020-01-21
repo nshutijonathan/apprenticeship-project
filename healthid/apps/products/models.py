@@ -81,9 +81,9 @@ class Product(BaseModel):
     nearest_expiry_date = models.DateField(
         auto_now=False, auto_now_add=False, null=True)
     preferred_supplier = models.ForeignKey(
-        Suppliers, related_name='prefered', on_delete=models.CASCADE)
+        Suppliers, related_name='prefered', null=True, on_delete=models.CASCADE)
     backup_supplier = models.ForeignKey(
-        Suppliers, related_name='backup', on_delete=models.CASCADE)
+        Suppliers, related_name='backup', null=True, on_delete=models.CASCADE)
     business = models.ForeignKey(
         Business, related_name='business_products',
         on_delete=models.CASCADE, null=True)

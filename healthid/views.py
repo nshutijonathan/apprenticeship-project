@@ -135,18 +135,21 @@ class HandleCSV(APIView):
                 user = request.user
                 result = retail_pro_csv_upload(io_string=io_string,
                                                user=user)
-
-                message = {
-                    "message": ("Products successfully added"
-                                if result['product_count']
-                                else "No new products added"),
-                    "noOfProductsAdded": result['product_count']
-                }
-                return Response(message,
-                                status.HTTP_201_CREATED
-                                if result['product_count']
-                                else status.HTTP_400_BAD_REQUEST
-                                )
+                if result['business_id']:
+                    message = {"message": ("Products successfully added"
+                                           if result['product_count']
+                                           else "No new products added"),
+                               "noOfProductsAdded": result['product_count']
+                               }
+                    return Response(message,
+                                    status.HTTP_201_CREATED
+                                    if result['product_count']
+                                    else status.HTTP_400_BAD_REQUEST
+                                    )
+                else:
+                    message = {"message": "Business id associated with this user is not found"
+                               }
+                    return Response(message)
             if param == 'customers':
                 user = request.user
                 result = handle_customer_csv_upload(

@@ -58,8 +58,8 @@ supplier_mutation = '''
                 email
                 mobileNumber
                 addressLine1
-                city{ name }
-                country{ name }
+                city
+                country
               }
               supplierMeta{
                 displayName
@@ -131,8 +131,8 @@ backup_supplier = '''
                 email
                 mobileNumber
                 addressLine1
-                city{ name }
-                country{ name }
+                city
+                country
               }
               supplierMeta{
                 displayName

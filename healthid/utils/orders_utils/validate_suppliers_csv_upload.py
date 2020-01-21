@@ -28,12 +28,13 @@ def validate_suppliers_csv_upload(io_string):
         'lga': 'not required',
         'city': 'not required',
         'tier': 'not required',
-        'country': 'required',
+        'country': 'not required',
         'logo': 'not required',
         'commentary': 'not required',
         'payment terms': 'required',
         'credit days': 'not required',
-        'is_approved': 'not required'
+        'is_approved': 'not required',
+        'supplier_id': 'not required'
     }
     min_column_lenght = \
         list(map(lambda column: valid_columns[column]
