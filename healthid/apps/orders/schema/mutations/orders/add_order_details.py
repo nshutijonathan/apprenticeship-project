@@ -9,6 +9,7 @@ from healthid.utils.orders_utils.supplier_order_details import \
 from healthid.apps.orders.schema.order_query import \
     SupplierOrderDetailsType, OrderDetailsType
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
+from healthid.apps.orders.services import OrderStatusChangeService
 
 
 class AddOrderDetails(graphene.Mutation):
@@ -111,9 +112,10 @@ class AddOrderDetails(graphene.Mutation):
                 kwargs,
                 object_list
             )
-
-        message = ORDERS_SUCCESS_RESPONSES["order_addition_success"]
         suppliers_order_details = create_suppliers_order_details(order)
+        OrderStatusChangeService(
+            order_id, "waiting for order to be placed").change_status()
+        message = ORDERS_SUCCESS_RESPONSES["order_addition_success"]
         return cls(order_details=order_details,
                    message=message,
                    suppliers_order_details=suppliers_order_details)

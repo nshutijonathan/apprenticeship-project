@@ -297,11 +297,11 @@ query {{
 '''
 
 retrieve_open_orders = '''
-query {
-  openOrders {
+query {{
+  ordersSortedByStatus(status: "{status}") {{
     id
-  }
-}
+  }}
+}}
 '''
 
 retrieve_closed_orders = '''
@@ -332,13 +332,13 @@ query {
 '''
 
 retrieve_open_orders_default_paginated = '''
-query {
-  openOrders {
+query {{
+  ordersSortedByStatus(status: "{status}") {{
     id
     closed
-  }
+  }}
   totalOrdersPagesCount
-}
+}}
 '''
 
 retrieve_closed_orders_default_paginated = '''
@@ -361,7 +361,7 @@ query {{
 
 retrieve_open_orders_custom_paginated = '''
 query {{
-  openOrders(pageCount:{pageCount} pageNumber: {pageNumber}) {{
+  ordersSortedByStatus(pageCount:{pageCount} pageNumber: {pageNumber} status: "{status}") {{
     id
     closed
   }}

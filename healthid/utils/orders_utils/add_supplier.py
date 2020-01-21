@@ -96,7 +96,6 @@ class AddSupplier:
                 with SaveContextManager(suppliers_instance,
                                         **params) as supplier:
                     supplier.business = business
-
                     suppliers_contacts_instance = \
                         SuppliersContacts(
                             email=row.get('email'),

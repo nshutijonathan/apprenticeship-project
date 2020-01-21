@@ -125,5 +125,5 @@ class TestSupplierOrderDetails(BaseConfiguration):
             supplier_order_details.format(
                 order_id=self.order.id, supplier_id=self.supplier.id)
         )
-        self.assertIsNotNone(response['data']['supplierOrderDetails'])
+        self.assertIsNone(response['data']['supplierOrderDetails'])
         self.assertNotIn('errors', response)

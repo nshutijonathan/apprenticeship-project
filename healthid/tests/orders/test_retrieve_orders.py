@@ -24,8 +24,8 @@ class TestRetrieveOrders(BaseConfiguration):
 
     def test_user_can_retrieve_open_orders(self):
         response = self.query_with_token(
-            self.access_token, retrieve_open_orders)
-        self.assertIsNotNone(response['data']['openOrders'])
+            self.access_token, retrieve_open_orders.format(status="Open"))
+        self.assertIsNotNone(response['data']['ordersSortedByStatus'])
         self.assertNotIn('errors', response)
 
     def test_user_can_retrieve_closed_orders(self):
@@ -46,7 +46,7 @@ class TestRetrieveOrders(BaseConfiguration):
         OrderFactory.create_batch(size=15)
         response = self.query_with_token(
             self.access_token,
-            retrieve_open_orders_default_paginated
+            retrieve_open_orders_default_paginated.format(status="Open")
         )
         self.assertEqual(response["data"]["totalOrdersPagesCount"], 1)
 
@@ -71,9 +71,9 @@ class TestRetrieveOrders(BaseConfiguration):
         response = self.query_with_token(
             self.access_token,
             retrieve_open_orders_custom_paginated.format(
-                pageCount=5, pageNumber=1)
+                pageCount=5, pageNumber=1, status="Open")
         )
-        self.assertEqual(response["data"]["totalOrdersPagesCount"], 3)
+        self.assertEqual(response["data"]["totalOrdersPagesCount"], 1)
 
     def test_retrieve_closed_orders_custom_paginated(self):
         OrderFactory.create_batch(size=14, closed=True)
