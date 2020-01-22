@@ -151,10 +151,10 @@ class HandleCSV(APIView):
                     message = {"message": "Business id associated with this user is not found"
                                }
                     return Response(message)
-            if param == 'quick_books_products':
+            if param == 'quick_box_products':
                 user = request.user
                 result = quick_box_csv_upload(io_string=io_string,
-                                              user=user)
+                                               user=user)
                 if result['business_id']:
                     message = {"message": ("Products successfully added"
                                            if result['product_count']

@@ -80,7 +80,7 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         self.product_category.save()
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(base_path, 'quickbooks_products.csv')
+        path = os.path.join(base_path, 'retail_pro_product.csv')
         file = open(path, 'rb')
         request = factory.post(
             reverse('handle_csv', args=['products']), {'file': file},

@@ -157,5 +157,12 @@
     "fields": {
       "name": "cash on delivery"
     }
+  },
+  {
+    "model": "orders.suppliers",
+    "pk": 1,
+    "fields": {
+      "name": "cash on delivery"
+    }
   }
 ]

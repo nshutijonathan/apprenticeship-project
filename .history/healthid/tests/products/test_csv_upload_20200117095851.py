@@ -73,24 +73,6 @@ class TestCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
         self.assertIn('message', response.data)
         self.assertIn('noOfProductsAdded', response.data)
 
-    def test_quick_books_csv_file_upload_products(self):
-        self.business.user = self.user
-        self.business.save()
-        self.product_category.business = self.business
-        self.product_category.save()
-        factory = RequestFactory()
-        base_path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(base_path, 'quickbooks_products.csv')
-        file = open(path, 'rb')
-        request = factory.post(
-            reverse('handle_csv', args=['products']), {'file': file},
-            **self.auth_headers)
-        view = HandleCSV.as_view()
-        response = view(request, param='quick_books_products')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('message', response.data)
-        self.assertIn('noOfProductsAdded', response.data)
-
     def test_invalid_csv_file_upload_products(self):
         factory = RequestFactory()
         base_path = os.path.dirname(os.path.realpath(__file__))

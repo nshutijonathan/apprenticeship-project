@@ -1,5 +1,6 @@
 import csv
 from re import sub
+import datetime
 from django.utils.dateparse import parse_date
 from rest_framework.exceptions import NotFound, ValidationError
 
@@ -23,6 +24,7 @@ from healthid.utils.get_on_duplication_csv_upload_actions import\
 from healthid.utils.product_utils.check_product import\
     check_product
 from healthid.utils.product_utils.metadata_handler import add_product_metadata
+from healthid.utils.product_utils.csv_upload_helper import map_quickbooks_data_helper
 from healthid.apps.orders.models.suppliers import Suppliers
 
 
@@ -314,5 +316,34 @@ class HandleCsvValidations(object):
                 )
                 add_product_metadata(product, product_meta_args)
                 product_count += 1
+
+        return {'product_count': product_count, 'business_id': business.id}
+
+    def handle_quick_box_csv_upload(self, io_string, user):
+        """
+        Maps products information from a quick box csv file to a Health ID
+        formatted CSV file
+        and save them.
+        arguments:
+            io_string(obj): 'io.StringIO' object containing a list
+                            of products in CSV format
+        returns:
+            int: the number of saved products
+        """
+
+        product_count = 0
+        business = Business.objects.filter(user_id=user.id).first()
+        default_quickbox_supplier = Suppliers.objects.filter(
+            supplier_id="quickbook").first()
+        if not business:
+            return {'product_count': product_count, 'business_id': None}
+        product_count = 0
+        for row in csv.DictReader(io_string):
+            result = map_quickbooks_data_helper(
+                row, business, user, default_quickbox_supplier)
+            if result:
+                with SaveContextManager(result['product_instance'], model=Product) as product:
+                    product_count += 1
+                    add_product_metadata(product, result['product_meta_args'])
 
         return {'product_count': product_count, 'business_id': business.id}

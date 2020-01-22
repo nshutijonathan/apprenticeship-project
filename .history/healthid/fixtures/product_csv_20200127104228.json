@@ -157,5 +157,12 @@
     "fields": {
       "name": "cash on delivery"
     }
+  },
+  {
+    "model": "orders.paymentterms",
+    "pk": 1,
+    "fields": {
+      "name": "cash on delivery"
+    }
   }
 ]

@@ -29,12 +29,8 @@ supplier_mutation = '''
                 email
                 mobileNumber
                 addressLine1
-                city {
-                  name
-                }
-                country {
-                  name
-                }
+                city
+                country
               }
               supplierMeta{
                 displayName

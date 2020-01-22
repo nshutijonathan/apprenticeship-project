@@ -70,8 +70,8 @@ class SuppliersContacts(BaseModel):
     mobile_number = models.CharField(max_length=100, null=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True)
-    city = models.ForeignKey(
+    country = models.CharField(Country, on_delete=models.CASCADE, null=True)
+    city = models.CharField(
         City, on_delete=models.CASCADE, null=True)
     lga = models.CharField(max_length=255, null=True)
     edit_request_id = models.CharField(max_length=255, null=True)
