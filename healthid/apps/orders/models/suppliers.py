@@ -2,7 +2,7 @@ from django.db import models
 
 from healthid.apps.authentication.models import User
 from healthid.apps.business.models import Business
-from healthid.apps.outlets.models import City, Outlet, Country
+from healthid.apps.outlets.models import Outlet, Country, City
 from healthid.models import BaseModel
 from healthid.utils.app_utils.id_generator import id_gen
 from healthid.apps.orders.enums.suppliers import PaymentTermsType
@@ -70,9 +70,9 @@ class SuppliersContacts(BaseModel):
     mobile_number = models.CharField(max_length=100, null=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
-    country = models.CharField(max_length=255, null=True)
-    city = models.CharField(
-        max_length=255, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True)
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, null=True)
     lga = models.CharField(max_length=255, null=True)
     edit_request_id = models.CharField(max_length=255, null=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE,

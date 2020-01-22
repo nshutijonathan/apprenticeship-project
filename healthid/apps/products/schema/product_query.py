@@ -22,6 +22,8 @@ from healthid.utils.messages.products_responses import PRODUCTS_ERROR_RESPONSES
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.utils.app_utils.validators import validate_expire_months
+from healthid.apps.orders.services import SaveAutofillItems
+from healthid.apps.orders.models.orders import AutoFillProducts
 
 
 @convert_django_field.register(TaggableManager)
@@ -97,6 +99,11 @@ class ProductType(DjangoObjectType):
         return self.id
 
 
+class AutofillProductType(DjangoObjectType):
+    class Meta:
+        model = AutoFillProducts
+
+
 class QuantityType(DjangoObjectType):
     id = graphene.String()
     quantity_received = graphene.Int()
@@ -136,8 +143,8 @@ class Query(graphene.AbstractType):
     approved_quantities = graphene.List(QuantityType)
     declined_quantities = graphene.List(QuantityType)
 
-    product_autofill = graphene.List(ProductType)
-    supplier_autofill = graphene.List(ProductType)
+    product_autofill = graphene.List(
+        AutofillProductType, order_id=graphene.Int(required=True))
     product = graphene.Field(
         ProductType,
         id=graphene.Int(),
@@ -171,21 +178,6 @@ class Query(graphene.AbstractType):
                                          page_count=graphene.Int(),
                                          page_number=graphene.Int(),
                                          expire_month=graphene.Int())
-
-    @login_required
-    def resolve_supplier_autofill(self, info):
-        user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
-        product_list = []
-
-        for product in Product.objects.for_business(outlet.business.id):
-            pre_ordered_product_quantity = Product.pre_ordered_quantity(
-                product)
-
-            if (product.quantity_in_stock +
-                    pre_ordered_product_quantity) < product.reorder_point:
-                product_list.append(product)
-        return product_list
 
     @login_required
     def resolve_products(self, info, **kwargs):
@@ -373,6 +365,7 @@ class Query(graphene.AbstractType):
     def resolve_product_autofill(self, info, **kwargs):
         user = info.context.user
         outlet = check_user_has_an_active_outlet(user)
+        order_id = kwargs.get("order_id")
         product_list = []
 
         for product in Product.objects.for_business(outlet.business.id):
@@ -382,7 +375,9 @@ class Query(graphene.AbstractType):
             if (product.quantity_in_stock +
                     pre_ordered_product_quantity) < product.reorder_point:
                 product_list.append(product)
-        return product_list
+
+        saved_products = SaveAutofillItems(product_list, order_id).save()
+        return saved_products
 
 
 class BatchQuery(graphene.AbstractType):

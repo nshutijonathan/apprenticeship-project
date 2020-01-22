@@ -5,7 +5,6 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models.orders import (
     SupplierOrderDetails, Order, OrderDetails)
 from healthid.utils.app_utils.database import get_model_object
-from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.utils.orders_utils.inventory_notification import \

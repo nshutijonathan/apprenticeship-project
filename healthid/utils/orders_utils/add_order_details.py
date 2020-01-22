@@ -57,7 +57,7 @@ class AddOrderDetails:
         Returns:
             created_order(obj): latest order detail created
         """
-        
+
         products_list = kwargs.get('products')
         cls.check_product_exists(products_list)
         order_id = kwargs.get('order_id')
@@ -66,7 +66,7 @@ class AddOrderDetails:
             detail_objects,
             supplier
         )
-        
+
         return created_order
 
     @classmethod
