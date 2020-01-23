@@ -53,6 +53,7 @@ class HandleCSV(APIView):
         handle_customer_csv_object = HandleCustomerCSVValidation()
         handle_supplier_csv_object = AddSupplier()
         retail_pro_suppliers = handle_supplier_csv_object.retail_pro_suppliers
+        quick_books_suppliers = handle_supplier_csv_object.quick_books_suppliers
         handle_csv = handle_csv_object.handle_csv_upload
         retail_pro_csv_upload = handle_csv_object.handle_retail_pro_csv_upload
         handle_supplier_csv = handle_supplier_csv_object.handle_csv_upload
@@ -114,6 +115,27 @@ class HandleCSV(APIView):
                         status.HTTP_400_BAD_REQUEST
                     )
                 return Response(message, status.HTTP_201_CREATED)
+            if param == 'quick_books_suppliers':
+                user = request.user
+                res = quick_books_suppliers(user=user,
+                                            io_string=io_string,
+                                            on_duplication=on_duplication)
+                added_suppliers = res['supplier_count']
+                message = {
+                    "success": "Successfully added supplier(s)",
+                    "noOfSuppliersAdded": res['supplier_count'],
+                    "duplicatedSuppliers": res['duplicated_suppliers'],
+                }
+                if added_suppliers == 0 and len(res['duplicated_suppliers']):
+                    return Response(
+                        {
+                            "message":
+                            "No supplier has been added due to duplication",
+                            "duplicatedSuppliers": res['duplicated_suppliers']
+                        },
+                        status.HTTP_400_BAD_REQUEST
+                    )
+                return Response(message, status.HTTP_201_CREATED)
 
             if param == 'products':
                 user = request.user
@@ -147,8 +169,9 @@ class HandleCSV(APIView):
                                     else status.HTTP_400_BAD_REQUEST
                                     )
                 else:
-                    message = {"message": "Business id associated with this user is not found"
-                               }
+                    message = \
+                        {"message": "Business id associated with this user is not found"
+                         }
                     return Response(message)
             if param == 'customers':
                 user = request.user
