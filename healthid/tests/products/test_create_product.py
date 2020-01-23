@@ -21,7 +21,6 @@ class TestCreateProduct(BaseConfiguration):
                                                supplier_mutation)
         self.supplier2 = self.query_with_token(self.access_token_master,
                                                backup_supplier)
-
         self.supplier_id = self.supplier1['data']['addSupplier']['supplier'][
             'id']
         self.backup_id = self.supplier2['data']['addSupplier']['supplier'][

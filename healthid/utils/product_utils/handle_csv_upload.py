@@ -248,13 +248,17 @@ class HandleCsvValidations(object):
             int: the number of saved products
         """
 
-        business = Business.objects.filter(user_id=user.id).first()
         product_count = 0
+        business = Business.objects.filter(user_id=user.id).first()
+        if not business:
+            return {'product_count': product_count, 'business_id': None}
         for row in csv.DictReader(io_string):
-            desc1 = (((row.get('Desc1')).replace('"', ''))).title()
-            desc2 = (((row.get('Desc2')).replace('"', ''))).title()
-            Attr = row.get('Attr')
-            size = row.get('Size')
+            desc1 = row.get('Desc1').replace(
+                '"', '').title() if row.get('Desc1') else ''
+            desc2 = row.get('Desc2').replace(
+                '"', '').title() if row.get('Desc2') else ''
+            Attr = row.get('Attr') or ''
+            size = row.get('Size') or ''
             str_oh_qty = row.get('Store OH Qty')
             cost = row.get('Cost')
             price = row.get('Price')
@@ -265,8 +269,9 @@ class HandleCsvValidations(object):
             cost = row.get('Cost')
             price = row.get('Price')
             dcs = row.get('DCS')
-            dispensing_size_name = desc1+desc2+size
-
+            dispensing_size_name = desc1+desc2
+            name = desc1+Attr+size
+            product_name = desc1 + ' '+Attr + ' ' + size
             if not desc2:
                 desc2 = 'n/a'
 
@@ -279,10 +284,10 @@ class HandleCsvValidations(object):
 
             supplier = Suppliers.objects.filter(supplier_id=vend_code).first()
             check_product_duplicates = Product.objects.filter(
-                product_name=desc1 + ' '+Attr + ' ' + size,
+                product_name=product_name,
                 business_id=business.id
             )
-            if not check_product_duplicates:
+            if not check_product_duplicates and name:
                 get_product_category, create_product_category =\
                     ProductCategory.objects.get_or_create(
                         name=dcs, business_id=business.id
@@ -295,10 +300,10 @@ class HandleCsvValidations(object):
                     description=desc2,
                     brand='n/a',
                     manufacturer='n/a',
-                    backup_supplier_id=supplier.id,
+                    backup_supplier_id=None,
                     dispensing_size_id=get_dispensing_size_id.id or
                     create_dispensing_size_id.id,
-                    preferred_supplier_id=supplier.id,
+                    preferred_supplier_id=supplier.id if supplier else None,
                     product_category_id=get_product_category.id or
                     create_product_category.id,
                     loyalty_weight=2,
@@ -310,4 +315,4 @@ class HandleCsvValidations(object):
                 add_product_metadata(product, product_meta_args)
                 product_count += 1
 
-        return {'product_count': product_count}
+        return {'product_count': product_count, 'business_id': business.id}
