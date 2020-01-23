@@ -6,6 +6,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
+from healthid.utils.app_utils.get_user_business import get_user_business
 from healthid.apps.orders.models import (Suppliers,
                                          SuppliersContacts,
                                          SuppliersMeta,
@@ -139,7 +140,7 @@ class Query(graphene.AbstractType):
         is_approved = kwargs.get('is_approved', True)
         user = info.context.user
         suppliers_set = Suppliers.objects.filter(
-            business=user.active_outlet.business, is_approved=is_approved)\
+            business=get_user_business(user), is_approved=is_approved)\
             .order_by('id')
         if page_count or page_number:
             suppliers = pagination_query(
@@ -197,7 +198,7 @@ class Query(graphene.AbstractType):
         page_number = kwargs.get('page_number')
         user = info.context.user
         approved_suppliers_set = Suppliers.objects.filter(
-            is_approved=True, business=user.active_outlet.business
+            is_approved=True, business=get_user_business(user)
         ).order_by('id')
         if page_count or page_number:
             approved_suppliers = pagination_query(
@@ -228,7 +229,7 @@ class Query(graphene.AbstractType):
                 if key == "name__icontains" else kwargs[key]
         user = info.context.user
         supplier = Suppliers.objects.filter(
-            **kwargs, business=user.active_outlet.business, parent=None)
+            **kwargs, business=get_user_business(user), parent=None)
         if not supplier:
             message = ORDERS_ERROR_RESPONSES[
                 "inexistent_supplier_search_error"]
