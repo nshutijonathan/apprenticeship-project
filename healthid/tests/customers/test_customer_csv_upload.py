@@ -56,3 +56,19 @@ class TestCustomerCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
                          "Customers successfully added"
                          )
         self.assertEqual(response.data["noOfCustomersAdded"], 1)
+
+    def test_customers_csv_file_quickbooks_upload(self):
+        factory = RequestFactory()
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(base_path, 'quickbooks.csv')
+        file = open(path, 'rb')
+        request = factory.post(
+            reverse('handle_csv', args=['customers']), {'file': file},
+            **self.auth_headers)
+        view = HandleCSV.as_view()
+        response = view(request, param='customers_quickbooks')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["message"],
+                         "Customers successfully added"
+                         )
+        self.assertEqual(response.data["noOfCustomersAdded"], 14)

@@ -6,7 +6,11 @@ customer_meta_object = {
     "lty_opt_in": "",
     "lty_enroll_date": "",
     "prc_lvl": "",
-    "str_credit": ""
+    "str_credit": "",
+    "title": "",
+    "customer_type": "",
+    "disc": "",
+    "last_sale": ""
 }
 
 
