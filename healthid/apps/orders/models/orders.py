@@ -209,7 +209,7 @@ class SupplierOrderDetails(BaseModel):
             string: combination of order number and supplier order
                     details id
         """
-        return self.order.order_number + '-' + self.supplier_id
+        return self.order.order_number + '-' + self.supplier.supplier_id
 
     @property
     def deliver_to_outlets(self):
@@ -252,3 +252,31 @@ class SupplierOrderDetails(BaseModel):
             status: displayable version of the status.
         """
         return self.get_status_display()
+
+
+class AutoFillProducts(BaseModel):
+    """
+    Class to handle autoFill products suggested
+    """
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+    product_name = models.CharField(null=True, max_length=100)
+    product_unit_price = models.IntegerField(null=True, blank=True)
+    sku_number = models.IntegerField(null=True)
+    autofill_quantity = models.IntegerField(null=True, blank=True)
+    preferred_supplier = models.ForeignKey(
+        Suppliers,
+        related_name='primary',
+        on_delete=models.CASCADE,
+        null=True, blank=True)
+    backup_supplier = models.ForeignKey(
+        Suppliers,
+        related_name='secondary',
+        on_delete=models.CASCADE,
+        null=True, blank=True)
+
+    class Meta:
+        unique_together = (("product_name", "sku_number",
+                            "autofill_quantity", "order"))
+
+    def __str__(self):
+        return self.product_name

@@ -358,7 +358,8 @@ class BaseConfiguration(TestCase):
             delivery_date="2012-12-12",
             sent_status=True,
             destination_outlet_id=self.outlet.id,
-            closed=closed
+            closed=closed,
+            user=self.user
         )
 
     def create_role(self, role_name):

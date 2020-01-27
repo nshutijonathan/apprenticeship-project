@@ -1,10 +1,10 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.orders.models.orders import (
     SupplierOrderDetails, Order, OrderDetails)
 from healthid.utils.app_utils.database import get_model_object
-from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.utils.app_utils.pagination import pagination_query
 from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.utils.orders_utils.inventory_notification import \
@@ -35,6 +35,7 @@ class OrderDetailsType(DjangoObjectType):
 
 class SupplierOrderDetailsType(DjangoObjectType):
     order_details = graphene.List(OrderDetailsType)
+    number_of_products = graphene.Int()
     supplier_order_name = graphene.String()
     supplier_order_number = graphene.String()
     deliver_to = graphene.String()
@@ -43,6 +44,9 @@ class SupplierOrderDetailsType(DjangoObjectType):
 
     class Meta:
         model = SupplierOrderDetails
+
+    def resolve_number_of_products(self, info):
+        return len(self.get_order_details)
 
     def resolve_order_details(self, info, **kwargs):
         """
@@ -129,9 +133,15 @@ class Query(graphene.AbstractType):
         Returns:
             list: supplier order details of a particular order
         """
-
         order = get_model_object(Order, 'id', kwargs.get('order_id'))
         return SupplierOrderDetails.objects.filter(order=order)
+
+    @login_required
+    def resolve_supplier_order_details(self, info, **kwargs):
+        order = get_model_object(Order, 'id', kwargs.get('order_id'))
+        supplier = get_model_object(Suppliers, 'id', kwargs.get('supplier_id'))
+        return SupplierOrderDetails.objects.filter(order=order,
+                                                   supplier=supplier).first()
 
     @login_required
     def resolve_orders(self, info, **kwargs):
@@ -143,7 +153,9 @@ class Query(graphene.AbstractType):
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        orders_set = Order.objects.all().order_by('id')
+        orders_set = Order.objects.filter(
+            user_id=info.context.user.id).order_by('id')
+
         if page_count or page_number:
             orders = pagination_query(
                 orders_set, page_count, page_number)

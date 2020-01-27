@@ -26,7 +26,9 @@ class TestSupplierOrderDetails(BaseConfiguration):
         return OrderDetails.objects.create(product=self.product,
                                            ordered_quantity=5,
                                            supplier=self.supplier,
-                                           order=order)
+                                           order=order,
+                                           price=1000
+                                           )
 
     def test_add_product_with_specific_quantity(self):
         response = self.query_with_token(
@@ -118,6 +120,8 @@ class TestSupplierOrderDetails(BaseConfiguration):
         )
         self.assertIsNotNone(response['data']['suppliersOrderDetails'])
         self.assertNotIn('errors', response)
+        self.assertEqual(
+            1000, response["data"]["suppliersOrderDetails"][0]["grandTotal"])
 
     def test_user_can_retrieve_supplier_order_details_for_order(self):
         response = self.query_with_token(

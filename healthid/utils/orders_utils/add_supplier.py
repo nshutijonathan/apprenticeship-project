@@ -18,6 +18,7 @@ from healthid.utils.orders_utils.validate_suppliers_csv_upload import\
 from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
 from healthid.utils.app_utils.generate_csv_file import generate_csv_file
+from .suppliers_helper import upload_supplier_quickbook_csv_file
 
 
 class AddSupplier:
@@ -85,14 +86,23 @@ class AddSupplier:
                 if error:
                     raise ValidationError(
                         {'error': f'{error} on row {row_count}'})
-                suppliers_instance = Suppliers(
-                    name=name,
-                    tier=tier,
-                    user=user_id,
-                    business=business,
-                    is_approved=True if row.get('is_approved') else False,
-                    supplier_id=row.get('supplier_id')
-                )
+                if row.get('supplier_id'):
+                    suppliers_instance = Suppliers(
+                        name=name,
+                        tier=tier,
+                        user=user_id,
+                        business=business,
+                        is_approved=True if row.get('is_approved') else False,
+                        supplier_id=row.get('supplier_id')
+                    )
+                else:
+                    suppliers_instance = Suppliers(
+                        name=name,
+                        tier=tier,
+                        user=user_id,
+                        business=business,
+                        is_approved=True if row.get('is_approved') else False,
+                    )
 
                 with SaveContextManager(suppliers_instance,
                                         **params) as supplier:
@@ -117,12 +127,12 @@ class AddSupplier:
                         credit_days=credit_days,
                         supplier_id=supplier.id
                     )
+                    with SaveContextManager(
+                            suppliers_meta_instance, model=SuppliersMeta):
+                        pass
 
                     with SaveContextManager(suppliers_contacts_instance,
                                             model=SuppliersContacts):
-                        pass
-                    with SaveContextManager(
-                            suppliers_meta_instance, model=SuppliersMeta):
                         pass
 
                     pass
@@ -142,6 +152,9 @@ class AddSupplier:
 
     def retail_pro_suppliers(self, io_string, user, on_duplication):
         rows = []
+        get_default_supplier, create_default_supplier = Suppliers.objects.get_or_create(
+            user_id=user.id, name="retail", supplier_id="retail", tier_id=1, is_approved=True)
+        default_supplier = get_default_supplier or create_default_supplier
         for row in csv.DictReader(io_string):
             rows.append([
                 (row.get('Vend Name') and row.get('Vend Name').replace(
@@ -160,7 +173,7 @@ class AddSupplier:
                 row.get('Tier') or '3t+ wholesaler',
                 'N/A',
                 'N/A',
-                'CASH_ON_DELIVERY',
+                'cash on delivery',
                 0,
                 True,
                 row.get('Vendor Code'),
@@ -181,6 +194,33 @@ class AddSupplier:
             "credit days",
             "is_approved",
             "supplier_id",
+        ]
+        custom_csv = generate_csv_file(header=header, rows=rows)
+        return AddSupplier.handle_csv_upload(self,
+                                             user, custom_csv, on_duplication)
+
+    def quick_books_suppliers(self, io_string, user, on_duplication):
+        rows = []
+        get_default_supplier, create_default_supplier = Suppliers.objects.get_or_create(
+            user_id=user.id, name="QuickBookVendor(default)", supplier_id="quickbook", tier_id=1, is_approved=True)
+        for row in csv.DictReader(io_string):
+            rows.append(upload_supplier_quickbook_csv_file(row, user))
+
+        header = [
+            "Name",
+            "Email",
+            "Mobile Number",
+            "country",
+            "address line 1",
+            "address line 2",
+            "lga",
+            "city",
+            "tier",
+            "logo",
+            "commentary",
+            "payment terms",
+            "credit days",
+            'is_approved'
         ]
         custom_csv = generate_csv_file(header=header, rows=rows)
         return AddSupplier.handle_csv_upload(self,

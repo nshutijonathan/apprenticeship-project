@@ -252,6 +252,8 @@ class HandleCsvValidations(object):
 
         product_count = 0
         business = Business.objects.filter(user_id=user.id).first()
+        default_retail_pro_supplier = Suppliers.objects.filter(
+            supplier_id="retail").first()
         if not business:
             return {'product_count': product_count, 'business_id': None}
         for row in csv.DictReader(io_string):
@@ -305,7 +307,7 @@ class HandleCsvValidations(object):
                     backup_supplier_id=None,
                     dispensing_size_id=get_dispensing_size_id.id or
                     create_dispensing_size_id.id,
-                    preferred_supplier_id=supplier.id if supplier else None,
+                    preferred_supplier_id=supplier.id if supplier else default_retail_pro_supplier.id,
                     product_category_id=get_product_category.id or
                     create_product_category.id,
                     loyalty_weight=2,
