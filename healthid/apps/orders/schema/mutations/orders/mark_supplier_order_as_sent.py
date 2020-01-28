@@ -24,10 +24,12 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
         order_id = graphene.Int(required=True)
         supplier_order_ids = graphene.List(graphene.String,
                                            required=True)
+        additional_notes = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
         order_id = kwargs.get('order_id')
+        additional_notes = kwargs.get('additional_notes') or None
         supplier_order_ids = kwargs.get('supplier_order_ids')
         details_fetcher = SupplierOrderDetailsFetcher(order_id,
                                                       supplier_order_ids)
@@ -35,6 +37,9 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
         ids = list()
         for supplier_order in supplier_orders:
             supplier_order.marked_as_sent = True
+            if additional_notes:
+                supplier_order.additional_notes = additional_notes
+
             ids.append(supplier_order.id)
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):
