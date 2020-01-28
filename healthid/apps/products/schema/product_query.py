@@ -24,6 +24,7 @@ from healthid.utils.app_utils.pagination_defaults import PAGINATION_DEFAULT
 from healthid.utils.app_utils.validators import validate_expire_months
 from healthid.apps.orders.services import SaveAutofillItems
 from healthid.apps.orders.models.orders import AutoFillProducts
+from healthid.utils.app_utils.get_user_business import get_user_business
 
 
 @convert_django_field.register(TaggableManager)
@@ -180,14 +181,31 @@ class Query(graphene.AbstractType):
                                          expire_month=graphene.Int())
 
     @login_required
+    def resolve_supplier_autofill(self, info):
+        user = info.context.user
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
+        product_list = []
+
+        for product in Product.objects.for_business(business.id):
+            pre_ordered_product_quantity = Product.pre_ordered_quantity(
+                product)
+
+            if (product.quantity_in_stock +
+                    pre_ordered_product_quantity) < product.reorder_point:
+                product_list.append(product)
+        return product_list
+
+    @login_required
     def resolve_products(self, info, **kwargs):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         search = (kwargs.get('search') or '').strip()
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         products_set = Product.all_products.for_business(
-            outlet.business.id).filter(parent_id__isnull=True).order_by('id')
+            business.id).filter(parent_id__isnull=True).order_by('id')
 
         if search:
             search_filter = Product.general_search(search)
@@ -239,14 +257,15 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_filter_products(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         for key in kwargs:
             if isinstance(kwargs[key], str) and kwargs[key].strip() == "":
                 raise GraphQLError(
                     PRODUCTS_ERROR_RESPONSES["invalid_search_key"])
 
         approved_products = \
-            Product.all_products.for_business(outlet.business.id).filter(
+            Product.all_products.for_business(business.id).filter(
                 parent_id__isnull=True)
         response = approved_products.filter(**kwargs).order_by("product_name")
         if not response:
@@ -259,9 +278,10 @@ class Query(graphene.AbstractType):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         proposed_products_set = Product.all_products.for_business(
-            outlet.business.id).filter(
+            business.id).filter(
             is_approved=False, parent_id__isnull=True).order_by('id')
         if page_count or page_number:
             proposed_products = pagination_query(
@@ -281,9 +301,10 @@ class Query(graphene.AbstractType):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         approved_products_set = Product.objects.for_business(
-            outlet.business.id).filter(is_approved=True).order_by('id')
+            business.id).filter(is_approved=True).order_by('id')
         if page_count or page_number:
             approved_products = pagination_query(
                 approved_products_set, page_count, page_number)
@@ -305,9 +326,10 @@ class Query(graphene.AbstractType):
         today_date = datetime.now()
         expire_range = today_date + relativedelta(months=+expire_month)
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         near_expired_products_set = Product.objects \
-            .for_business(outlet.business.id) \
+            .for_business(business.id) \
             .filter(nearest_expiry_date__range=(today_date, expire_range)) \
             .order_by('id')
         if page_count or page_number:
@@ -333,8 +355,9 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_proposed_edits(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
-        return Product.all_products.for_business(outlet.business.id).exclude(
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
+        return Product.all_products.for_business(business.id).exclude(
             parent_id__isnull=True)
 
     @login_required
@@ -357,18 +380,20 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_user_product_requests(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
-        return Product.all_products.for_business(outlet.business.id).filter(
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
+        return Product.all_products.for_business(business.id).filter(
             user=user).exclude(parent=None)
 
     @login_required
     def resolve_product_autofill(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
         order_id = kwargs.get("order_id")
         product_list = []
 
-        for product in Product.objects.for_business(outlet.business.id):
+        for product in Product.objects.for_business(business.id):
             pre_ordered_product_quantity = Product.pre_ordered_quantity(
                 product)
 
@@ -432,8 +457,9 @@ class BatchQuery(graphene.AbstractType):
     @user_permission('Operations Admin')
     def resolve_deactivated_products(self, info, **kwargs):
         user = info.context.user
-        outlet = check_user_has_an_active_outlet(user)
-        return Product.all_products.for_business(outlet.business.id).filter(
+        check_user_has_an_active_outlet(user)
+        business = get_user_business(user)
+        return Product.all_products.for_business(business.id).filter(
             is_active=False)
 
     @login_required
