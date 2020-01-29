@@ -263,6 +263,7 @@ class AutoFillProducts(BaseModel):
     product_unit_price = models.IntegerField(null=True, blank=True)
     sku_number = models.IntegerField(null=True)
     autofill_quantity = models.IntegerField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
     preferred_supplier = models.ForeignKey(
         Suppliers,
         related_name='primary',

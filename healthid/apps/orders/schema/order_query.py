@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
-
+from healthid.apps.orders.models.suppliers import Suppliers
 from healthid.apps.orders.models.orders import (
     SupplierOrderDetails, Order, OrderDetails)
 from healthid.utils.app_utils.database import get_model_object
@@ -44,7 +44,6 @@ class SupplierOrderDetailsType(DjangoObjectType):
 
     class Meta:
         model = SupplierOrderDetails
-
 
     def resolve_number_of_products(self, info):
         return len(self.get_order_details)
@@ -154,7 +153,8 @@ class Query(graphene.AbstractType):
         """
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
-        orders_set = Order.objects.filter(user_id=info.context.user.id).order_by('id')
+        orders_set = Order.objects.filter(
+            user_id=info.context.user.id).order_by('id')
 
         if page_count or page_number:
             orders = pagination_query(

@@ -29,8 +29,12 @@ supplier_mutation = '''
                 email
                 mobileNumber
                 addressLine1
-                city
-                country
+                city {
+                  name
+                }
+                country {
+                  name
+                }
               }
               supplierMeta{
                 displayName
@@ -75,8 +79,12 @@ email_invalid = '''
                 email
                 mobileNumber
                 addressLine1
-                city
-                country
+                city{
+                  name
+                }
+                country {
+                  name
+                }
               }
               supplierMeta{
                 displayName
@@ -121,8 +129,12 @@ mobile_invalid = '''
                 email
                 mobileNumber
                 addressLine1
-                city
-                country
+                city {
+                  name
+                }
+                country {
+                  name
+                }
               }
               supplierMeta{
                 displayName

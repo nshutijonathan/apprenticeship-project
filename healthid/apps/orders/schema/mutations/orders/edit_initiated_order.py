@@ -1,6 +1,8 @@
 import graphene
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
+from healthid.apps.orders.schema.mutations.orders.initiate_order \
+    import InitiateOrder
 
 from healthid.apps.orders.models.orders import Order, AutoFillProducts
 from healthid.utils.app_utils.database import (SaveContextManager,
@@ -10,6 +12,8 @@ from healthid.apps.products.models import Product
 from healthid.apps.products.schema.product_query import AutofillProductType
 from healthid.utils.messages.common_responses import (
     SUCCESS_RESPONSES, ERROR_RESPONSES)
+from healthid.apps.orders.schema.mutations.orders.initiate_order import\
+    InitiateOrder
 
 
 class EditInitiateOrder(graphene.Mutation):
@@ -78,8 +82,8 @@ class EditAutofillItems(graphene.Mutation):
     class Arguments:
         autofill_item_id = graphene.Int(required=True)
         autofill_quantity = graphene.Int()
-        preferred_supplier_id = graphene.Int()
-        backup_supplier_id = graphene.Int()
+        preferred_supplier_id = graphene.String()
+        backup_supplier_id = graphene.String()
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -130,14 +134,14 @@ class DeleteAutofillItem(graphene.Mutation):
     @login_required
     def mutate(self, info, **kwargs):
         autofill_item_ids = kwargs.get('autofill_item_id')
-        success_message = SUCCESS_RESPONSES["deletion_success"].format(
-            "item(s)"
-        )
+        success_message =\
+            "Product successfully removed from the order list"
         for autofill_item_id in autofill_item_ids:
             remove_item = get_model_object(
                 AutoFillProducts,
                 'id',
                 autofill_item_id
             )
-            remove_item.hard_delete()
+            remove_item.is_deleted = True
+            remove_item.save()
         return DeleteAutofillItem(message=success_message)

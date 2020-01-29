@@ -415,3 +415,15 @@ mutation{{
     }}
   }}
 '''
+
+add_order_notes = '''
+mutation{{
+  addOrderNotes(
+    orderId: {order_id},
+    supplierOrderId: "{supplier_order_id}",
+    additionalNotes: "Testing add note"
+    ){{
+      message
+    }}
+  }}
+'''

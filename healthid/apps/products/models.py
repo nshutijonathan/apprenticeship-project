@@ -66,10 +66,10 @@ class Product(BaseModel):
         you don't need deactivated products.'''
     """
     product_category = models.ForeignKey(
-        ProductCategory, on_delete=models.CASCADE)
+        ProductCategory, on_delete=models.CASCADE, null=True)
     product_name = models.CharField(max_length=244, null=False)
     dispensing_size = models.ForeignKey(
-        DispensingSize, on_delete=models.CASCADE)
+        DispensingSize, on_delete=models.CASCADE, null=True)
     sku_number = models.CharField(max_length=100, null=True)
     is_approved = models.BooleanField(default=False)
     description = models.TextField()

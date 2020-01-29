@@ -6,6 +6,8 @@ from healthid.apps.orders.schema.mutations.orders.edit_initiated_order \
     import EditInitiateOrder, EditAutofillItems, DeleteAutofillItem
 from healthid.apps.orders.schema.mutations.orders.add_order_details \
     import AddOrderDetails
+from healthid.apps.orders.schema.mutations.orders.add_order_notes \
+    import AddOrderNotes
 from healthid.apps.orders.schema.mutations.orders.approve_supplier_order \
     import ApproveSupplierOrder
 from healthid.apps.orders.schema.mutations.orders.\
@@ -27,6 +29,7 @@ class Mutation(graphene.ObjectType):
     delete_autofill_item = DeleteAutofillItem.Field()
     edit_autofill_items = EditAutofillItems.Field()
     add_order_details = AddOrderDetails.Field()
+    add_order_notes = AddOrderNotes.Field()
     approve_supplier_order = ApproveSupplierOrder.Field()
     mark_supplier_order_status_approved = ChangeSupplierOrderStatus.Field()
     send_supplier_order_emails = SendSupplierOrderEmails.Field()

@@ -208,17 +208,19 @@ class SaveAutofillItems:
 
     def save(self):
         if self.product_list:
-            for product in self.product_list:
-                AutoFillProducts.objects.get_or_create(
-                    order_id=self.order_id,
-                    product_unit_price=product.sales_price,
-                    product_name=product.product_name,
-                    sku_number=product.sku_number,
-                    autofill_quantity=product.autofill_quantity,
-                    preferred_supplier_id=product.preferred_supplier_id,
-                    backup_supplier_id=product.backup_supplier_id,
-                )
-
-            return AutoFillProducts.objects.all()
+            order_exists = AutoFillProducts.objects.filter(
+                order_id=self.order_id)
+            if not order_exists:
+                for product in self.product_list:
+                    AutoFillProducts.objects.get_or_create(
+                        order_id=self.order_id,
+                        product_unit_price=product.sales_price,
+                        product_name=product.product_name,
+                        sku_number=product.sku_number,
+                        autofill_quantity=product.autofill_quantity,
+                        preferred_supplier_id=product.preferred_supplier_id,
+                        backup_supplier_id=product.backup_supplier_id,
+                    )
+            return AutoFillProducts.objects.filter(is_deleted=False)
         raise GraphQLError(
             "There are no data to be generated")
