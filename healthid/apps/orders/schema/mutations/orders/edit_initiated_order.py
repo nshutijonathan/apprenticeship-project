@@ -12,6 +12,8 @@ from healthid.apps.products.models import Product
 from healthid.apps.products.schema.product_query import AutofillProductType
 from healthid.utils.messages.common_responses import (
     SUCCESS_RESPONSES, ERROR_RESPONSES)
+from healthid.apps.orders.schema.mutations.orders.initiate_order import\
+    InitiateOrder
 
 
 class EditInitiateOrder(graphene.Mutation):
