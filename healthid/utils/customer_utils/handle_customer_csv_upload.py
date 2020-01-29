@@ -148,3 +148,69 @@ class HandleCustomerCSVValidation:
                 customer_count += 1
 
         return customer_count
+
+    def handle_cutomer_quickbooks_csv_upload(self, io_string, user):
+        """
+        Maps customers information from quickbooks to Health ID
+        formatted CSV file
+        and save them.
+        arguments:
+            io_string(obj): 'io.StringIO' object containing a list
+                            of customers in CSV format
+        returns:
+            int: the number of saved customers
+        """
+        customer_count = 0
+        for row in csv.DictReader(io_string):
+            title = (row.get('Title')).title()
+            first_name = (row.get('First Name')).title()
+            last_name = (row.get('Last Name')).title()
+            customer_type = row.get('Customer Type')
+            phone1 = row.get('Phone 1')
+            phone2 = row.get('Phone 2')
+            email = row.get('EMail').replace(' ', '').replace('_', '')
+            disc = row.get('Disc %')
+            last_Sale = row.get('Last Sale')
+            user_type = 0
+
+            customer_quicks_meta_args = {
+                'title': title,
+                'customer_type': customer_type,
+                'disc': disc,
+                'last_Sale': last_Sale
+            }
+
+            if email == "":
+                email = None
+
+            if customer_type == "":
+                user_type = 0
+
+            check_profile_dublicates = Profile.objects.filter(
+                primary_mobile_number=phone1)
+            if not check_profile_dublicates:
+                customer_quickbooks = Profile.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    user_type=user_type,
+                    primary_mobile_number=phone1,
+                    secondary_mobile_number=phone2,
+                    city=get_model_object(City,
+                                          'name__iexact',
+                                          "Lagos",
+                                          error_type=NotFound,
+                                          label='name')
+                    if "Lagos" else None,
+                    country=get_model_object(Country,
+                                             'name__iexact',
+                                             "Nigeria",
+                                             error_type=NotFound,
+                                             label='name')
+                    if "Nigeria" else None,
+                )
+                add_customer_metadata(
+                    customer_quickbooks, customer_quicks_meta_args)
+                customer_count += 1
+
+        return customer_count

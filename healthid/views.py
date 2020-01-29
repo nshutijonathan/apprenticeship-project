@@ -62,6 +62,8 @@ class HandleCSV(APIView):
             handle_customer_csv_object.handle_customer_csv_upload
         handle_cutomer_retail_pro_csv_upload =\
             handle_customer_csv_object.handle_cutomer_retail_pro_csv_upload
+        handle_cutomer_quickbooks_csv_upload =\
+            handle_customer_csv_object.handle_cutomer_quickbooks_csv_upload
         csv_file = request.FILES['file']
 
         if not csv_file.name.endswith('.csv'):
@@ -212,6 +214,22 @@ class HandleCSV(APIView):
             if param == 'customers_retail_pro':
                 user = request.user
                 result = handle_cutomer_retail_pro_csv_upload(
+                    io_string=io_string, user=user)
+                message = {
+                    "message": ("Customers successfully added"
+                                if result
+                                else "No new customers added"),
+                    "noOfCustomersAdded": result
+                }
+                return Response(message,
+                                status.HTTP_201_CREATED
+                                if result
+                                else status.HTTP_400_BAD_REQUEST
+                                )
+
+            if param == 'quick_books_customers':
+                user = request.user
+                result = handle_cutomer_quickbooks_csv_upload(
                     io_string=io_string, user=user)
                 message = {
                     "message": ("Customers successfully added"
