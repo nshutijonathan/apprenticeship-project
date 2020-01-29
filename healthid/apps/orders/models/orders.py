@@ -264,6 +264,11 @@ class AutoFillProducts(BaseModel):
     sku_number = models.IntegerField(null=True)
     autofill_quantity = models.IntegerField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
+    current_supplier = models.ForeignKey(
+        Suppliers,
+        related_name='current',
+        on_delete=models.CASCADE,
+        null=True, blank=True)
     preferred_supplier = models.ForeignKey(
         Suppliers,
         related_name='primary',

@@ -89,6 +89,7 @@ class EditAutofillItems(graphene.Mutation):
     def mutate(self, info, **kwargs):
         autofill_item_id = kwargs.get("autofill_item_id")
         autofill_quantity = kwargs.get('autofill_quantity')
+        # current_supplier_id = kwargs.get('current_supplier_id')
         preferred_supplier_id = kwargs.get('preferred_supplier_id')
         backup_supplier_id = kwargs.get('backup_supplier_id')
         update_fields = get_model_object(
@@ -100,10 +101,8 @@ class EditAutofillItems(graphene.Mutation):
                 raise GraphQLError(
                     f"you can not exceed the quantity of {product.reorder_max}")
             update_fields.autofill_quantity = autofill_quantity
-        if preferred_supplier_id:
-            update_fields.preferred_supplier_id = preferred_supplier_id
-        if backup_supplier_id:
-            update_fields.backup_supplier_id = backup_supplier_id
+        if preferred_supplier_id or backup_supplier_id:
+            update_fields.current_supplier_id = preferred_supplier_id or backup_supplier_id
 
         if autofill_quantity or preferred_supplier_id or backup_supplier_id:
             update_fields.save()
