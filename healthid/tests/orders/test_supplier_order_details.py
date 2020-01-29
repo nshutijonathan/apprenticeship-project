@@ -4,7 +4,7 @@ from healthid.utils.orders_utils.supplier_order_details import \
     create_suppliers_order_details
 from healthid.tests.test_fixtures.orders import \
     suppliers_order_details, supplier_order_details, modify_order_quantities,\
-    remove_order_detail
+    remove_order_detail, add_order_notes
 
 
 class TestSupplierOrderDetails(BaseConfiguration):
@@ -131,3 +131,13 @@ class TestSupplierOrderDetails(BaseConfiguration):
         )
         self.assertIsNone(response['data']['supplierOrderDetails'])
         self.assertNotIn('errors', response)
+
+    def test_add_supplier_order_note(self):
+        supplier_order_id = "q3q4234"
+        response = self.query_with_token(
+            self.access_token,
+            add_order_notes.format(
+                order_id=self.order.id, supplier_order_id=supplier_order_id)
+        )
+        self.assertEqual(response["data"]["addOrderNotes"]
+                         ["message"], "Order Id or additional notes cannot be empty")

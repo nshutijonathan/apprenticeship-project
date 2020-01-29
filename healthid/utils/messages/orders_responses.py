@@ -1,5 +1,6 @@
 ORDERS_SUCCESS_RESPONSES = {
     "scan_save_success": "Scan successfully saved",
+    "add_order_note_success": "A supplier order note successfully added",
     "invoice_upload_success": "Invoice uploaded successfully",
     "order_initiation_success": "Order successfully initiated!",
     "order_addition_success": "Successfully added order details!",
