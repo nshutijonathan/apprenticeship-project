@@ -14,8 +14,8 @@ PRODUCTS_SUCCESS_RESPONSES = {
                           "Product name: {}, Unit(s) left: {}.",
     "proposal_approval_success": "Proposal for change in quantity of {}"
                                  " received on {} has been approved",
-    "batch_upload_success": "Successfully uploaded batch CSV information."
-
+    "batch_upload_success": "Successfully uploaded batch CSV information.",
+    "loyalty_weight_updated": "The Loyalty weight of {} products has successfully been updated to {}"
 }
 
 PRODUCTS_ERROR_RESPONSES = {
@@ -65,5 +65,5 @@ PRODUCTS_ERROR_RESPONSES = {
                         "entered in the 'Delivery Promptness' column.",
     "batch_expiry_error": "The batch for product '{}' has expired. "
                           "Please check its expiry and delivery dates.",
-    "promotion_generated_success": "{}, generated successfully!"
+    "promotion_generated_success": "{}, generated successfully!",
 }

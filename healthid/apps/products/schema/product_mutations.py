@@ -395,7 +395,7 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
     product = graphene.Field(ProductType)
 
     class Arguments:
-        id = graphene.Int(required=True)
+        id = graphene.List(graphene.String, required=True)
         loyalty_value = graphene.Int(required=True)
 
     message = graphene.String()
@@ -405,14 +405,15 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
     @user_permission('Manager')
     def mutate(self, info, **kwargs):
         loyalty_value = kwargs.get("loyalty_value")
+        product_ids = kwargs.get('id')
         if loyalty_value < 1:
             raise GraphQLError(
                 PRODUCTS_ERROR_RESPONSES["loyalty_weight_error"])
-        product_id = kwargs.get("id")
-        product = get_model_object(Product, 'id', product_id)
-        product.loyalty_weight = loyalty_value
-        product.save()
-        message = SUCCESS_RESPONSES["update_success"].format("Loyalty weight")
+        for product_id in product_ids:
+            product = get_model_object(Product, 'id', product_id)
+            product.loyalty_weight = loyalty_value
+            product.save()
+        message = PRODUCTS_SUCCESS_RESPONSES["loyalty_weight_updated"].format(len(product_ids), loyalty_value)
         return UpdateAProductLoyaltyWeight(product=product, message=message)
 
 
