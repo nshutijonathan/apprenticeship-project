@@ -32,7 +32,8 @@ def create_suppliers_order_details(order, supplier=None):
 
         # calculate the grand total of products of a given supplier
         for order_detail in order_details:
-            if order_details_per_supplier[0].supplier_id == order_detail.supplier_id:
+            if order_details_per_supplier[0].supplier_id ==\
+                    order_detail.supplier_id:
                 grand_total += int(order_detail.price)
 
         # set the grand total

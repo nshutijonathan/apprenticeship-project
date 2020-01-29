@@ -47,6 +47,9 @@ def set_nearest_expiry_date(sender, instance, **kwargs):
         product.save()
 
 
+post_save.connect(set_nearest_expiry_date, sender=BatchInfo)
+
+
 @receiver(post_save, sender=Quantity)  # noqa
 def notify_quantity(sender, instance, created, **kwargs):
     """

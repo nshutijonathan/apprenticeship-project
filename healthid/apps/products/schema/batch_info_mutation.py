@@ -109,7 +109,12 @@ class CreateBatchInfo(graphene.Mutation):
                 batch=batch_info, quantity_received=quantity,
                 quantity_remaining=quantity, is_approved=True)
             quantity.save()
-            generate_reorder_points_and_max(batch_info.product)
+            product = batch_info.product
+            generate_reorder_points_and_max(product)
+            if product.nearest_expiry_date is None or \
+                    product.nearest_expiry_date > product.expiry_date:
+                product.nearest_expiry_date = batch_info.expiry_date
+                product.save()
             message = SUCCESS_RESPONSES["creation_success"].format("Batch")
             return CreateBatchInfo(message=message, batch_info=batch_info)
 

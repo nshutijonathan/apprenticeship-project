@@ -323,6 +323,11 @@ class UpdatePrice(graphene.Mutation):
 
     @user_permission('Manager')
     def mutate(self, info, **kwargs):
+        sales_price = kwargs.get("sales_price")
+        markup = kwargs.get("markup")
+        if (not markup and not sales_price) or (markup and sales_price):
+            raise GraphQLError(
+                PRODUCTS_ERROR_RESPONSES["update_price_error"])
         set_price = SetPrice()
         product_ids = kwargs.pop('product_ids')
         products = GetObjectList.get_objects(Product, product_ids)
@@ -335,7 +340,11 @@ class UpdatePrice(graphene.Mutation):
             return UpdatePrice(products=set_price.products, errors=errors)
         return UpdatePrice(
             products=set_price.products,
-            message=PRODUCTS_SUCCESS_RESPONSES["set_price_success"])
+            message=PRODUCTS_SUCCESS_RESPONSES["set_price_success"].format(
+                key="sales price" if sales_price else "markup",
+                number=len(set_price.products),
+                value=markup or sales_price)
+        )
 
 
 class UpdateLoyaltyWeight(graphene.Mutation):
@@ -413,7 +422,8 @@ class UpdateAProductLoyaltyWeight(graphene.Mutation):
             product = get_model_object(Product, 'id', product_id)
             product.loyalty_weight = loyalty_value
             product.save()
-        message = PRODUCTS_SUCCESS_RESPONSES["loyalty_weight_updated"].format(len(product_ids), loyalty_value)
+        message = PRODUCTS_SUCCESS_RESPONSES["loyalty_weight_updated"].format(
+            len(product_ids), loyalty_value)
         return UpdateAProductLoyaltyWeight(product=product, message=message)
 
 

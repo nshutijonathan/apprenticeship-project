@@ -261,14 +261,11 @@ approve_product = '''
 set_price_string = '''
     mutation{{
         updatePrice(
-            markup:{markup}
-            productIds:{product_ids}
-            autoPrice:{auto_price}
+            productIds:{product_ids} 
             salesPrice:{sales_price}
         ){{
             products{{
             id
-            unitCost
             markup
             salesPrice
             }}
@@ -277,6 +274,40 @@ set_price_string = '''
         }}
     }}
 '''
+
+set_markup_string = '''
+    mutation{{
+        updatePrice(
+            productIds:{product_ids} 
+            markup:{markup}
+        ){{
+            products{{
+            id
+            markup
+            salesPrice
+            }}
+            errors
+            message
+        }}
+    }}
+'''
+
+set_nothing_string = '''
+    mutation{{
+        updatePrice(
+            productIds:{product_ids} 
+        ){{
+            products{{
+            id
+            markup
+            salesPrice
+            }}
+            errors
+            message
+        }}
+    }}
+'''
+
 product_search_query = '''
 query{{
     filterProducts(
