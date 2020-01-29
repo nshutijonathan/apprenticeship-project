@@ -217,6 +217,7 @@ class SaveAutofillItems:
                         product_unit_price=product.sales_price,
                         product_name=product.product_name,
                         sku_number=product.sku_number,
+                        current_supplier_id=product.preferred_supplier_id,
                         autofill_quantity=product.autofill_quantity,
                         preferred_supplier_id=product.preferred_supplier_id,
                         backup_supplier_id=product.backup_supplier_id,

@@ -401,7 +401,8 @@ class Query(graphene.AbstractType):
                     pre_ordered_product_quantity) < product.reorder_point:
                 product_list.append(product)
 
-        saved_products = SaveAutofillItems(product_list, order_id).save()
+        saved_products = SaveAutofillItems(
+            product_list, order_id).save().order_by('-created_at')
         return saved_products
 
 
