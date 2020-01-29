@@ -1,4 +1,6 @@
 import graphene
+import json
+from collections import namedtuple, Counter
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models.suppliers import Suppliers
@@ -11,6 +13,18 @@ from healthid.utils.orders_utils.inventory_notification import \
     autosuggest_product_order
 from healthid.utils.app_utils.check_user_in_outlet import \
     check_user_has_an_active_outlet
+
+
+class SupplierOrderFormOutput(graphene.ObjectType):
+    supplier_order_form_id = graphene.String()
+    order_id = graphene.Int()
+    supplier_id = graphene.Int()
+    order_name = graphene.String()
+    status = graphene.String()
+    supplier_order_name = graphene.String()
+    supplier_order_number = graphene.String()
+    number_of_products = graphene.Int()
+    marked_as_sent = graphene.Boolean()
 
 
 class AutosuggestOrder(graphene.ObjectType):
@@ -111,8 +125,7 @@ class Query(graphene.AbstractType):
     suppliers_order_details = graphene.List(
         SupplierOrderDetailsType, order_id=graphene.Int(required=True))
     supplier_order_details = graphene.Field(
-        SupplierOrderDetailsType, order_id=graphene.Int(required=True),
-        supplier_id=graphene.String(required=True)
+        SupplierOrderDetailsType, supplier_order_form_id=graphene.String(required=True)
     )
     orders = graphene.List(OrderType, page_count=graphene.Int(),
                            page_number=graphene.Int())
@@ -124,6 +137,107 @@ class Query(graphene.AbstractType):
     total_orders_pages_count = graphene.Int()
     pagination_result = None
     autosuggest_product_order = graphene.List(AutosuggestOrder)
+
+    all_suppliers_order_forms = graphene.List(SupplierOrderFormOutput)
+
+    @login_required
+    def resolve_all_suppliers_order_forms(self, info, **kwargs):
+
+        incomplete_orders = []
+        complete_orders_with_duplicates = []
+        complete_orders_with_no_duplicates = []
+
+        # get all of my orders
+        orders = Order.objects.filter(user_id=info.context.user.id)
+
+        # get all of my orders's IDs
+        order_ids = [i.__dict__['id'] for i in orders]
+
+        # getting the incomplete order information
+        for order_detail_item in orders:
+            supplier_order_object = {}
+            supplier_order_object['order_name'] = order_detail_item.__dict__[
+                'name']
+            supplier_order_object['order_id'] = order_detail_item.__dict__[
+                'id']
+            supplier_order_object['status'] = order_detail_item.__dict__[
+                'status']
+            incomplete_orders.append(supplier_order_object)
+
+
+        supplier_order_details = SupplierOrderDetails.objects.filter(
+            order_id__in=order_ids)
+
+        order_details = OrderDetails.objects.filter(order_id__in=order_ids)
+
+        # get the complete order information
+        for sod in supplier_order_details:
+            for od in order_details:
+                if sod.__dict__['order_id'] == od.__dict__['order_id'] \
+                        and sod.__dict__['supplier_id'] == od.__dict__['supplier_id']:
+                    
+                    supplier_order_object = {}
+                    supplier_order_object['supplier_order_form_id'] = sod.__dict__['id']
+                    supplier_order_object['order_id'] = od.__dict__['order_id']
+                    supplier_order_object['supplier_id'] = od.__dict__[
+                        'supplier_id']
+                    supplier_order_object['status'] = "Awaiting order send-out..."
+                    supplier_order_object['supplier_order_name'] = od.__dict__[
+                        'supplier_order_name']
+                    supplier_order_object['supplier_order_number'] = od.__dict__[
+                        'supplier_order_number']
+                    supplier_order_object['marked_as_sent'] = sod.__dict__[
+                        'marked_as_sent']
+                    complete_orders_with_duplicates.append(supplier_order_object)
+
+
+        # converting complete_orders_with_duplicates
+        # from a dictionary to an object
+        new_list = []
+        for res in complete_orders_with_duplicates:
+            new_list.append(namedtuple(
+                    'Struct', res.keys())(*res.values()))
+
+        
+        # counter how many times it repeats itself in order
+        # to get the number of products
+        new_counter_object = dict(Counter(new_list))
+        keys = list(new_counter_object.keys())
+        values = list(new_counter_object.values())
+
+        # store supplier order form id as a key and
+        # value as a number of products
+        key_value_object = {}
+        for i, res in enumerate(keys):
+            key_value_object[list(keys[i])[0]] = values[i]
+
+        
+        # remove duplicates
+        for res in complete_orders_with_duplicates:
+            if res not in complete_orders_with_no_duplicates:
+                complete_orders_with_no_duplicates.append(res)
+
+
+        # adding the number of products for each supplier order form
+        for res in complete_orders_with_no_duplicates:
+            for key, value in key_value_object.items():
+                if key == res['supplier_order_form_id']:
+                    res['number_of_products'] = value
+            
+
+        union = incomplete_orders + complete_orders_with_no_duplicates
+        all_supplier_order_forms = []
+
+        # remove the order which is has a status of ready to be placed because
+        # once it has that, it means the real supplier order forms where generated
+        # so we use them on it's behalf.
+        for res in union:
+            if 'waiting for order to be placed' not in res['status'] \
+                and not res.get('marked_as_sent'):
+                all_supplier_order_forms.append(namedtuple(
+                    'Struct', res.keys())(*res.values()))
+
+        return all_supplier_order_forms
 
     @login_required
     def resolve_suppliers_order_details(self, info, **kwargs):
@@ -138,10 +252,7 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_supplier_order_details(self, info, **kwargs):
-        order = get_model_object(Order, 'id', kwargs.get('order_id'))
-        supplier = get_model_object(Suppliers, 'id', kwargs.get('supplier_id'))
-        return SupplierOrderDetails.objects.filter(order=order,
-                                                   supplier=supplier).first()
+        return SupplierOrderDetails.objects.filter(id=kwargs['supplier_order_form_id']).first()
 
     @login_required
     def resolve_orders(self, info, **kwargs):

@@ -221,6 +221,22 @@ query {{
 }}
 '''
 
+
+all_suppliers_order_forms = '''{{
+  allSuppliersOrderForms {{
+     supplierOrderFormId
+     orderId
+     orderName
+     status
+     supplierId
+     supplierOrderName
+     supplierOrderNumber
+     numberOfProducts
+  }}
+}}
+'''
+
+
 supplier_order_details = '''
 query {{
   supplierOrderDetails(orderId: {order_id}, supplierId: "{supplier_id}"){{
