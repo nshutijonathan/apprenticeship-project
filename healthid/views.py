@@ -211,7 +211,7 @@ class HandleCSV(APIView):
                                 else status.HTTP_400_BAD_REQUEST
                                 )
 
-            if param == 'customers_retail_pro':
+            if param == 'retail_pro_customers':
                 user = request.user
                 result = handle_cutomer_retail_pro_csv_upload(
                     io_string=io_string, user=user)
