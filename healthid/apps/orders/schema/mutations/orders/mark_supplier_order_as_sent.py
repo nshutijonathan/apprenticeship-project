@@ -16,21 +16,18 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
         supplier_order_ids: A list of supplier order ids
 
     Returns:
-        message: a return messae.
+        message: a return message.
     """
     message = graphene.String()
 
     class Arguments:
-        order_id = graphene.Int(required=True)
         supplier_order_ids = graphene.List(graphene.String,
                                            required=True)
 
     @login_required
     def mutate(self, info, **kwargs):
-        order_id = kwargs.get('order_id')
         supplier_order_ids = kwargs.get('supplier_order_ids')
-        details_fetcher = SupplierOrderDetailsFetcher(order_id,
-                                                      supplier_order_ids)
+        details_fetcher = SupplierOrderDetailsFetcher(supplier_order_ids)
         supplier_orders = details_fetcher.fetch()
         ids = list()
         for supplier_order in supplier_orders:
@@ -39,7 +36,6 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):
                 pass
-        OrderStatusChangeService(order_id, "Open").change_status()
         message = ORDERS_SUCCESS_RESPONSES[
             "supplier_order_marked_closed"].format(
                 ",".join(id for id in ids))
