@@ -214,6 +214,7 @@ class SaveAutofillItems:
                         order_id=self.order_id,
                         product_unit_price=product.sales_price,
                         product_name=product.product_name,
+                        product_id=product.id,
                         sku_number=product.sku_number,
                         current_supplier_id=product.preferred_supplier_id,
                         autofill_quantity=product.autofill_quantity,

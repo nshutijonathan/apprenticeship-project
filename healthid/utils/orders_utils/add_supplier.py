@@ -152,9 +152,11 @@ class AddSupplier:
 
     def retail_pro_suppliers(self, io_string, user, on_duplication):
         rows = []
-        get_default_supplier, create_default_supplier = Suppliers.objects.get_or_create(
-            user_id=user.id, name="retail", supplier_id="retail", tier_id=1, is_approved=True)
-        default_supplier = get_default_supplier or create_default_supplier
+        get_default_supplier, create_default_supplier =\
+            Suppliers.objects.get_or_create(
+                user_id=user.id, name="retail", supplier_id="retail",
+                tier_id=1, is_approved=True
+            )
         for row in csv.DictReader(io_string):
             rows.append([
                 (row.get('Vend Name') and row.get('Vend Name').replace(

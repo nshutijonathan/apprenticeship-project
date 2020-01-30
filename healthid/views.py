@@ -53,7 +53,8 @@ class HandleCSV(APIView):
         handle_customer_csv_object = HandleCustomerCSVValidation()
         handle_supplier_csv_object = AddSupplier()
         retail_pro_suppliers = handle_supplier_csv_object.retail_pro_suppliers
-        quick_books_suppliers = handle_supplier_csv_object.quick_books_suppliers
+        quick_books_suppliers = \
+            handle_supplier_csv_object.quick_books_suppliers
         handle_csv = handle_csv_object.handle_csv_upload
         retail_pro_csv_upload = handle_csv_object.handle_retail_pro_csv_upload
         quick_box_csv_upload = handle_csv_object.handle_quick_box_csv_upload
@@ -173,7 +174,8 @@ class HandleCSV(APIView):
                                     )
                 else:
                     message = \
-                        {"message": "Business id associated with this user is not found"
+                        {"message":
+                         "Business id associated with this user is not found"
                          }
                     return Response(message)
             if param == 'quick_books_products':
@@ -211,7 +213,7 @@ class HandleCSV(APIView):
                                 else status.HTTP_400_BAD_REQUEST
                                 )
 
-            if param == 'customers_retail_pro':
+            if param == 'retail_pro_customers':
                 user = request.user
                 result = handle_cutomer_retail_pro_csv_upload(
                     io_string=io_string, user=user)

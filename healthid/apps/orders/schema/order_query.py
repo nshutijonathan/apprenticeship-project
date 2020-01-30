@@ -21,6 +21,7 @@ class SupplierOrderFormOutput(graphene.ObjectType):
     order_id = graphene.Int()
     supplier_id = graphene.String()
     order_name = graphene.String()
+    order_number = graphene.String()
     status = graphene.String()
     supplier_order_name = graphene.String()
     supplier_order_number = graphene.String()
@@ -161,6 +162,8 @@ class Query(graphene.AbstractType):
                 'name']
             supplier_order_object['order_id'] = order_detail_item.__dict__[
                 'id']
+            supplier_order_object['order_number'] = order_detail_item.__dict__[
+                'order_number']
             supplier_order_object['status'] = order_detail_item.__dict__[
                 'status']
             incomplete_orders.append(supplier_order_object)

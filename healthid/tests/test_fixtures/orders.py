@@ -304,13 +304,11 @@ query {
     name
     orderNumber
     status
-    
     supplierorderdetailsSet {
       id
       supplierOrderName
       supplierOrderNumber
       numberOfProducts
-      
       supplier {
         id
         name
@@ -393,8 +391,8 @@ query {{
 
 retrieve_open_orders_custom_paginated = '''
 query {{
-  ordersSortedByStatus(pageCount:{pageCount} \ 
-  pageNumber: {pageNumber} status: "{status}") 
+  ordersSortedByStatus(pageCount:{pageCount}
+  pageNumber: {pageNumber} status: "{status}")
     {{
     id
     closed
