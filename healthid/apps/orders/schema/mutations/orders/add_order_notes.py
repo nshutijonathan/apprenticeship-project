@@ -4,7 +4,6 @@ from graphql_jwt.decorators import login_required
 from healthid.apps.orders.models.orders import SupplierOrderDetails
 from healthid.utils.app_utils.database import SaveContextManager
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
-from healthid.apps.orders.services import SupplierOrderDetailsFetcher, OrderStatusChangeService
 
 
 class AddOrderNotes(graphene.Mutation):
@@ -39,4 +38,5 @@ class AddOrderNotes(graphene.Mutation):
             message = ORDERS_SUCCESS_RESPONSES[
                 "add_order_note_success"]
             return AddOrderNotes(message=message)
-        return AddOrderNotes(message="Order Id or additional notes cannot be empty")
+        return AddOrderNotes(message="Order Id or \
+            additional notes cannot be empty")

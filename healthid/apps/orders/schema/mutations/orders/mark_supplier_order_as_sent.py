@@ -1,10 +1,11 @@
 import graphene
 from graphql_jwt.decorators import login_required
 
-from healthid.apps.orders.models.orders import SupplierOrderDetails, Order
+from healthid.apps.orders.models.orders import SupplierOrderDetails
 from healthid.utils.app_utils.database import SaveContextManager
 from healthid.utils.messages.orders_responses import ORDERS_SUCCESS_RESPONSES
-from healthid.apps.orders.services import SupplierOrderDetailsFetcher, OrderStatusChangeService
+from healthid.apps.orders.services import \
+    SupplierOrderDetailsFetcher, OrderStatusChangeService
 
 
 class MarkSupplierOrderAsSent(graphene.Mutation):

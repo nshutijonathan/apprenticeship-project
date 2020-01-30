@@ -136,7 +136,8 @@ class Query(graphene.AbstractType):
     approved_products = graphene.List(ProductType, page_count=graphene.Int(),
                                       page_number=graphene.Int())
     filter_products = DjangoFilterConnectionField(ProductType)
-    proposed_edits = graphene.List(ProductType)
+    proposed_edits = graphene.List(
+        ProductType, page_count=graphene.Int(), page_number=graphene.Int())
     price_check_surveys = graphene.List(SurveyType)
     price_check_survey = graphene.Field(
         SurveyType, id=graphene.String(required=True))
@@ -354,11 +355,25 @@ class Query(graphene.AbstractType):
 
     @login_required
     def resolve_proposed_edits(self, info, **kwargs):
+        page_count = kwargs.get('page_count')
+        page_number = kwargs.get('page_number')
         user = info.context.user
         check_user_has_an_active_outlet(user)
         business = get_user_business(user)
-        return Product.all_products.for_business(business.id).exclude(
+        proposed_edits_set = Product.all_products.for_business(business.id).exclude(
             parent_id__isnull=True)
+        if page_count or page_number:
+            proposed_edits = pagination_query(
+                proposed_edits_set, page_count, page_number)
+            Query.pagination_result = proposed_edits
+            return proposed_edits[0]
+        paginated_response = pagination_query(proposed_edits_set,
+                                              PAGINATION_DEFAULT[
+                                                  "page_count"],
+                                              PAGINATION_DEFAULT[
+                                                  "page_number"])
+        Query.pagination_result = paginated_response
+        return paginated_response[0]
 
     @login_required
     def resolve_product_categories(self, info, **kwargs):
