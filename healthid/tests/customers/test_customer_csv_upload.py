@@ -50,7 +50,7 @@ class TestCustomerCsvUpload(BaseConfiguration, JSONWebTokenTestCase):
             reverse('handle_csv', args=['customers']), {'file': file},
             **self.auth_headers)
         view = HandleCSV.as_view()
-        response = view(request, param='customers_retail_pro')
+        response = view(request, param='retail_pro_customers')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["message"],
                          "Customers successfully added"
