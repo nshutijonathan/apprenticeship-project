@@ -19,7 +19,7 @@ from healthid.utils.app_utils.check_user_in_outlet import \
 class SupplierOrderFormOutput(graphene.ObjectType):
     supplier_order_form_id = graphene.String()
     order_id = graphene.Int()
-    supplier_id = graphene.Int()
+    supplier_id = graphene.String()
     order_name = graphene.String()
     status = graphene.String()
     supplier_order_name = graphene.String()
