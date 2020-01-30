@@ -2,7 +2,8 @@ PRODUCTS_SUCCESS_RESPONSES = {
     "survey_deletion_success": "Survey id, {}, and all its associated price "
                                "checks have been deleted!",
     "edit_request_success": "Edit request for quantity has been sent!",
-    "set_price_success": "successfully set prices for products",
+    "set_price_success": "The {key} of {number} product(s) has"
+    " successfully been updated to {value}",
     "approval_pending": "Proposed update pending approval",
     "edit_request_decline": "Edit request for product {} has been declined!",
     "product_activation_success": "Products with ids {} have been activated.",
@@ -66,4 +67,6 @@ PRODUCTS_ERROR_RESPONSES = {
     "batch_expiry_error": "The batch for product '{}' has expired. "
                           "Please check its expiry and delivery dates.",
     "promotion_generated_success": "{}, generated successfully!",
+    "update_price_error": "You can update only one value, either "
+                            "markup or sales_price"
 }
