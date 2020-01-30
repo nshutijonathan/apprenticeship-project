@@ -19,8 +19,7 @@ class SupplierOrderDetailsFetcher:
         supplier_order_details_ids (List): a list of supplier order ids
     """
 
-    def __init__(self, order_id, supplier_order_details_ids):
-        self.order_id = order_id
+    def __init__(self, supplier_order_details_ids):
         self.supplier_order_details_ids = supplier_order_details_ids
 
     def fetch(self):
@@ -32,10 +31,9 @@ class SupplierOrderDetailsFetcher:
         Returns:
             (Obj:) QuerySet object of supplier order details
         """
-        order = get_model_object(Order, 'id', self.order_id)
         results = SupplierOrderDetails.objects.all()
         results = results.filter(
-            id__in=self.supplier_order_details_ids, order=order)
+            id__in=self.supplier_order_details_ids)
         if not results:
             raise ValueError("No supplier Order Details found matching "
                              "provided ids and Order")

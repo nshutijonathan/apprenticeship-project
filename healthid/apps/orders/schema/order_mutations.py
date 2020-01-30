@@ -21,6 +21,8 @@ from healthid.apps.orders.schema.mutations.orders.delete_order_detail \
     import DeleteOrderDetail
 from healthid.apps.orders.schema.mutations.orders.close_order \
     import CloseOrder
+from healthid.apps.orders.schema.mutations.orders.cancel_order \
+    import CancelOrder
 
 
 class Mutation(graphene.ObjectType):
@@ -35,4 +37,5 @@ class Mutation(graphene.ObjectType):
     send_supplier_order_emails = SendSupplierOrderEmails.Field()
     mark_supplier_order_as_sent = MarkSupplierOrderAsSent.Field()
     delete_order_detail = DeleteOrderDetail.Field()
+    cancel_order = CancelOrder.Field()
     close_order = CloseOrder.Field()
