@@ -53,7 +53,13 @@ class AddOrderDetails(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, **kwargs):
-        order_details_data = kwargs.get('order_details_data')
+        order_details_data = []
+
+        # remove duplicates
+        for order_detail_item in kwargs.get('order_details_data'):
+            if order_detail_item not in order_details_data:
+                order_details_data.append(order_detail_item)
+
         order_id = None
         products = []
         quantities = []

@@ -127,7 +127,8 @@ class Query(graphene.AbstractType):
     suppliers_order_details = graphene.List(
         SupplierOrderDetailsType, order_id=graphene.Int(required=True))
     supplier_order_details = graphene.Field(
-        SupplierOrderDetailsType, supplier_order_form_id=graphene.String(required=True)
+        SupplierOrderDetailsType, supplier_order_form_id=graphene.String(
+            required=True)
     )
     orders = graphene.List(OrderType, page_count=graphene.Int(),
                            page_number=graphene.Int())
@@ -168,7 +169,6 @@ class Query(graphene.AbstractType):
                 'status']
             incomplete_orders.append(supplier_order_object)
 
-
         supplier_order_details = SupplierOrderDetails.objects.filter(
             order_id__in=order_ids)
 
@@ -179,9 +179,10 @@ class Query(graphene.AbstractType):
             for od in order_details:
                 if sod.__dict__['order_id'] == od.__dict__['order_id'] \
                         and sod.__dict__['supplier_id'] == od.__dict__['supplier_id']:
-                    
+
                     supplier_order_object = {}
-                    supplier_order_object['supplier_order_form_id'] = sod.__dict__['id']
+                    supplier_order_object['supplier_order_form_id'] = sod.__dict__[
+                        'id']
                     supplier_order_object['order_id'] = od.__dict__['order_id']
                     supplier_order_object['supplier_id'] = od.__dict__[
                         'supplier_id']
@@ -192,17 +193,16 @@ class Query(graphene.AbstractType):
                         'supplier_order_number']
                     supplier_order_object['marked_as_sent'] = sod.__dict__[
                         'marked_as_sent']
-                    complete_orders_with_duplicates.append(supplier_order_object)
-
+                    complete_orders_with_duplicates.append(
+                        supplier_order_object)
 
         # converting complete_orders_with_duplicates
         # from a dictionary to an object
         new_list = []
         for res in complete_orders_with_duplicates:
             new_list.append(namedtuple(
-                    'Struct', res.keys())(*res.values()))
+                'Struct', res.keys())(*res.values()))
 
-        
         # counter how many times it repeats itself in order
         # to get the number of products
         new_counter_object = dict(Counter(new_list))
@@ -215,19 +215,16 @@ class Query(graphene.AbstractType):
         for i, res in enumerate(keys):
             key_value_object[list(keys[i])[0]] = values[i]
 
-        
         # remove duplicates
         for res in complete_orders_with_duplicates:
             if res not in complete_orders_with_no_duplicates:
                 complete_orders_with_no_duplicates.append(res)
-
 
         # adding the number of products for each supplier order form
         for res in complete_orders_with_no_duplicates:
             for key, value in key_value_object.items():
                 if key == res['supplier_order_form_id']:
                     res['number_of_products'] = value
-            
 
         union = incomplete_orders + complete_orders_with_no_duplicates
         all_supplier_order_forms = []
@@ -237,7 +234,7 @@ class Query(graphene.AbstractType):
         # so we use them on it's behalf.
         for res in union:
             if 'waiting for order to be placed' not in res['status'] \
-                and not res.get('marked_as_sent'):
+                    and not res.get('marked_as_sent'):
                 all_supplier_order_forms.append(namedtuple(
                     'Struct', res.keys())(*res.values()))
 
@@ -320,7 +317,7 @@ class Query(graphene.AbstractType):
         page_count = kwargs.get('page_count')
         page_number = kwargs.get('page_number')
         status = kwargs.get('status')
-        orders_set = Order.objects.filter(
+        orders_set = SupplierOrderDetails.objects.filter(
             closed=False, status=status).order_by('id')
         if page_count or page_number:
             orders_sorted_by_status = pagination_query(
