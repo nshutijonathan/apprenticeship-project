@@ -32,6 +32,7 @@ class MarkSupplierOrderAsSent(graphene.Mutation):
         ids = list()
         for supplier_order in supplier_orders:
             supplier_order.marked_as_sent = True
+            supplier_order.status = "open"
             ids.append(supplier_order.id)
             with SaveContextManager(supplier_order,
                                     model=SupplierOrderDetails):
