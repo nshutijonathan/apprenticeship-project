@@ -133,7 +133,7 @@ class Query(graphene.AbstractType):
     orders = graphene.List(OrderType, page_count=graphene.Int(),
                            page_number=graphene.Int())
     order = graphene.Field(OrderType, order_id=graphene.Int(required=True))
-    orders_sorted_by_status = graphene.List(OrderType, page_count=graphene.Int(),
+    orders_sorted_by_status = graphene.List(SupplierOrderDetailsType, page_count=graphene.Int(),
                                             page_number=graphene.Int(), status=graphene.String(required=True))
     closed_orders = graphene.List(OrderType, page_count=graphene.Int(),
                                   page_number=graphene.Int())
@@ -318,7 +318,7 @@ class Query(graphene.AbstractType):
         page_number = kwargs.get('page_number')
         status = kwargs.get('status')
         orders_set = SupplierOrderDetails.objects.filter(
-            closed=False, status=status).order_by('id')
+            status=status).order_by('id')
         if page_count or page_number:
             orders_sorted_by_status = pagination_query(
                 orders_set, page_count, page_number)
