@@ -221,6 +221,7 @@ class SaveAutofillItems:
                         preferred_supplier_id=product.preferred_supplier_id,
                         backup_supplier_id=product.backup_supplier_id,
                     )
-            return AutoFillProducts.objects.filter(is_deleted=False)
+            return AutoFillProducts.objects.filter(
+                is_deleted=False, order_id=self.order_id)
         raise GraphQLError(
             "There are no data to be generated")
