@@ -6,6 +6,7 @@ from healthid.apps.products.schema.product_query import BatchInfoType
 from healthid.apps.products.models import BatchInfo, Quantity
 from healthid.utils.app_utils.database import get_model_object
 from healthid.apps.orders.services import OrderStatusChangeService
+from django.utils.dateparse import parse_date
 
 
 class BatchInfoObject(graphene.InputObjectType):
@@ -46,20 +47,19 @@ class CloseOrder(graphene.Mutation):
         if batch_info and supplier_order_form:
             for batch in batch_info:
                 product_batch = BatchInfo.objects.create(
-                    date_received=batch.date_received,
+                    date_received=parse_date(batch.date_received),
                     delivery_promptness=batch.delivery_promptness,
-                    expiry_date=batch.expiry_date,
+                    expiry_date=parse_date(batch.expiry_date),
                     product_id=batch.product_id,
                     service_quality=batch.service_quality,
                     supplier_id=batch.supplier_id,
+                    comment=batch.notes,
                     unit_cost=batch.cost_per_item,
                     user=user
                 )
-
                 Quantity.objects.create(
                     quantity_received=batch.quantity_received,
                     quantity_remaining=batch.quantity_received,
-                    comment=batch.notes,
                     batch_id=product_batch.id,
                     is_approved=True
                 )
