@@ -16,7 +16,7 @@ class BatchInfoObject(graphene.InputObjectType):
     product_id = graphene.Int(required=True)
     quantity_received = graphene.Int(required=True)
     service_quality = graphene.Int(required=True)
-    supplier_id = graphene.Int(required=True)
+    supplier_id = graphene.String(required=True)
     cost_per_item = graphene.Int(required=True)
 
 
