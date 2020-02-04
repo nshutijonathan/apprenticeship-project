@@ -106,8 +106,8 @@ class Product(BaseModel):
         default='https://res.cloudinary.com/dojaopytm/image/upload/'
         'v1558444184/productPlaceholder.png')
     is_active = models.BooleanField(default=True)
-    reorder_point = models.IntegerField(default=0)
-    reorder_max = models.IntegerField(default=0)
+    reorder_point = models.IntegerField(default=5)
+    reorder_max = models.IntegerField(default=100)
     request_declined = models.BooleanField(default=False)
 
     '''all_products model manager returns both all products including

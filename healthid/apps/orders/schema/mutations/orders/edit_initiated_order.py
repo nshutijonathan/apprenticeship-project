@@ -99,7 +99,7 @@ class EditAutofillItems(graphene.Mutation):
         if autofill_quantity:
             if autofill_quantity > product.reorder_max:
                 raise GraphQLError(
-                    f"you can not exceed the quantity of {product.reorder_max}")
+                    f"you can not exceed the quantity of {product.reorder_max} of the reoder max")
             update_fields.autofill_quantity = autofill_quantity
         if preferred_supplier_id or backup_supplier_id:
             update_fields.current_supplier_id = preferred_supplier_id or backup_supplier_id
