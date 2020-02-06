@@ -36,6 +36,7 @@ updateBatchInfo (
     unitCost: 50,
     comment:"Delivered on time",
     deliveryPromptness: true,
+    quantityReceived: 60,
     serviceQuality: 5
   ) {{
     message
@@ -45,6 +46,9 @@ updateBatchInfo (
       dateReceived
       supplier{{
         name
+      }}
+      batchQuantities {{
+        quantityReceived
       }}
       unitCost,
       comment
