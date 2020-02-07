@@ -81,11 +81,12 @@ class AddSupplier(graphene.Mutation):
         fields['name'] = input['name'].strip()
         fields['name'] = validator.special_character_validation(
             input['name'], 'supplier name')
-        if on_duplicate != 'new' and \
-                (Suppliers.objects.filter(
-                    name__iexact=fields['name'].strip()).count()):
+        supplier = Suppliers.objects.filter(
+            name__iexact=fields['name'].strip()).first()
+        if (on_duplicate != 'new' and on_duplicate != "use the same") and supplier:
             raise GraphQLError(
                 ERROR_RESPONSES['duplication_error'].format(fields['name']))
+        fields['supplier'] = supplier
         return fields
 
     @classmethod
@@ -98,6 +99,10 @@ class AddSupplier(graphene.Mutation):
 
         business = get_user_business(user)
         fields = cls.validate_fields(input, on_duplicate)
+        if on_duplicate == "use the same" and fields["supplier"]:
+            supplier = fields["supplier"]
+            supplier.business.add(business)
+            return AddSupplier(supplier)
         # contacts input
         contacts_fields = AddSupplierContacts.validate_fields(
             contacts_input) if contacts_input else None
@@ -109,9 +114,9 @@ class AddSupplier(graphene.Mutation):
             setattr(supplier, key, value)
 
         supplier.user = user
-        supplier.business = business
 
         with SaveContextManager(supplier, model=Suppliers) as supplier:
+            supplier.business.add(business)
             data = supplier
             if contacts_fields:
                 contacts_fields['supplier_id'] = supplier.id

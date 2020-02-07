@@ -31,9 +31,7 @@ class Suppliers(BaseModel):
     is_approved = models.BooleanField(default=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='supplier_creator')
-    business = models.ForeignKey(
-        Business, on_delete=models.CASCADE,
-        related_name='supplier_business', null=True)
+    business = models.ManyToManyField('business.Business')
     parent = models.ForeignKey("self", on_delete=models.CASCADE,
                                related_name="proposedEdit",
                                null=True, blank=True)
