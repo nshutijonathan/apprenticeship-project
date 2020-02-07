@@ -108,13 +108,14 @@ class EditAutofillItems(graphene.Mutation):
             update_fields.save()
             success = 'successfully edited'
             update_fields = update_fields
-            return EditAutofillItems(updated_fields=update_fields, message=success)
+            return EditAutofillItems(updated_fields=update_fields,
+                                     message=success)
         return {"message": "You did not edit anything"}
 
 
 class DeleteAutofillItem(graphene.Mutation):
     """
-    Mutation that deletes one or more records 
+    Mutation that deletes one or more records
     in the 'autofill order table' model.
 
     Arguments:
