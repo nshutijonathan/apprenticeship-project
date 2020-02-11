@@ -74,7 +74,6 @@ class HandleCSV(APIView):
 
         io_string = io.StringIO(data_set)
         on_duplication = request.POST.get('on_duplication')
-
         try:
             if param == 'suppliers':
                 user = request.user

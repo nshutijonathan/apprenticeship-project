@@ -367,13 +367,13 @@ class BaseConfiguration(TestCase):
 
     def create_suppliers(self, user):
         tier = Tier.objects.create(name="exporter")
-
-        return Suppliers.objects.create(
+        supplier = Suppliers.objects.create(
             name='Sport Direct',
             tier=tier,
             user=user,
-            business=self.business,
             is_approved=True)
+        supplier.business.add(self.business)
+        return supplier
 
     def create_suppliers_contacts(self, supplier):
         city = City.objects.get(name="Chiclayo")

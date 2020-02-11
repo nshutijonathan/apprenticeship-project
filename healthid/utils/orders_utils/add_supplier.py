@@ -22,7 +22,7 @@ from .suppliers_helper import upload_supplier_quickbook_csv_file
 
 
 class AddSupplier:
-    def handle_csv_upload(self, user, io_string, on_duplication):
+    def handle_csv_upload(self, user, io_string, on_duplication=''):
         """
         This CSV method loops through the csv file populating the DB with
         the information in the csv rows through the SaveContextManager,
@@ -36,7 +36,10 @@ class AddSupplier:
         [supplier_count, row_count, error] = [0, 0, '']
         duplicated_suppliers = []
         suppliers = validate_suppliers_csv_upload(io_string)
-        supplier_names = Suppliers.objects.values_list('name', flat=True)
+
+        supplier_names = Suppliers.objects.values_list(
+            'name', flat=True)
+        on_duplication = on_duplication.lower() if on_duplication else ''
 
         for row in suppliers:
             row_count += 1
@@ -44,7 +47,6 @@ class AddSupplier:
             does_supplier_exist = name in supplier_names
             on_duplicate_action = on_duplication_actions.get(
                 name.lower()) or ''
-
             if not does_supplier_exist or on_duplicate_action.lower() == 'new':
                 city = get_model_object(City,
                                         'name__iexact',
@@ -91,7 +93,6 @@ class AddSupplier:
                         name=name,
                         tier=tier,
                         user=user_id,
-                        business=business,
                         is_approved=True if row.get('is_approved') else False,
                         supplier_id=row.get('supplier_id')
                     )
@@ -100,13 +101,12 @@ class AddSupplier:
                         name=name,
                         tier=tier,
                         user=user_id,
-                        business=business,
                         is_approved=True if row.get('is_approved') else False,
                     )
 
                 with SaveContextManager(suppliers_instance,
                                         **params) as supplier:
-                    supplier.business = business
+                    suppliers_instance.business.add(business)
                     suppliers_contacts_instance = \
                         SuppliersContacts(
                             email=row.get('email'),
@@ -137,16 +137,20 @@ class AddSupplier:
 
                     pass
                 supplier_count += 1
+
+            elif on_duplication == "use the same":
+                supplier = Suppliers.objects.filter(
+                    name__iexact=name).first()
+                if business not in supplier.business.all():
+                    supplier.business.add(business)
+                    supplier_count += 1
+                else:
+                    duplicated_suppliers.append(
+                        self.get_formated_duplicate_object(row_count, name, row))
+
             elif on_duplicate_action.lower() != 'skip':
-                duplicated_suppliers.append({
-                    'row': row_count,
-                    'message': ERROR_RESPONSES['duplication_error'].format(
-                        name),
-                    'data': row,
-                    'conflicts': Suppliers.objects.filter(
-                        name__iexact=name).values(
-                        'id', 'name', 'supplier_id')
-                })
+                duplicated_suppliers.append(
+                    self.get_formated_duplicate_object(row_count, name, row))
         return {'supplier_count': supplier_count,
                 'duplicated_suppliers': duplicated_suppliers}
 
@@ -227,3 +231,14 @@ class AddSupplier:
         custom_csv = generate_csv_file(header=header, rows=rows)
         return AddSupplier.handle_csv_upload(self,
                                              user, custom_csv, on_duplication)
+
+    def get_formated_duplicate_object(self, row_count, name, row):
+        return {
+            'row': row_count,
+            'message': ERROR_RESPONSES['duplication_error'].format(
+                name),
+            'data': row,
+            'conflicts': Suppliers.objects.filter(
+                name__iexact=name).values(
+                'id', 'name', 'supplier_id')
+        }
