@@ -143,29 +143,34 @@ class UpdateBatchInfo(graphene.Mutation):
 
     class Arguments:
         batch_id = graphene.String(required=True)
+        batch_no = graphene.String()
         supplier_id = graphene.String()
         date_received = graphene.String()
         unit_cost = graphene.Float()
         expiry_date = graphene.String()
         service_quality = graphene.Argument(ServiceQuality)
         delivery_promptness = graphene.Boolean()
-        comment = graphene.String()
+        quantity_received = graphene.Int()
 
     @login_required
     @batch_info_instance
     @user_permission('Manager')
     def mutate(self, info, batch_id, **kwargs):
         batch_info = get_model_object(BatchInfo, 'id', batch_id)
+        product_info = get_model_object(Quantity, 'batch_id', batch_id)
         for (key, value) in kwargs.items():
             if key is not None:
                 if key in ('date_received', 'expiry_date'):
                     value = parse_date(value)
+                elif key in ('quantity_received'):
+                    setattr(product_info, key, value)
                 setattr(batch_info, key, value)
         with SaveContextManager(batch_info, model=BatchInfo) as batch_info:
-            message = SUCCESS_RESPONSES[
-                "update_success"].format(
-                "Batch with number " + str(batch_info.batch_no))
-            return UpdateBatchInfo(message=message, batch_info=batch_info)
+            with SaveContextManager(product_info, model=Quantity) as product_info:
+                message = SUCCESS_RESPONSES[
+                    "update_success"].format(
+                    "Batch with number " + str(batch_info.batch_no))
+                return UpdateBatchInfo(message=message, batch_info=batch_info)
 
 
 class ProposeQuantity(graphene.Mutation):
