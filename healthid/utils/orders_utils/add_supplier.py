@@ -19,6 +19,7 @@ from healthid.utils.get_on_duplication_csv_upload_actions import\
     get_on_duplication_csv_upload_actions
 from healthid.utils.app_utils.generate_csv_file import generate_csv_file
 from .suppliers_helper import upload_supplier_quickbook_csv_file
+from healthid.apps.business.models import Business
 
 
 class AddSupplier:
@@ -156,11 +157,15 @@ class AddSupplier:
 
     def retail_pro_suppliers(self, io_string, user, on_duplication):
         rows = []
-        get_default_supplier, create_default_supplier =\
-            Suppliers.objects.get_or_create(
-                user_id=user.id, name="retail", supplier_id="retail",
+        business = Business.objects.filter(user_id=user.id).first()
+        default_retai_pro =\
+            Suppliers(
+                user_id=user.id, name="RetailProVendor(default)", supplier_id="retail",
                 tier_id=1, is_approved=True
             )
+
+        with SaveContextManager(default_retai_pro):
+            default_retai_pro.business.add(business)
         for row in csv.DictReader(io_string):
             rows.append([
                 (row.get('Vend Name') and row.get('Vend Name').replace(
@@ -207,8 +212,11 @@ class AddSupplier:
 
     def quick_books_suppliers(self, io_string, user, on_duplication):
         rows = []
-        get_default_supplier, create_default_supplier = Suppliers.objects.get_or_create(
+        business = Business.objects.filter(user_id=user.id).first()
+        default_quick_books_supplier = Suppliers(
             user_id=user.id, name="QuickBookVendor(default)", supplier_id="quickbook", tier_id=1, is_approved=True)
+        with SaveContextManager(default_quick_books_supplier):
+            default_quick_books_supplier .business.add(business)
         for row in csv.DictReader(io_string):
             rows.append(upload_supplier_quickbook_csv_file(row, user))
 
