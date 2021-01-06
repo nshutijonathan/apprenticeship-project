@@ -9,7 +9,7 @@ autopep8==1.4.3
 backcall==0.1.0
 blessings==1.7
 cairocffi==1.0.2
-CairoSVG==2.4.1
+CairoSVG==2.5.1
 certifi==2019.3.9
 cffi==1.12.3
 chardet==3.0.4
